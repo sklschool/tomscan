@@ -1,1453 +1,1259 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=1.0, user-scalable=no">
-    <title>System Check - เช็คชื่อ/เช็คงาน 2IN1</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Kanit', 'sans-serif'] },
-                    colors: {
-                        brand: {
-                            main: 'var(--theme-main)',
-                            light: 'var(--theme-light)',
-                            dark: 'var(--theme-dark)',
-                            accent: 'var(--theme-accent)',
-                            bg: '#F8FAFC'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <style>
-        :root {
-            --theme-main: #4F46E5; /* Indigo 600 */
-            --theme-light: #EEF2FF; /* Indigo 50 */
-            --theme-dark: #3730A3; /* Indigo 800 */
-            --theme-accent: #8B5CF6; /* Violet 500 */
-        }
-        body { background-color: var(--color-brand-bg); -webkit-tap-highlight-color: transparent; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .toggle-checkbox:checked { right: 0; border-color: var(--theme-main); }
-        .toggle-checkbox:checked + .toggle-label { background-color: var(--theme-main); }
-        .toggle-checkbox { right: 4px; z-index: 1; border-color: #e2e8f0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .toggle-label { width: 3rem; height: 1.5rem; background-color: #e2e8f0; border-radius: 9999px; transition: all 0.3s; }
-
-        .segmented-control { display: flex; background: #f1f5f9; border-radius: 1rem; padding: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        .segment-btn { flex: 1; text-align: center; padding: 0.5rem 0.75rem; border-radius: 0.75rem; font-weight: 600; color: #64748b; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; font-size: 0.875rem;}
-        .segment-btn.active { background: white; color: var(--theme-main); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-
-        #qr-reader { border: none !important; border-radius: 1rem; overflow: hidden; background: #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        #qr-reader__scan_region { background: #f8fafc; }
-        #qr-reader video { object-fit: cover; border-radius: 1rem; }
-
-        @keyframes flashSuccess { 0% { background-color: #d1fae5; transform: scale(1.02); } 100% { background-color: #f8fafc; transform: scale(1); } }
-        .scan-success-flash { animation: flashSuccess 0.8s ease-out; border-color: #10b981 !important; color: #047857 !important; }
-
-        input:focus, select:focus { border-color: var(--theme-main); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
-        
-        .theme-btn { transition: all 0.2s; }
-        .theme-btn.active { transform: scale(1.15); box-shadow: 0 0 0 4px white, 0 0 0 6px var(--theme-main); }
-
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body, .bg-brand-bg { background: white !important; }
-            .card-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .student-card { page-break-inside: avoid; border: 1px solid #e2e8f0 !important; box-shadow: none !important; margin-bottom: 10px; }
-            #sec-reports { display: block !important; box-shadow: none !important; border: none !important; }
-            .print-full-width { width: 100% !important; max-width: none !important; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=1.0, user-scalable=no">
+<title>System Check - เช็คชื่อ/เช็คงาน 2IN1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+fontFamily: { sans: ['Kanit', 'sans-serif'] },
+colors: {
+brand: {
+main: 'var(--theme-main)',
+light: 'var(--theme-light)',
+dark: 'var(--theme-dark)',
+accent: 'var(--theme-accent)',
+bg: '#F8FAFC'
+}
+}
+}
+}
+}
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Supabase JS Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+--theme-main: #4F46E5; /* Indigo 600 /
+--theme-light: #EEF2FF; / Indigo 50 /
+--theme-dark: #3730A3; / Indigo 800 /
+--theme-accent: #8B5CF6; / Violet 500 */
+}
+body { background-color: var(--color-brand-bg); -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.toggle-checkbox:checked { right: 0; border-color: var(--theme-main); }
+.toggle-checkbox:checked + .toggle-label { background-color: var(--theme-main); }
+.toggle-checkbox { right: 4px; z-index: 1; border-color: #e2e8f0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.toggle-label { width: 3rem; height: 1.5rem; background-color: #e2e8f0; border-radius: 9999px; transition: all 0.3s; }
+.segmented-control { display: flex; background: #f1f5f9; border-radius: 1rem; padding: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+.segment-btn { flex: 1; text-align: center; padding: 0.5rem 0.75rem; border-radius: 0.75rem; font-weight: 600; color: #64748b; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; font-size: 0.875rem;}
+.segment-btn.active { background: white; color: var(--theme-main); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+#qr-reader { border: none !important; border-radius: 1rem; overflow: hidden; background: #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+#qr-reader__scan_region { background: #f8fafc; }
+#qr-reader video { object-fit: cover; border-radius: 1rem; }
+@keyframes flashSuccess { 0% { background-color: #d1fae5; transform: scale(1.02); } 100% { background-color: #f8fafc; transform: scale(1); } }
+.scan-success-flash { animation: flashSuccess 0.8s ease-out; border-color: #10b981 !important; color: #047857 !important; }
+input:focus, select:focus { border-color: var(--theme-main); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+.theme-btn { transition: all 0.2s; }
+.theme-btn.active { transform: scale(1.15); box-shadow: 0 0 0 4px white, 0 0 0 6px var(--theme-main); }
+@keyframes spinSlow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spinSlow 12s linear infinite; }
+@media print {
+.no-print { display: none !important; }
+.print-only { display: block !important; }
+body, .bg-brand-bg { background: white !important; }
+.card-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.student-card { page-break-inside: avoid; border: 1px solid #e2e8f0 !important; box-shadow: none !important; margin-bottom: 10px; }
+#sec-reports { display: block !important; box-shadow: none !important; border: none !important; }
+.print-full-width { width: 100% !important; max-width: none !important; }
+}
+</style>
 </head>
 <body class="text-slate-800 flex flex-col h-screen overflow-hidden relative selection:bg-brand-light selection:text-brand-main text-base bg-slate-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-light/60 via-slate-50 to-slate-100">
-
-    <!-- ==================== LOGIN VIEW ==================== -->
-    <div id="view-login" class="absolute inset-0 z-[100] flex items-center justify-center p-4 transition-opacity duration-500 bg-white/40 backdrop-blur-sm">
-        <div class="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-br from-brand-main/20 via-brand-accent/10 to-transparent -z-10 transition-colors"></div>
-        
-        <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.1)] border border-white p-6 md:p-8 max-w-sm mx-auto w-full relative">
-            <div class="text-center mb-6">
-                <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-brand-main to-brand-accent rounded-2xl flex items-center justify-center text-white shadow-xl shadow-brand-main/30 mb-5 transform rotate-3 hover:rotate-0 transition-all">
-                    <i class="fa-solid fa-qrcode text-4xl"></i>
-                </div>
-                <h1 class="text-3xl font-bold text-slate-800 tracking-tight">System Check</h1>
-                <p class="text-brand-main font-medium mt-1 transition-colors text-lg">เช็คชื่อ & เช็คงาน 2IN1</p>
-            </div>
-
-            <div class="space-y-4">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-regular fa-envelope text-lg"></i></div>
-                    <input type="email" id="login-email" placeholder="อีเมล" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none transition-all text-base font-medium focus:bg-white" value="">
-                </div>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-lock text-lg"></i></div>
-                    <input type="password" id="login-pass" placeholder="รหัสผ่าน" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none transition-all text-base font-medium focus:bg-white" value="">
-                </div>
-                <button onclick="doLogin()" class="w-full bg-gradient-to-r from-brand-main to-brand-accent text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-main/30 hover:shadow-brand-main/50 hover:-translate-y-1 transition-all mt-5 text-lg">
-                    เข้าสู่ระบบ
-                </button>
-                <button onclick="showRegister()" class="w-full text-slate-500 font-medium py-2 text-base hover:text-brand-main transition-colors mt-2">
-                    สมัครสมาชิกใหม่ (รออนุมัติ)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==================== MAIN APP ==================== -->
-    <div id="view-app" class="hidden flex-col h-full bg-transparent">
-        
-        <!-- Header -->
-        <header class="bg-white/80 backdrop-blur-lg border-b border-brand-main/10 px-4 py-3 flex items-center justify-between z-40 sticky top-0 no-print transition-colors shadow-sm">
-            <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="text-slate-500 text-2xl hover:text-brand-main transition-colors p-1"><i class="fa-solid fa-bars-staggered"></i></button>
-                <div class="leading-none flex items-center gap-2">
-                    <div class="w-9 h-9 bg-gradient-to-tr from-brand-main to-brand-accent rounded-xl flex items-center justify-center text-white shadow-md transition-colors">
-                        <i class="fa-solid fa-qrcode text-base"></i>
-                    </div>
-                    <div>
-                        <div class="font-bold text-slate-800 text-base">System Check</div>
-                        <div id="header-subtitle" class="text-[10px] font-bold text-brand-main tracking-wide uppercase transition-colors">Workspace</div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <div class="flex items-center gap-2 bg-white text-slate-700 px-3 py-1.5 rounded-full text-sm font-medium border border-brand-main/20 shadow-sm cursor-pointer hover:bg-brand-light/50 hover:text-brand-main transition-colors" onclick="logout()" title="คลิกเพื่อออกจากระบบ">
-                    <div id="header-avatar" class="w-7 h-7 rounded-full bg-brand-main text-white flex items-center justify-center font-bold transition-colors">?</div>
-                    <div class="hidden md:flex flex-col text-left mr-1">
-                        <span id="display-user-name" class="font-bold leading-tight">นายทดสอบ</span>
-                        <span id="display-user-role" class="text-[10px] text-slate-500 uppercase">Role</span>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Sidebar Overlay -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden transition-opacity" onclick="toggleSidebar()"></div>
-
-        <!-- Sidebar Menu -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col no-print border-r border-brand-main/10">
-            <div class="p-5 pb-4 border-b border-brand-light/50 bg-gradient-to-b from-brand-light/30 to-white">
-                <div class="flex justify-between items-start mb-5">
-                    <div class="w-12 h-12 bg-gradient-to-tr from-brand-main to-brand-accent rounded-2xl flex items-center justify-center text-white shadow-lg shadow-brand-main/20 transition-all">
-                        <i class="fa-solid fa-qrcode text-xl"></i>
-                    </div>
-                    <button onclick="toggleSidebar()" class="text-slate-400 hover:text-rose-500 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-base"></i></button>
-                </div>
-                <h2 class="text-lg font-bold text-slate-800">เมนูหลัก</h2>
-                <p id="sidebar-role-desc" class="text-xs text-slate-500 font-medium mt-0.5">จัดการระบบ</p>
-            </div>
-            
-            <nav id="nav-teacher" class="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 hidden">
-                <a href="#" onclick="navTo('scan')" id="menu-scan" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-expand text-sm"></i></div>
-                    <span class="text-[15px]">สแกน QR Code</span>
-                </a>
-                <a href="#" onclick="navTo('check')" id="menu-check" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-clipboard-check text-sm"></i></div>
-                    <span class="text-[15px]">ตรวจงาน / เช็คชื่อ</span>
-                </a>
-                <div class="my-2 border-t border-slate-100"></div>
-                <a href="#" onclick="navTo('students')" id="menu-students" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-users text-sm"></i></div>
-                    <span class="text-[15px]">ฐานข้อมูลนักเรียน</span>
-                </a>
-                <a href="#" onclick="navTo('cards')" id="menu-cards" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-id-badge text-sm"></i></div>
-                    <span class="text-[15px]">พิมพ์บัตรประจำตัว</span>
-                </a>
-                <a href="#" onclick="navTo('setup')" id="menu-setup" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-database text-sm"></i></div>
-                    <span class="text-[15px]">วิชา / ชิ้นงาน (Setup)</span>
-                </a>
-                <div class="my-2 border-t border-slate-100"></div>
-                <a href="#" onclick="navTo('random')" id="menu-random" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-dice text-sm"></i></div>
-                    <span class="text-[15px]">สุ่มนักเรียน (Random)</span>
-                </a>
-                <a href="#" onclick="navTo('reports')" id="menu-reports" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-chart-pie text-sm"></i></div>
-                    <span class="text-[15px]">รายงาน (Reports)</span>
-                </a>
-                <a href="#" onclick="navTo('settings')" id="menu-settings" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-gear text-sm"></i></div>
-                    <span class="text-[15px]">ตั้งค่าระบบ (Settings)</span>
-                </a>
-            </nav>
-
-            <nav id="nav-admin" class="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 hidden">
-                <a href="#" onclick="navTo('admin-users')" id="menu-admin-users" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
-                    <div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-users-gear text-sm"></i></div>
-                    <span class="text-[15px]">เครื่องมือจัดการสมาชิก</span>
-                </a>
-            </nav>
-
-            <div class="p-4 border-t border-brand-light/50 bg-slate-50/50">
-                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 text-slate-600 text-sm font-bold py-3 hover:bg-rose-100 hover:text-rose-600 rounded-xl transition-colors border border-slate-200 hover:border-rose-200"><i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ</button>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="flex-1 overflow-y-auto p-3 md:p-6 pb-24 print:p-0 print:overflow-visible">
-            
-            <!-- ADMIN SECTION: USER MANAGEMENT -->
-            <section id="sec-admin-users" class="max-w-5xl mx-auto hidden animate-fade-in no-print">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-brand-light text-brand-main flex items-center justify-center shadow-sm"><i class="fa-solid fa-users-gear"></i></div> จัดการสมาชิก</h2>
-                        <p class="text-sm text-slate-500 mt-1">เพิ่มสมาชิกใหม่, อนุมัติ, ระงับการใช้งาน หรือลบบัญชีคุณครูในระบบ</p>
-                    </div>
-                    <button onclick="adminAddUserModal()" class="bg-gradient-to-r from-brand-main to-brand-accent text-white px-5 py-3 rounded-2xl font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-user-plus"></i> เพิ่มสมาชิกใหม่
-                    </button>
-                </div>
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-brand-light/40 text-brand-dark text-sm font-bold uppercase tracking-wider border-b border-brand-main/10">
-                                <tr><th class="px-5 py-4">ชื่อผู้ใช้งาน</th><th class="px-5 py-4">อีเมล (บัญชีล็อกอิน)</th><th class="px-5 py-4 text-center">สถานะ</th><th class="px-5 py-4 text-center">เครื่องมือจัดการ</th></tr>
-                            </thead>
-                            <tbody id="admin-users-tbody" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TEACHER SECTION: SCAN -->
-            <section id="sec-scan" class="max-w-lg mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in no-print">
-                <div class="text-center mb-6">
-                    <div id="scan-display-logo-container" class="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-brand-light to-white text-brand-main mb-4 transition-colors overflow-hidden shadow-sm border border-brand-main/20">
-                        <i id="scan-display-icon" class="fa-solid fa-qrcode text-4xl"></i>
-                        <img id="scan-display-img" src="" class="w-full h-full object-cover hidden" alt="โลโก้">
-                    </div>
-                    <h2 id="scan-display-title" class="text-2xl font-bold text-slate-800 leading-tight">สแกน QR Code 2IN1</h2>
-                </div>
-                
-                <div class="segmented-control mb-6 bg-slate-100 p-1.5 rounded-2xl">
-                    <div id="scan-btn-daily" onclick="setScanMode('daily')" class="segment-btn active rounded-xl"><i class="fa-regular fa-calendar-check text-lg mb-1.5"></i><span class="text-sm">กิจกรรมรายวัน</span></div>
-                    <div id="scan-btn-score" onclick="setScanMode('score')" class="segment-btn rounded-xl"><i class="fa-solid fa-book-open text-lg mb-1.5"></i><span class="text-sm">ชิ้นงาน/คะแนน</span></div>
-                </div>
-
-                <div class="space-y-4 mb-6">
-                    <!-- Daily Mode -->
-                    <div id="scan-daily-inputs" class="space-y-4">
-                        <select id="scan-daily-select" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all hover:bg-white"><option value="">-- เลือกกิจกรรมรายวัน --</option></select>
-                    </div>
-                    <!-- Score Mode -->
-                    <div id="scan-score-inputs" class="space-y-4 hidden">
-                        <select id="scan-subject" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all hover:bg-white"><option value="">-- เลือกวิชา --</option></select>
-                        <div class="flex gap-3">
-                            <select id="scan-assignment" class="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all hover:bg-white"><option value="">-- เลือกชิ้นงาน --</option></select>
-                            <input type="number" id="scan-score-val" placeholder="คะแนน" class="w-24 px-3 py-4 bg-slate-50 border border-slate-200 text-brand-main text-base font-black rounded-2xl outline-none text-center transition-all focus:bg-white">
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="toggleCamera()" id="btn-camera" class="w-full py-4 bg-gradient-to-r from-slate-800 to-slate-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 mb-5 hover:shadow-lg transition-all text-lg">
-                    <i class="fa-solid fa-camera"></i> <span>เปิดกล้องสแกน</span>
-                </button>
-
-                <div id="camera-container" class="hidden mb-5 relative rounded-2xl overflow-hidden shadow-inner border border-slate-200">
-                    <div id="qr-reader" class="w-full"></div>
-                </div>
-
-                <div class="flex mb-5 shadow-sm rounded-2xl overflow-hidden border border-slate-200">
-                    <input type="text" id="scan-manual-input" placeholder="พิมพ์รหัสด้วยตนเอง..." class="flex-1 px-5 py-4 bg-white outline-none text-base transition-all font-medium" onkeypress="if(event.key==='Enter') processScanManual()">
-                    <button onclick="processScanManual()" class="px-6 bg-brand-main text-white font-bold hover:bg-brand-dark transition-colors text-lg"><i class="fa-solid fa-arrow-right"></i></button>
-                </div>
-                
-                <div id="scan-log" class="text-center text-base font-medium p-4 flex flex-col items-center justify-center text-slate-500 bg-slate-50 border border-slate-100 rounded-2xl min-h-[5rem] transition-all">รอรับข้อมูลสแกน...</div>
-            </section>
-
-            <!-- TEACHER SECTION: CHECK (LIST) -->
-            <section id="sec-check" class="max-w-3xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in no-print">
-                <div class="flex items-center justify-between mb-6 pb-5 border-b border-brand-light/50">
-                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-clipboard-check"></i></div>บันทึกแบบรายชื่อ</h2>
-                </div>
-                
-                <div class="segmented-control mb-6 max-w-lg mx-auto bg-slate-100 p-1.5 rounded-2xl">
-                    <div id="check-btn-daily" onclick="setCheckMode('daily')" class="segment-btn active rounded-xl"><i class="fa-regular fa-calendar-check mb-1.5 text-lg"></i> <span class="text-sm">กิจกรรมรายวัน</span></div>
-                    <div id="check-btn-score" onclick="setCheckMode('score')" class="segment-btn rounded-xl"><i class="fa-solid fa-book-open mb-1.5 text-lg"></i> <span class="text-sm">ชิ้นงาน/คะแนน</span></div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-50/50 p-5 rounded-3xl border border-slate-100">
-                    <div id="check-daily-inputs" class="md:col-span-2">
-                        <label class="block text-sm font-bold text-slate-600 mb-2">เลือกกิจกรรม</label>
-                        <select id="check-daily-select" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 shadow-sm text-base"><option value="">-- เลือกกิจกรรมรายวัน --</option></select>
-                    </div>
-                    <div id="check-score-inputs" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
-                        <div><label class="block text-sm font-bold text-slate-600 mb-2">วิชา</label><select id="check-subject" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 shadow-sm text-base"><option value="">-- เลือกวิชา --</option></select></div>
-                        <div><label class="block text-sm font-bold text-slate-600 mb-2">ชิ้นงาน</label><select id="check-assignment" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 shadow-sm text-base"><option value="">-- เลือกชิ้นงาน --</option></select></div>
-                    </div>
-                    <div><label class="block text-sm font-bold text-slate-600 mb-2">วันที่บันทึก</label><input type="date" id="check-date" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-brand-main shadow-sm transition-colors text-base"></div>
-                    <div><label class="block text-sm font-bold text-slate-600 mb-2">ห้องเรียน</label><select id="check-class" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 shadow-sm text-base"><option value="">-- เลือกห้อง --</option></select></div>
-                    <div class="md:col-span-2 pt-2"><button onclick="fetchListForCheck()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl hover:bg-slate-700 transition-all flex items-center justify-center gap-2 text-base shadow-md"><i class="fa-solid fa-list-ol"></i> ดึงรายชื่อนักเรียน</button></div>
-                </div>
-                
-                <div id="check-list-container" class="hidden animate-fade-in">
-                    <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-bold text-slate-700 text-base">รายชื่อนักเรียน</h3>
-                        <button onclick="saveCheckList()" class="bg-gradient-to-r from-brand-main to-brand-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> บันทึกข้อมูล</button>
-                    </div>
-                    <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
-                        <table class="w-full text-base text-left"><thead class="bg-brand-light/40 text-brand-dark text-sm font-bold border-b border-brand-main/10 uppercase tracking-wider"><tr><th class="px-5 py-4 text-center w-16">เลขที่</th><th class="px-5 py-4">รหัส / ชื่อ-สกุล</th><th class="px-5 py-4 text-center w-32" id="check-th-action">สถานะ</th></tr></thead><tbody id="check-table-body" class="divide-y divide-slate-100 bg-white"></tbody></table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TEACHER SECTION: STUDENTS -->
-            <section id="sec-students" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in no-print">
-                <div class="flex justify-between items-center border-b border-brand-light/50 pb-5 mb-5">
-                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-users"></i></div> ฐานข้อมูลนักเรียน</h2>
-                    <button onclick="addStudentMock()" class="bg-brand-main text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-brand-dark transition-colors"><i class="fa-solid fa-plus mr-1"></i> เพิ่มนักเรียน</button>
-                </div>
-                <div class="flex gap-3 mb-5 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
-                    <input type="text" id="stu-search" placeholder="ค้นหารหัส หรือชื่อ..." class="flex-1 px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-medium focus:border-brand-main transition-colors" oninput="renderStudentsTable()">
-                    <select id="stu-filter-class" class="px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold text-brand-main w-1/3 min-w-[120px] focus:border-brand-main transition-colors" onchange="renderStudentsTable()"><option value="">ทุกห้อง</option></select>
-                </div>
-                <div class="overflow-x-auto rounded-3xl border border-slate-200 shadow-sm">
-                    <table class="w-full text-base text-left"><thead class="bg-brand-light/40 text-brand-dark text-sm border-b border-brand-main/10 uppercase tracking-wider font-bold"><tr><th class="px-5 py-4">รหัส</th><th class="px-5 py-4">ชื่อ - นามสกุล</th><th class="px-5 py-4 text-center">ห้องเรียน</th></tr></thead><tbody id="student-table-body" class="divide-y divide-slate-100 bg-white"></tbody></table>
-                </div>
-            </section>
-
-            <!-- TEACHER SECTION: CARDS (PRINT QR) -->
-            <section id="sec-cards" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in print-full-width">
-                <div class="flex justify-between items-center border-b border-brand-light/50 pb-5 mb-5 no-print">
-                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-id-badge"></i></div> เครื่องมือพิมพ์บัตร QR</h2>
-                    <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-slate-700 transition-all"><i class="fa-solid fa-print mr-1"></i> พิมพ์ / PDF</button>
-                </div>
-                
-                <!-- เครื่องมือปรับแต่งบัตร -->
-                <div class="mb-6 no-print bg-slate-50/50 p-6 rounded-3xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div class="md:col-span-2">
-                        <h3 class="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-3 text-base"><i class="fa-solid fa-wand-magic-sparkles text-brand-main mr-2"></i>ปรับแต่งรูปแบบบัตร</h3>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-solid fa-pen mr-1"></i> ข้อความหัวบัตร</label>
-                        <input type="text" id="card-custom-title" value="บัตรประจำตัวนักเรียน" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold transition-all focus:border-brand-main" oninput="renderCardsPreview()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-solid fa-palette mr-1"></i> สีหัวบัตร</label>
-                        <div class="flex gap-3">
-                            <input type="color" id="card-custom-color" value="#4F46E5" class="w-12 h-12 rounded-xl border border-slate-200 cursor-pointer bg-white p-1 shrink-0" onchange="renderCardsPreview()">
-                            <input type="text" id="card-custom-color-text" value="#4F46E5" class="flex-1 px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold uppercase transition-all focus:border-brand-main" oninput="document.getElementById('card-custom-color').value=this.value; renderCardsPreview()">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-solid fa-users mr-1"></i> เลือกห้องเรียน</label>
-                        <select id="card-class-select" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold text-brand-main transition-all focus:border-brand-main" onchange="renderCardsPreview()"><option value="">-- กรุณาเลือกห้อง --</option></select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-solid fa-qrcode mr-1"></i> รูปแบบรหัส</label>
-                        <select class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold transition-all focus:border-brand-main"><option>สี่เหลี่ยม (QR Code)</option></select>
-                    </div>
-                </div>
-
-                <div class="print-only print-full-width">
-                    <div id="cards-preview-container" class="card-container flex flex-wrap gap-4 justify-center">
-                        <div class="text-center text-slate-400 py-12 w-full no-print border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50"><p class="font-bold text-base">กรุณาเลือกห้องเรียนเพื่อสร้างบัตร</p></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TEACHER SECTION: SETUP -->
-            <section id="sec-setup" class="max-w-4xl mx-auto hidden animate-fade-in no-print">
-                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800 leading-tight">จัดการรายวิชา<br>และงาน</h2>
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <button class="bg-cyan-500 text-white px-5 py-3.5 rounded-2xl font-bold shadow-md hover:bg-cyan-600 transition-colors flex items-center justify-center gap-2 text-sm">
-                            <i class="fa-solid fa-right-left"></i> จัดการวิชาที่เรียน
-                        </button>
-                        <button onclick="openAddSetupModal()" class="bg-emerald-500 text-white px-5 py-3.5 rounded-2xl font-bold shadow-md hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 text-sm">
-                            <i class="fa-solid fa-plus"></i> เพิ่มวิชา/งาน
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 mb-5 flex flex-col md:flex-row gap-4 items-center">
-                    <div class="flex-1 w-full">
-                        <label class="block text-sm font-bold text-slate-600 mb-2">กรองตามวิชา</label>
-                        <select id="setup-filter-subject" class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 text-base focus:border-brand-main transition-colors" onchange="renderSetupList()">
-                            <option value="">-- วิชาทั้งหมด --</option>
-                        </select>
-                    </div>
-                    <button class="w-full md:w-auto bg-amber-500 text-white px-6 py-3.5 md:mt-[28px] rounded-2xl font-bold shadow-md hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 text-base">
-                        <i class="fa-solid fa-pen-to-square"></i> แก้ชื่อวิชา
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div id="setup-list-container" class="divide-y divide-slate-100 flex flex-col">
-                        <!-- List items render here -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- TEACHER SECTION: REPORTS -->
-            <section id="sec-reports" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in print-full-width">
-                
-                <div class="flex items-center gap-3 mb-6 no-print">
-                    <div class="w-10 h-10 rounded-xl bg-brand-light text-brand-main flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-pie text-lg"></i></div>
-                    <h2 class="text-2xl font-bold text-slate-800">Dashboard</h2>
-                </div>
-
-                <!-- Sub Tabs -->
-                <div class="flex gap-3 mb-6 overflow-x-auto pb-2 scrollbar-hide no-print">
-                    <button onclick="setReportTab('stats')" id="rep-tab-stats" class="px-6 py-2.5 rounded-full font-bold text-sm bg-brand-main text-white shrink-0 shadow-md shadow-brand-main/30 transition-all">สถิติรายงาน</button>
-                    <button onclick="setReportTab('monthly')" id="rep-tab-monthly" class="px-6 py-2.5 rounded-full font-bold text-sm bg-slate-50 text-slate-500 border border-slate-200 shrink-0 hover:bg-slate-100 hover:text-slate-700 transition-all">รายเดือน</button>
-                    <button onclick="setReportTab('overview')" id="rep-tab-overview" class="px-6 py-2.5 rounded-full font-bold text-sm bg-slate-50 text-slate-500 border border-slate-200 shrink-0 hover:bg-slate-100 hover:text-slate-700 transition-all">ภาพรวมห้อง</button>
-                </div>
-
-                <!-- Mode Switcher -->
-                <div class="segmented-control mb-6 max-w-lg mx-auto no-print bg-slate-100 p-1.5 rounded-2xl">
-                    <div id="rep-btn-daily" onclick="setReportMode('daily')" class="segment-btn active rounded-xl"><i class="fa-regular fa-calendar-check mb-1.5 text-lg"></i> <span class="text-sm">กิจกรรม (รายวัน)</span></div>
-                    <div id="rep-btn-score" onclick="setReportMode('score')" class="segment-btn rounded-xl"><i class="fa-solid fa-book-open mb-1.5 text-lg"></i> <span class="text-sm">ชิ้นงาน/คะแนน</span></div>
-                </div>
-
-                <!-- Filters -->
-                <div class="bg-slate-50/50 border border-slate-100 rounded-3xl p-5 shadow-sm mb-6 no-print">
-                    <div id="rep-daily-inputs" class="space-y-4">
-                        <select id="rep-daily-select" class="w-full px-5 py-3.5 bg-white border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all focus:border-brand-main shadow-sm"><option value="">-- เลือกกิจกรรมรายวัน --</option></select>
-                        <input type="date" id="rep-daily-date" class="w-full px-5 py-3.5 bg-white border border-slate-200 text-brand-main font-bold rounded-2xl outline-none transition-all text-center uppercase text-base tracking-wide focus:border-brand-main shadow-sm">
-                    </div>
-                    <div id="rep-score-inputs" class="space-y-4 hidden">
-                        <select id="rep-score-subject" class="w-full px-5 py-3.5 bg-white border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all focus:border-brand-main shadow-sm"><option value="">-- เลือกวิชา --</option></select>
-                        <select id="rep-score-assignment" class="w-full px-5 py-3.5 bg-white border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all focus:border-brand-main shadow-sm"><option value="">-- เลือกชิ้นงาน --</option></select>
-                    </div>
-
-                    <button onclick="fetchReportData()" class="w-full mt-5 bg-gradient-to-r from-brand-main to-brand-accent text-white font-bold py-3.5 rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-base">
-                        <i class="fa-solid fa-magnifying-glass"></i> ค้นหาข้อมูล
-                    </button>
-                </div>
-
-                <!-- Summary Section -->
-                <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm mb-6 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-brand-light/30 rounded-full blur-3xl -mr-10 -mt-10"></div>
-                    <div class="flex justify-between items-center mb-6 relative z-10">
-                        <h3 class="font-bold text-slate-800 text-base">สรุปภาพรวม — <span id="rep-summary-title" class="text-brand-main">ทุกห้อง</span></h3>
-                        <select id="rep-summary-class" class="px-4 py-2 bg-brand-light/40 border border-brand-main/20 text-brand-dark font-bold rounded-xl outline-none text-sm shadow-sm hover:bg-brand-light/60 transition-colors" onchange="updateReportSummary()">
-                            <option value="">-- ทุกห้อง --</option>
-                        </select>
-                    </div>
-                    <div class="text-center mb-6 relative z-10">
-                        <div class="text-6xl md:text-7xl font-black text-slate-800 tracking-tight" id="rep-summary-count">0</div>
-                        <div class="text-slate-500 font-bold mt-2 text-sm">คน</div>
-                    </div>
-                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center justify-center gap-3 relative z-10">
-                        <div class="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0 shadow-md"><i class="fa-solid fa-check"></i></div>
-                        <div class="font-bold text-emerald-700 text-base">อัตราความสำเร็จ <span id="rep-summary-percent" class="text-emerald-600 text-xl ml-1">0%</span></div>
-                    </div>
-                </div>
-
-                <!-- Details Section -->
-                <div class="bg-white border border-slate-100 rounded-3xl p-5 md:p-6 shadow-sm mb-5">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4 no-print">
-                        <h3 class="font-bold text-slate-800 flex items-center gap-2 text-base"><i class="fa-solid fa-list-ul text-brand-main"></i> รายละเอียด (รายบุคคล)</h3>
-                        <div class="flex gap-2 w-full md:w-auto">
-                            <button onclick="exportExcel()" class="flex-1 md:flex-none justify-center bg-emerald-500 text-white shadow-sm shadow-emerald-500/30 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-600 hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fa-solid fa-file-excel"></i> โหลด Excel</button>
-                            <button onclick="window.print()" class="flex-1 md:flex-none justify-center bg-rose-500 text-white shadow-sm shadow-rose-500/30 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-rose-600 hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fa-solid fa-file-pdf"></i> พิมพ์ PDF</button>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm print:border-none print:shadow-none">
-                        <table class="w-full text-base text-left whitespace-nowrap">
-                            <thead class="bg-brand-light/40 text-brand-dark font-bold border-b border-brand-main/10 uppercase tracking-wider text-xs">
-                                <tr>
-                                    <th class="px-4 py-4">ห้อง</th>
-                                    <th class="px-4 py-4 text-center">เลขที่</th>
-                                    <th class="px-4 py-4">ชื่อ - สกุล</th>
-                                    <th class="px-4 py-4 text-center">สถานะ</th>
-                                    <th class="px-4 py-4 text-center">เวลา</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rep-table-body" class="divide-y divide-slate-100 bg-white">
-                                <tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold text-base">กรุณากดค้นหาข้อมูล</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="text-center text-[11px] text-slate-400 font-bold mt-8 border-t border-slate-100 pt-6 uppercase tracking-widest no-print">
-                    &lt;/&gt; พัฒนาโดย Kru M Memtem and Gemini
-                </div>
-            </section>
-
-            <!-- TEACHER SECTION: SETTINGS -->
-            <section id="sec-settings" class="max-w-3xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in no-print">
-                 <div class="flex items-center gap-3 border-b border-brand-light/50 pb-5 mb-6">
-                    <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-gear text-lg"></i></div>
-                    <h2 class="text-2xl font-bold text-slate-800">ตั้งค่าระบบ (Settings)</h2>
-                 </div>
-
-                 <!-- ตั้งค่าหน้าสแกน -->
-                 <div class="mb-8 border-b border-slate-100 pb-8">
-                     <div class="flex items-center gap-3 mb-5"><div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-base shadow-sm"><i class="fa-solid fa-image"></i></div><h3 class="text-lg font-bold text-slate-800">ตั้งค่าหน้าสแกน QR Code</h3></div>
-                     <div class="space-y-5 bg-slate-50/50 p-5 rounded-3xl border border-slate-100">
-                         <div>
-                             <label class="block text-sm font-bold text-slate-600 mb-2">ข้อความหัวหน้าสแกน</label>
-                             <input type="text" id="setting-scan-title" placeholder="เช่น สแกน QR Code 2IN1" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none transition-all text-base font-bold focus:border-brand-main shadow-sm">
-                         </div>
-                         <div>
-                             <label class="block text-sm font-bold text-slate-600 mb-2">โลโก้หน้าสแกน (รูปภาพ)</label>
-                             <div class="flex items-center gap-4">
-                                 <div id="setting-logo-preview" class="w-16 h-16 rounded-2xl border border-slate-200 bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                                     <i class="fa-regular fa-image text-slate-400 text-xl"></i>
-                                 </div>
-                                 <div class="flex-1">
-                                     <input type="file" id="setting-scan-logo" accept="image/*" class="w-full text-base text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-brand-light file:text-brand-main hover:file:bg-brand-main hover:file:text-white transition-all cursor-pointer" onchange="previewLogoUpload(event)">
-                                     <p class="text-xs text-slate-400 mt-2 font-medium">แนะนำขนาด 200x200 px (สี่เหลี่ยมจัตุรัส)</p>
-                                 </div>
-                             </div>
-                         </div>
-                         <button onclick="saveScanSettings()" class="bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold shadow-md hover:bg-slate-700 hover:-translate-y-0.5 transition-all text-sm flex items-center gap-2">
-                             <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลหน้าสแกน
-                         </button>
-                     </div>
-                 </div>
-
-                 <!-- ตั้งค่าธีมสี -->
-                 <div class="mb-4">
-                     <div class="flex items-center gap-3 mb-5"><div class="w-8 h-8 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center text-base shadow-sm"><i class="fa-solid fa-palette"></i></div><h3 class="text-lg font-bold text-slate-800">ตั้งค่าธีมสีระบบ</h3></div>
-                     <div class="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
-                         <div class="grid grid-cols-3 md:grid-cols-6 gap-y-6 gap-x-4 mb-8" id="theme-selector-container"></div>
-                         <div class="flex justify-center md:justify-start">
-                            <button onclick="confirmTheme()" class="bg-brand-main text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-brand-main/30 hover:bg-brand-dark hover:-translate-y-0.5 transition-all flex items-center gap-2 text-base">
-                                <i class="fa-solid fa-check"></i> ตกลง (บันทึกชุดสี)
-                            </button>
-                         </div>
-                     </div>
-                 </div>
-            </section>
-
-            <!-- TEACHER SECTION: RANDOMIZER -->
-            <section id="sec-random" class="max-w-3xl mx-auto hidden animate-fade-in no-print">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-10 h-10 rounded-xl bg-brand-light text-brand-main flex items-center justify-center shadow-sm"><i class="fa-solid fa-dice text-xl"></i></div>
-                    <h2 class="text-2xl font-bold text-slate-800">สุ่มนักเรียน (Randomizer)</h2>
-                </div>
-                
-                <div class="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl shadow-brand-main/5 border border-white p-6 md:p-10 text-center">
-                    <div class="max-w-[280px] mx-auto mb-8">
-                        <label class="block text-sm font-bold text-slate-600 mb-2">เลือกห้องเรียน</label>
-                        <select id="random-class-select" class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-slate-700 text-base font-bold transition-all focus:border-brand-main shadow-sm hover:bg-white"><option value="">-- กรุณาเลือกห้อง --</option></select>
-                    </div>
-                    
-                    <div id="random-display" class="w-full h-56 md:h-72 bg-slate-50 border-4 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center mb-8 transition-all relative overflow-hidden shadow-inner">
-                        <div class="text-slate-400 font-bold text-lg" id="random-placeholder"><i class="fa-solid fa-wand-magic-sparkles text-3xl mb-3 block text-brand-light"></i> พร้อมสุ่มผู้โชคดี!</div>
-                        <div class="hidden flex-col items-center justify-center w-full h-full p-5 relative z-10" id="random-result">
-                            <div class="text-7xl md:text-9xl font-black text-brand-main mb-4 transition-transform duration-300 drop-shadow-sm" id="random-number">--</div>
-                            <div class="text-xl md:text-3xl font-bold text-slate-700 truncate w-full px-4" id="random-name">------------</div>
-                        </div>
-                    </div>
-                    
-                    <button onclick="startRandomizer()" id="btn-random" class="bg-gradient-to-r from-brand-main to-brand-accent text-white px-10 py-4 rounded-3xl font-bold text-xl shadow-xl shadow-brand-main/30 hover:shadow-brand-main/50 hover:-translate-y-1 transition-all active:scale-95">
-                        <i class="fa-solid fa-play mr-2"></i> สุ่มเลย!
-                    </button>
-                </div>
-            </section>
-
-        </main>
-    </div>
-
-    <!-- Modal: Add Subject/Work -->
-    <div id="modal-add-setup" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] hidden items-center justify-center p-4 transition-opacity duration-300 opacity-0">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh] transform scale-95 transition-transform duration-300 border border-white" id="modal-add-setup-content">
-            <div class="p-5 border-b border-brand-main/10 flex justify-between items-center bg-white z-10 sticky top-0">
-                <h3 class="text-lg font-bold text-brand-main flex items-center gap-3"><div class="bg-brand-light text-brand-main w-9 h-9 rounded-xl flex items-center justify-center"><i class="fa-solid fa-folder-plus text-base"></i></div> เพิ่มวิชา/งาน</h3>
-                <button onclick="closeAddSetupModal()" class="text-slate-400 hover:text-rose-500 w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-sm"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto flex-1 space-y-5 bg-slate-50/30">
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">ประเภทกิจกรรม</label>
-                    <select id="modal-setup-type" class="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-slate-700 font-bold text-base shadow-sm focus:border-brand-main transition-colors" onchange="toggleSetupModalType()">
-                        <option value="academic">📚 ชิ้นงานวิชาการ (มีรายวิชา)</option>
-                        <option value="daily">📅 กิจกรรมประจำวัน (ไม่มีรายวิชา)</option>
-                    </select>
-                </div>
-                
-                <div id="modal-setup-subject-group">
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-book text-brand-main mr-1"></i> รายวิชา</label>
-                    <select id="modal-setup-subject" class="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-slate-700 font-bold mb-3 text-base shadow-sm focus:border-brand-main transition-colors" onchange="checkNewSubject()">
-                        <option value="">-- กรุณาเลือกวิชา (ที่มีอยู่แล้ว) --</option>
-                        <option value="new">+ สร้างรายวิชาใหม่ (พิมพ์ชื่อเอง)...</option>
-                    </select>
-                    <input type="text" id="modal-setup-new-subject" placeholder="พิมพ์ชื่อรายวิชาใหม่..." class="w-full px-4 py-3.5 bg-white border-2 border-brand-main/50 rounded-2xl outline-none hidden focus:border-brand-main transition-all text-base font-bold shadow-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-list-check text-brand-main mr-1"></i> รายการงาน</label>
-                    <div id="modal-setup-tasks" class="space-y-3">
-                        <div class="flex gap-2 task-row">
-                            <input type="text" placeholder="ชื่องาน (เช่น ใบงานที่ 1)" class="flex-1 px-4 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold task-name shadow-sm focus:border-brand-main transition-colors">
-                            <input type="number" placeholder="10" class="w-20 px-3 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-center text-base font-black text-brand-main task-score shadow-sm focus:border-brand-main transition-colors">
-                        </div>
-                    </div>
-                    <button onclick="addModalTaskRow()" class="w-full mt-4 py-3.5 border-2 border-dashed border-brand-main/40 text-brand-main font-bold rounded-2xl hover:bg-brand-light transition-colors flex items-center justify-center gap-2 text-sm">
-                        <i class="fa-solid fa-plus"></i> เพิ่มช่องงาน (พิมพ์หลายงานพร้อมกัน)
-                    </button>
-                </div>
-            </div>
-            <div class="p-5 border-t border-slate-100 bg-white sticky bottom-0 z-10">
-                <button onclick="saveSetupData()" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:bg-emerald-600 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-base">
-                    <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลวิชา/งาน
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
-    <script>
-        /* ==================== SUPABASE CONFIG & DATABASE ==================== */
-        const SUPABASE_URL = 'https://iyqmurdgbsrhaggtwrub.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5cW11cmRnYnNyaGFnZ3R3cnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2ODAxMjksImV4cCI6MjEwOTI1NjEyOX0.ROhI8PhC9P5iUF36sxT3HLQhFI0MAcfzYQja42dMozw';
-        
-        let supabaseClient = null;
-        if (window.supabase) {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-
-        let db = {
-            users: [
-                { id: 'admin_1', email: 'admin@school.com', pass: '1234', name: 'ผู้ดูแลระบบ', role: 'admin', status: 'active' }
-            ],
-            teacherData: {}
-        };
-
-        const themes = {
-            'indigo': { name: 'Indigo', main: '#4F46E5', light: '#EEF2FF', dark: '#3730A3', accent: '#8B5CF6' },
-            'emerald': { name: 'Emerald', main: '#10B981', light: '#ECFDF5', dark: '#047857', accent: '#34D399' },
-            'rose': { name: 'Rose', main: '#E11D48', light: '#FFF1F2', dark: '#9F1239', accent: '#FB7185' },
-            'sky': { name: 'Sky', main: '#0EA5E9', light: '#F0F9FF', dark: '#0369A1', accent: '#38BDF8' },
-            'amber': { name: 'Amber', main: '#D97706', light: '#FFFBEB', dark: '#92400E', accent: '#FBBF24' },
-            'slate': { name: 'Slate', main: '#475569', light: '#F8FAFC', dark: '#1E293B', accent: '#94A3B8' }
-        };
-
-        let currentUser = null; 
-        let currentWorkspace = null;
-        let currentMode = { scan: 'daily', check: 'daily', reports: 'daily' };
-        let currentReportTab = 'stats';
-        let html5QrcodeScanner = null;
-        let isCameraOpen = false;
-
-        /* ==================== INIT ==================== */
-        document.addEventListener('DOMContentLoaded', () => {
-            initTheme();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('check-date').value = today;
-            document.getElementById('rep-daily-date').value = today;
-
-            const savedUser = localStorage.getItem('syscheck_user_pro');
-            if(savedUser) {
-                let userObj = JSON.parse(savedUser);
-                let checkUser = db.users.find(u => u.email === userObj.email);
-                if(checkUser && checkUser.status === 'active') {
-                    currentUser = checkUser;
-                    setupSession();
-                } else {
-                    localStorage.removeItem('syscheck_user_pro');
-                }
-            }
-        });
-
-        /* ==================== AUTH & ROUTING ==================== */
-        function doLogin() {
-            const email = document.getElementById('login-email').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            const user = db.users.find(u => u.email === email && u.pass === pass);
-            
-            if(user) {
-                if(user.status === 'pending') { Swal.fire('รอการอนุมัติ', 'บัญชีของคุณกำลังรอผู้ดูแลระบบอนุมัติการใช้งาน', 'info'); return; }
-                if(user.status === 'disabled') { Swal.fire('ถูกระงับ', 'บัญชีของคุณถูกระงับการใช้งาน', 'error'); return; }
-                currentUser = user;
-                localStorage.setItem('syscheck_user_pro', JSON.stringify({email: user.email}));
-                setupSession();
-            } else { Swal.fire('ผิดพลาด', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'error'); }
-        }
-
-        async function showRegister() {
-            const { value: formValues } = await Swal.fire({
-                title: 'สมัครใช้งานสำหรับครู',
-                html: `<input id="r-name" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="r-email" type="email" class="swal2-input" placeholder="อีเมล"><input id="r-pass" type="password" class="swal2-input" placeholder="รหัสผ่าน">`,
-                focusConfirm: false, confirmButtonText: 'สมัครสมาชิก', confirmButtonColor: 'var(--theme-main)',
-                preConfirm: () => {
-                    const name = document.getElementById('r-name').value;
-                    const email = document.getElementById('r-email').value;
-                    const pass = document.getElementById('r-pass').value;
-                    if(!name || !email || !pass) { Swal.showValidationMessage('กรุณากรอกให้ครบทุกช่อง'); }
-                    if(db.users.find(u => u.email === email)) { Swal.showValidationMessage('อีเมลนี้ถูกใช้งานแล้ว'); }
-                    return { name, email, pass };
-                }
-            });
-
-            if (formValues) {
-                let newId = 'u' + (db.users.length + 1);
-                db.users.push({ id: newId, email: formValues.email, pass: formValues.pass, name: formValues.name, role: 'teacher', status: 'pending' });
-                db.teacherData[newId] = { classes: [], subjects: [], activities: [], assignments: [], students: [], logs: [], settings: {} };
-                Swal.fire('สำเร็จ', 'สมัครสมาชิกสำเร็จ รอผู้ดูแลระบบอนุมัติ', 'success');
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('syscheck_user_pro');
-            currentUser = null; currentWorkspace = null;
-            document.getElementById('view-app').classList.add('hidden');
-            document.getElementById('view-app').classList.remove('flex');
-            document.getElementById('view-login').classList.remove('opacity-0', 'hidden');
-            if(html5QrcodeScanner && isCameraOpen) toggleCamera();
-        }
-
-        function setupSession() {
-            document.getElementById('display-user-name').innerText = currentUser.name;
-            document.getElementById('header-avatar').innerText = currentUser.name.charAt(0) || 'U';
-            
-            const loginView = document.getElementById('view-login');
-            loginView.classList.add('opacity-0');
-            
-            setTimeout(() => {
-                loginView.classList.add('hidden');
-                document.getElementById('view-app').classList.remove('hidden');
-                document.getElementById('view-app').classList.add('flex');
-                
-                if (currentUser.role === 'admin') {
-                    document.getElementById('display-user-role').innerText = 'Administrator';
-                    document.getElementById('sidebar-role-desc').innerText = 'ระบบจัดการสำหรับแอดมิน';
-                    document.getElementById('nav-teacher').classList.add('hidden');
-                    document.getElementById('nav-admin').classList.remove('hidden');
-                    document.getElementById('header-subtitle').innerText = 'Admin Management';
-                    navTo('admin-users');
-                    renderAdminUsers();
-                } else {
-                    document.getElementById('display-user-role').innerText = 'Teacher Workspace';
-                    document.getElementById('sidebar-role-desc').innerText = 'ระบบจัดการสำหรับครู';
-                    document.getElementById('nav-admin').classList.add('hidden');
-                    document.getElementById('nav-teacher').classList.remove('hidden');
-                    document.getElementById('header-subtitle').innerText = 'Teacher Workspace';
-                    
-                    currentWorkspace = db.teacherData[currentUser.id];
-                    populateDropdowns();
-                    renderThemeSelector();
-                    loadScanSettings();
-                    navTo('scan');
-                }
-            }, 500);
-        }
-
-        /* ==================== NAVIGATION ==================== */
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            if(sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-                setTimeout(() => overlay.classList.add('opacity-100'), 10);
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.remove('opacity-100');
-                setTimeout(() => overlay.classList.add('hidden'), 300);
-            }
-        }
-
-        function navTo(section) {
-            const allSections = ['admin-users', 'scan', 'check', 'students', 'cards', 'setup', 'reports', 'settings', 'random'];
-            allSections.forEach(sec => {
-                const el = document.getElementById(`sec-${sec}`);
-                if(el) el.classList.add('hidden');
-                
-                const menu = document.getElementById(`menu-${sec}`);
-                if(menu) {
-                    menu.classList.remove('bg-brand-light/50', 'text-brand-dark');
-                    menu.classList.add('text-slate-600');
-                    const icon = menu.querySelector('.menu-icon');
-                    if(icon) icon.classList.remove('bg-white', 'text-brand-main', 'shadow-sm');
-                }
-            });
-            
-            const targetSec = document.getElementById(`sec-${section}`);
-            if(targetSec) targetSec.classList.remove('hidden');
-            
-            const targetMenu = document.getElementById(`menu-${section}`);
-            if(targetMenu) {
-                targetMenu.classList.remove('text-slate-600');
-                targetMenu.classList.add('bg-brand-light/50', 'text-brand-dark');
-                const icon = targetMenu.querySelector('.menu-icon');
-                if(icon) icon.classList.add('bg-white', 'text-brand-main', 'shadow-sm');
-            }
-            
-            if(window.innerWidth < 1024 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleSidebar();
-            if(section !== 'scan' && isCameraOpen) toggleCamera();
-            if(section === 'students') renderStudentsTable();
-        }
-
-        /* ==================== ADMIN: USER MANAGEMENT ==================== */
-        function renderAdminUsers() {
-            const tbody = document.getElementById('admin-users-tbody');
-            let html = '';
-            db.users.filter(u => u.role !== 'admin').forEach(u => {
-                let badge = u.status === 'active' ? '<span class="px-2 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-md text-[11px] font-bold shadow-sm inline-flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div>ใช้งานปกติ</span>' : 
-                            u.status === 'pending' ? '<span class="px-2 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-md text-[11px] font-bold shadow-sm inline-flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-amber-500"></div>รออนุมัติ</span>' : 
-                            '<span class="px-2 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-md text-[11px] font-bold shadow-sm inline-flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rose-500"></div>ระงับใช้งาน</span>';
-                
-                let actionBtn = u.status === 'active' 
-                    ? `<button onclick="confirmToggleStatus('${u.id}', 'disabled', '${u.name}')" class="text-xs bg-rose-50 text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-100 font-bold border border-rose-200 transition-colors shadow-sm"><i class="fa-solid fa-lock mr-1"></i> ปิดใช้งาน</button>` 
-                    : `<button onclick="confirmToggleStatus('${u.id}', 'active', '${u.name}')" class="text-xs bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-100 font-bold border border-emerald-200 transition-colors shadow-sm"><i class="fa-solid fa-unlock mr-1"></i> เปิดใช้งาน</button>`;
-
-                let delBtn = `<button onclick="deleteUser('${u.id}', '${u.name}')" class="text-xs bg-slate-50 text-slate-400 px-3 py-1.5 rounded-lg hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 font-bold border border-slate-200 transition-colors shadow-sm ml-2" title="ลบผู้ใช้นี้"><i class="fa-solid fa-trash-can"></i></button>`;
-
-                html += `<tr class="hover:bg-slate-50 transition-colors"><td class="px-5 py-3 font-bold text-slate-700 whitespace-nowrap">${u.name}</td><td class="px-5 py-3 text-slate-500">${u.email}</td><td class="px-5 py-3 text-center whitespace-nowrap">${badge}</td><td class="px-5 py-3 text-center whitespace-nowrap">${actionBtn}${delBtn}</td></tr>`;
-            });
-            tbody.innerHTML = html || '<tr><td colspan="4" class="text-center py-10 text-slate-400 font-medium">ยังไม่มีข้อมูลคุณครูในระบบ</td></tr>';
-        }
-
-        async function adminAddUserModal() {
-            const { value: formValues } = await Swal.fire({
-                title: 'เพิ่มสมาชิกครูใหม่',
-                html: `
-                    <div class="space-y-3 text-left">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">ชื่อ-นามสกุล</label>
-                            <input id="admin-add-name" class="swal2-input !m-0 !w-full" placeholder="นายครู สมชาย">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">อีเมล (สำหรับเข้าใช้งาน)</label>
-                            <input id="admin-add-email" type="email" class="swal2-input !m-0 !w-full" placeholder="teacher@school.com">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">รหัสผ่าน</label>
-                            <input id="admin-add-pass" type="password" class="swal2-input !m-0 !w-full" placeholder="อย่างน้อย 4 หลัก">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">สถานะเริ่มต้น</label>
-                            <select id="admin-add-status" class="swal2-select !m-0 !w-full">
-                                <option value="active">เปิดใช้งานทันที (Active)</option>
-                                <option value="pending">รออนุมัติ (Pending)</option>
-                            </select>
-                        </div>
-                    </div>
-                `,
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: 'บันทึกสมาชิกใหม่',
-                cancelButtonText: 'ยกเลิก',
-                confirmButtonColor: 'var(--theme-main)',
-                cancelButtonColor: '#94a3b8',
-                preConfirm: () => {
-                    const name = document.getElementById('admin-add-name').value.trim();
-                    const email = document.getElementById('admin-add-email').value.trim();
-                    const pass = document.getElementById('admin-add-pass').value.trim();
-                    const status = document.getElementById('admin-add-status').value;
-
-                    if(!name || !email || !pass) {
-                        Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบทุกช่อง');
-                        return false;
-                    }
-                    if(db.users.find(u => u.email === email)) {
-                        Swal.showValidationMessage('อีเมลนี้มีอยู่ในระบบแล้ว');
-                        return false;
-                    }
-                    return { name, email, pass, status };
-                }
-            });
-
-            if (formValues) {
-                let newId = 'u' + (db.users.length + 1);
-                db.users.push({
-                    id: newId,
-                    email: formValues.email,
-                    pass: formValues.pass,
-                    name: formValues.name,
-                    role: 'teacher',
-                    status: formValues.status
-                });
-                db.teacherData[newId] = {
-                    classes: ['ป.1', 'ป.2'],
-                    subjects: ['วิทยาการคำนวณ'],
-                    activities: ['เข้าแถวเช้า'],
-                    assignments: ['ชิ้นงานที่ 1'],
-                    students: [
-                        { code: 'ST101', num: 1, name: 'เด็กชายสมชาย ใจดี', class: 'ป.1' },
-                        { code: 'ST102', num: 2, name: 'เด็กหญิงสมหญิง รักเรียน', class: 'ป.1' }
-                    ],
-                    logs: [],
-                    settings: {}
-                };
-                renderAdminUsers();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'เพิ่มสมาชิกสำเร็จ',
-                    text: `เพิ่มบัญชี ${formValues.name} เรียบร้อยแล้ว`,
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            }
-        }
-
-        function confirmToggleStatus(id, newStatus, name) {
-            const isEnable = newStatus === 'active';
-            Swal.fire({
-                title: isEnable ? 'ยืนยันเปิดใช้งาน' : 'ยืนยันระงับบัญชี',
-                html: `คุณต้องการ${isEnable ? '<b class="text-emerald-500">เปิด</b>' : '<b class="text-rose-500">ระงับ</b>'}การใช้งานบัญชีของ<br><b>${name}</b> ใช่หรือไม่?`,
-                icon: isEnable ? 'question' : 'warning',
-                showCancelButton: true,
-                confirmButtonColor: isEnable ? '#10b981' : '#f43f5e',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: isEnable ? 'ใช่, เปิดใช้งาน' : 'ใช่, ระงับบัญชี'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    let user = db.users.find(u => u.id === id);
-                    if(user) { 
-                        user.status = newStatus; 
-                        renderAdminUsers(); 
-                        Swal.fire({icon: 'success', title: 'สำเร็จ', text: 'เปลี่ยนสถานะเรียบร้อย', timer: 1500, showConfirmButton: false});
-                    }
-                }
-            });
-        }
-        function deleteUser(id, name) {
-            Swal.fire({
-                title: 'ยืนยันการลบผู้ใช้',
-                html: `คุณแน่ใจที่จะลบ <b>${name}</b>?<br><span class="text-xs text-rose-500">การกระทำนี้ไม่สามารถยกเลิกได้</span>`,
-                icon: 'error',
-                showCancelButton: true,
-                confirmButtonColor: '#f43f5e',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'ลบข้อมูล'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    db.users = db.users.filter(u => u.id !== id);
-                    delete db.teacherData[id];
-                    renderAdminUsers();
-                    Swal.fire({icon: 'success', title: 'ลบสำเร็จ', text: 'ลบผู้ใช้ออกจากระบบแล้ว', timer: 1500, showConfirmButton: false});
-                }
-            });
-        }
-
-        /* ==================== TEACHER: SETTINGS (SCAN LOGO/TITLE) ==================== */
-        function loadScanSettings() {
-            if(!currentWorkspace.settings) currentWorkspace.settings = { scanTitle: 'สแกน QR Code 2IN1', scanLogo: '' };
-            const s = currentWorkspace.settings;
-            document.getElementById('setting-scan-title').value = s.scanTitle || '';
-            
-            const titleEl = document.getElementById('scan-display-title');
-            const iconEl = document.getElementById('scan-display-icon');
-            const imgEl = document.getElementById('scan-display-img');
-            const previewEl = document.getElementById('setting-logo-preview');
-
-            titleEl.innerText = s.scanTitle || 'สแกน QR Code 2IN1';
-
-            if(s.scanLogo) {
-                previewEl.innerHTML = `<img src="${s.scanLogo}" class="w-full h-full object-cover">`;
-                previewEl.dataset.tempUrl = s.scanLogo;
-                iconEl.classList.add('hidden');
-                imgEl.src = s.scanLogo;
-                imgEl.classList.remove('hidden');
-            } else {
-                previewEl.innerHTML = `<i class="fa-regular fa-image text-slate-400"></i>`;
-                delete previewEl.dataset.tempUrl;
-                iconEl.classList.remove('hidden');
-                imgEl.classList.add('hidden');
-            }
-        }
-        
-        function previewLogoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const dataUrl = e.target.result;
-                    document.getElementById('setting-logo-preview').innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover">`;
-                    document.getElementById('setting-logo-preview').dataset.tempUrl = dataUrl;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function saveScanSettings() {
-            const title = document.getElementById('setting-scan-title').value.trim() || 'สแกน QR Code 2IN1';
-            const tempUrl = document.getElementById('setting-logo-preview').dataset.tempUrl;
-            
-            if(!currentWorkspace.settings) currentWorkspace.settings = {};
-            currentWorkspace.settings.scanTitle = title;
-            currentWorkspace.settings.scanLogo = tempUrl || '';
-            
-            loadScanSettings();
-            Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', text: 'อัปเดตข้อมูลหน้าสแกนเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false});
-        }
-
-        /* ==================== TEACHER: POPULATE DROPDOWNS ==================== */
-        function populateDropdowns() {
-            if(!currentWorkspace) return;
-            const fillSelect = (ids, data, defaultTxt) => {
-                ids.forEach(id => {
-                    let el = document.getElementById(id);
-                    if(el) {
-                        let inner = defaultTxt ? `<option value="">-- ${defaultTxt} --</option>` : '';
-                        inner += data.map(i => `<option value="${i}">${i}</option>`).join('');
-                        el.innerHTML = inner;
-                    }
-                });
-            };
-
-            fillSelect(['check-class', 'stu-filter-class', 'rep-summary-class'], currentWorkspace.classes, 'ทุกห้อง');
-            fillSelect(['card-class-select', 'random-class-select'], currentWorkspace.classes, 'กรุณาเลือกห้อง');
-            fillSelect(['scan-subject', 'check-subject', 'setup-filter-subject', 'rep-score-subject'], currentWorkspace.subjects, 'เลือกวิชา');
-            fillSelect(['scan-assignment', 'check-assignment', 'rep-score-assignment'], currentWorkspace.assignments, 'เลือกชิ้นงาน');
-            fillSelect(['scan-daily-select', 'check-daily-select', 'rep-daily-select'], currentWorkspace.activities, 'เลือกกิจกรรมรายวัน');
-
-            let modalSubjectSelect = document.getElementById('modal-setup-subject');
-            if(modalSubjectSelect) {
-                modalSubjectSelect.innerHTML = `<option value="">-- กรุณาเลือกวิชา (ที่มีอยู่แล้ว) --</option>` + currentWorkspace.subjects.map(s => `<option value="${s}">${s}</option>`).join('') + `<option value="new" class="font-bold text-brand-main">+ สร้างรายวิชาใหม่ (พิมพ์ชื่อเอง)...</option>`;
-            }
-            renderSetupList();
-        }
-
-        /* ==================== TEACHER: SETUP MODULE ==================== */
-        function openAddSetupModal() {
-            const modal = document.getElementById('modal-add-setup');
-            const content = document.getElementById('modal-add-setup-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
-            
-            document.getElementById('modal-setup-type').value = 'academic';
-            toggleSetupModalType();
-            document.getElementById('modal-setup-subject').value = '';
-            checkNewSubject();
-            document.getElementById('modal-setup-tasks').innerHTML = `
-                <div class="flex gap-2 task-row">
-                    <input type="text" placeholder="ชื่องาน (เช่น ใบงานที่ 1)" class="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm font-medium task-name">
-                    <input type="number" placeholder="10" class="w-16 px-2 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-center text-sm font-bold task-score">
-                </div>
-            `;
-        }
-        function closeAddSetupModal() {
-            const modal = document.getElementById('modal-add-setup');
-            const content = document.getElementById('modal-add-setup-content');
-            modal.classList.add('opacity-0'); content.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-        function toggleSetupModalType() {
-            const type = document.getElementById('modal-setup-type').value;
-            const subGroup = document.getElementById('modal-setup-subject-group');
-            if(type === 'academic') subGroup.classList.remove('hidden'); else subGroup.classList.add('hidden');
-        }
-        function checkNewSubject() {
-            const val = document.getElementById('modal-setup-subject').value;
-            const newSubInput = document.getElementById('modal-setup-new-subject');
-            if(val === 'new') newSubInput.classList.remove('hidden'); else newSubInput.classList.add('hidden');
-        }
-        function addModalTaskRow() {
-            const container = document.getElementById('modal-setup-tasks');
-            const row = document.createElement('div');
-            row.className = 'flex gap-2 task-row mt-2';
-            row.innerHTML = `
-                <input type="text" placeholder="ชื่องาน (เช่น ใบงานที่ 1)" class="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm font-medium task-name">
-                <input type="number" placeholder="10" class="w-16 px-2 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-center text-sm font-bold task-score">
-                <button onclick="this.parentElement.remove()" class="w-10 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
-            `;
-            container.appendChild(row);
-        }
-        function saveSetupData() {
-            const type = document.getElementById('modal-setup-type').value;
-            let subject = '';
-            
-            if (type === 'academic') {
-                const subSelect = document.getElementById('modal-setup-subject').value;
-                subject = subSelect === 'new' ? document.getElementById('modal-setup-new-subject').value.trim() : subSelect;
-                if(!subject) { Swal.fire('แจ้งเตือน', 'กรุณาระบุรายวิชา', 'warning'); return; }
-                if(subSelect === 'new' && !currentWorkspace.subjects.includes(subject)) { currentWorkspace.subjects.push(subject); }
-            }
-
-            const tasks = document.querySelectorAll('.task-row');
-            let addedCount = 0;
-            tasks.forEach(row => {
-                const name = row.querySelector('.task-name').value.trim();
-                if (name) {
-                    if (type === 'academic') currentWorkspace.assignments.push(name);
-                    else currentWorkspace.activities.push(name);
-                    addedCount++;
-                }
-            });
-
-            if(addedCount === 0 && subject) {
-                populateDropdowns(); closeAddSetupModal();
-                Swal.fire({icon: 'success', title: 'สำเร็จ', text: 'เพิ่มรายวิชาเรียบร้อย', showConfirmButton: false, timer: 1500});
-                return;
-            }
-
-            if(addedCount > 0) {
-                populateDropdowns(); closeAddSetupModal();
-                Swal.fire({icon: 'success', title: 'สำเร็จ', text: `เพิ่มข้อมูล ${addedCount} รายการเรียบร้อย`, showConfirmButton: false, timer: 1500});
-            } else { Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่องานอย่างน้อย 1 รายการ', 'warning'); }
-        }
-        function renderSetupList() {
-            if(!currentWorkspace) return;
-            const filter = document.getElementById('setup-filter-subject') ? document.getElementById('setup-filter-subject').value : '';
-            const container = document.getElementById('setup-list-container');
-            if(!container) return;
-            let html = '';
-            
-            let items = [];
-            currentWorkspace.activities.forEach(a => items.push({name: a, type: 'daily', typeLabel: 'รายวัน'}));
-            currentWorkspace.assignments.forEach(a => items.push({name: a, type: 'academic', typeLabel: 'ชิ้นงาน'})); 
-            
-            if (filter) items = items.filter(i => i.type === 'academic'); 
-
-            if(items.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center text-slate-400 font-medium border-b border-slate-100">ไม่พบข้อมูล</div>'; return;
-            }
-
-            items.forEach((i, idx) => {
-                let badgeColor = i.type === 'daily' ? 'bg-[#06b6d4]' : 'bg-brand-main';
-                let tagColor = i.type === 'daily' ? 'border-cyan-200 text-cyan-600 bg-cyan-50' : 'border-indigo-200 text-indigo-600 bg-indigo-50';
-                
-                html += `
-                <div class="flex items-center gap-2 w-full p-3 md:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                    <div class="w-14 md:w-20 shrink-0"><span class="px-2 py-1 border ${tagColor} rounded-full text-[9px] md:text-[10px] font-bold whitespace-nowrap">ห้อง: ทุกห้อง</span></div>
-                    <div class="flex-1 font-bold text-brand-dark text-sm truncate pl-1">${i.name}</div>
-                    <div class="shrink-0 flex items-center gap-2 md:gap-3">
-                        <span class="px-2 py-1 ${badgeColor} text-white rounded-lg text-[9px] md:text-[10px] font-bold shadow-sm whitespace-nowrap">${i.typeLabel}</span>
-                        <button onclick="removeMockData('${i.type === 'daily' ? 'activities' : 'assignments'}', ${i.type === 'daily' ? currentWorkspace.activities.indexOf(i.name) : currentWorkspace.assignments.indexOf(i.name)})" class="text-slate-300 hover:text-rose-500 transition-colors p-1"><i class="fa-solid fa-trash-can text-sm"></i></button>
-                    </div>
-                </div>`;
-            });
-            container.innerHTML = html;
-        }
-        function removeMockData(type, index) { currentWorkspace[type].splice(index, 1); populateDropdowns(); }
-
-        /* ==================== TEACHER: SCAN MODULE ==================== */
-        function setScanMode(mode) {
-            currentMode.scan = mode;
-            document.getElementById('scan-btn-daily').classList.toggle('active', mode === 'daily');
-            document.getElementById('scan-btn-score').classList.toggle('active', mode === 'score');
-            document.getElementById('scan-daily-inputs').classList.toggle('hidden', mode !== 'daily');
-            document.getElementById('scan-score-inputs').classList.toggle('hidden', mode !== 'score');
-        }
-        function toggleCamera() {
-            const container = document.getElementById('camera-container');
-            const btn = document.getElementById('btn-camera');
-            if(!isCameraOpen) {
-                container.classList.remove('hidden');
-                btn.classList.add('bg-rose-50', 'text-rose-500'); btn.classList.remove('bg-slate-800', 'text-white');
-                btn.innerHTML = '<i class="fa-solid fa-camera-rotate"></i> ปิดกล้องสแกน';
-                
-                if(!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("qr-reader");
-                html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, 
-                    (text) => { html5QrcodeScanner.pause(); processScanData(text); setTimeout(() => { if(isCameraOpen) html5QrcodeScanner.resume(); }, 1500); }, 
-                    (err) => {}
-                );
-                isCameraOpen = true;
-            } else {
-                if(html5QrcodeScanner) html5QrcodeScanner.stop();
-                container.classList.add('hidden');
-                btn.classList.remove('bg-rose-50', 'text-rose-500'); btn.classList.add('bg-slate-800', 'text-white');
-                btn.innerHTML = '<i class="fa-solid fa-camera"></i> เปิดกล้องสแกน';
-                isCameraOpen = false;
-            }
-        }
-        function processScanManual() {
-            const input = document.getElementById('scan-manual-input');
-            if(input.value.trim()) { processScanData(input.value.trim()); input.value = ''; }
-        }
-        function processScanData(code) {
-            const student = currentWorkspace.students.find(s => s.code === code);
-            const logEl = document.getElementById('scan-log');
-            if(!student) { logEl.innerHTML = `<span class="text-rose-500 font-bold"><i class="fa-solid fa-circle-xmark"></i> ไม่พบรหัสนักเรียน</span>`; return; }
-
-            document.getElementById('beep-sound').play().catch(e=>{});
-            logEl.classList.remove('scan-success-flash'); void logEl.offsetWidth; logEl.classList.add('scan-success-flash');
-
-            let txt = currentMode.scan === 'daily' ? (document.getElementById('scan-daily-select').value || 'กิจกรรม') : (document.getElementById('scan-assignment').value || 'ชิ้นงาน');
-            currentWorkspace.logs.push({ code, time: new Date() });
-            logEl.innerHTML = `<span class="text-emerald-600 font-bold mb-0.5"><i class="fa-solid fa-circle-check"></i> ${student.name}</span><span class="text-xs text-slate-500">${txt}</span>`;
-        }
-
-        /* ==================== TEACHER: CHECK LIST ==================== */
-        function setCheckMode(mode) {
-            currentMode.check = mode;
-            document.getElementById('check-btn-daily').classList.toggle('active', mode === 'daily');
-            document.getElementById('check-btn-score').classList.toggle('active', mode === 'score');
-            document.getElementById('check-daily-inputs').classList.toggle('hidden', mode !== 'daily');
-            document.getElementById('check-score-inputs').classList.toggle('hidden', mode !== 'score');
-            document.getElementById('check-th-action').innerText = mode === 'daily' ? 'สถานะ' : 'คะแนน';
-            document.getElementById('check-list-container').classList.add('hidden');
-        }
-        function fetchListForCheck() {
-            const className = document.getElementById('check-class').value;
-            if(!className) { Swal.fire({icon: 'warning', text:'กรุณาเลือกห้องเรียน'}); return; }
-            const students = currentWorkspace.students.filter(s => s.class === className);
-            let html = students.length === 0 ? '<tr><td colspan="3" class="text-center py-6 text-slate-400">ไม่มีนักเรียน</td></tr>' : '';
-            
-            students.forEach(s => {
-                let inputHtml = currentMode.check === 'daily' 
-                    ? `<label class="relative inline-block w-10 align-middle select-none"><input type="checkbox" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer"></label></label>`
-                    : `<input type="number" class="w-14 px-2 py-1.5 border border-slate-300 rounded-lg text-center outline-none focus:border-brand-main font-bold text-brand-main text-sm" placeholder="0">`;
-                html += `<tr class="hover:bg-slate-50"><td class="px-3 py-2.5 text-center text-slate-400">${s.num}</td><td class="px-3 py-2.5"><div class="font-bold text-slate-700">${s.name}</div><div class="text-[9px] text-slate-400">${s.code}</div></td><td class="px-3 py-2.5 text-center">${inputHtml}</td></tr>`;
-            });
-            document.getElementById('check-table-body').innerHTML = html;
-            document.getElementById('check-list-container').classList.remove('hidden');
-        }
-        function saveCheckList() { Swal.fire({icon: 'success', title: 'สำเร็จ', text:'บันทึกข้อมูลเรียบร้อย', confirmButtonColor: 'var(--theme-main)'}); }
-
-        /* ==================== TEACHER: STUDENTS ==================== */
-        function renderStudentsTable() {
-            if(!currentWorkspace) return;
-            const search = document.getElementById('stu-search').value.toLowerCase();
-            const filterClass = document.getElementById('stu-filter-class').value;
-            
-            let filtered = currentWorkspace.students;
-            if(filterClass) filtered = filtered.filter(s => s.class === filterClass);
-            if(search) filtered = filtered.filter(s => s.name.toLowerCase().includes(search) || s.code.includes(search));
-
-            let html = '';
-            filtered.forEach(s => { html += `<tr class="hover:bg-slate-50"><td class="px-4 py-3 font-mono font-bold text-brand-main">${s.code}</td><td class="px-4 py-3"><span class="inline-block w-5 h-5 text-center rounded bg-slate-200 text-[10px] font-bold mr-1.5">${s.num}</span><span class="font-medium text-slate-700">${s.name}</span></td><td class="px-4 py-3 text-center"><span class="px-2 py-1 rounded-md bg-brand-light text-brand-dark text-[10px] font-bold">${s.class}</span></td></tr>`; });
-            document.getElementById('student-table-body').innerHTML = html || '<tr><td colspan="3" class="text-center py-8 text-slate-400 font-medium">ไม่พบข้อมูลนักเรียน</td></tr>';
-        }
-        function addStudentMock() { Swal.fire('Demo', 'ในระบบจำลองสามารถดึงข้อมูลได้เท่านั้น', 'info'); }
-
-        /* ==================== TEACHER: CARDS ==================== */
-        function renderCardsPreview() {
-            const className = document.getElementById('card-class-select').value;
-            const container = document.getElementById('cards-preview-container');
-            const cardTitle = document.getElementById('card-custom-title').value || 'บัตรประจำตัวนักเรียน';
-            const cardColor = document.getElementById('card-custom-color').value || 'var(--theme-main)';
-            
-            const colorTextEl = document.getElementById('card-custom-color-text');
-            if (colorTextEl && colorTextEl.value !== document.getElementById('card-custom-color').value) {
-                colorTextEl.value = document.getElementById('card-custom-color').value;
-            }
-
-            if(!className) { container.innerHTML = '<div class="text-center text-slate-400 py-10 w-full no-print bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200"><p class="font-medium text-sm">กรุณาเลือกห้องเรียนเพื่อสร้างบัตร</p></div>'; return; }
-            const students = currentWorkspace.students.filter(s => s.class === className);
-            container.innerHTML = '';
-            
-            if(students.length === 0) { 
-                container.innerHTML = '<div class="text-center text-slate-400 py-10 w-full no-print bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200"><p class="font-medium text-sm">ไม่พบรายชื่อนักเรียนในห้องนี้</p></div>'; return; 
-            }
-            
-            students.forEach(s => {
-                const qrId = `qr-${s.code}`;
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'student-card bg-white rounded-xl overflow-hidden border border-slate-200 w-full max-w-[320px] shadow-sm';
-                cardDiv.innerHTML = `<div class="py-2 px-3 text-white font-bold text-xs text-center" style="background-color: ${cardColor}">${cardTitle}</div><div class="p-4 flex gap-3 items-center"><div class="flex-1"><h3 class="font-bold text-slate-800 leading-tight mb-1.5 text-sm">${s.name}</h3><div class="text-[11px] text-slate-500 pb-0.5">รหัส: <span class="text-slate-800 font-bold">${s.code}</span></div><div class="text-[11px] text-slate-500 pb-0.5">ชั้น: <span class="text-slate-800 font-bold">${s.class}</span></div></div><div class="w-[72px] h-[72px] border border-slate-100 rounded-lg p-1 bg-white shrink-0" id="${qrId}"></div></div>`;
-                container.appendChild(cardDiv);
-                setTimeout(() => { new QRCode(document.getElementById(qrId), { text: s.code, width: 62, height: 62, colorDark : "#1e293b", colorLight : "#ffffff", correctLevel: QRCode.CorrectLevel.H }); }, 50);
-            });
-        }
-
-        /* ==================== TEACHER: REPORTS MODULE ==================== */
-        function setReportTab(tab) {
-            currentReportTab = tab;
-            ['stats', 'monthly', 'overview'].forEach(t => {
-                const btn = document.getElementById(`rep-tab-${t}`);
-                if(t === tab) {
-                    btn.classList.remove('bg-slate-50', 'text-slate-500', 'border-slate-200', 'hover:bg-slate-100');
-                    btn.classList.add('bg-brand-main', 'text-white', 'shadow-md');
-                } else {
-                    btn.classList.remove('bg-brand-main', 'text-white', 'shadow-md');
-                    btn.classList.add('bg-slate-50', 'text-slate-500', 'border-slate-200', 'hover:bg-slate-100');
-                }
-            });
-            document.getElementById('rep-table-body').innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">กรุณากดค้นหาข้อมูล</td></tr>`;
-            updateReportSummary();
-        }
-
-        function setReportMode(mode) {
-            currentMode.reports = mode;
-            document.getElementById('rep-btn-daily').classList.toggle('active', mode === 'daily');
-            document.getElementById('rep-btn-score').classList.toggle('active', mode === 'score');
-            
-            document.getElementById('rep-daily-inputs').classList.toggle('hidden', mode !== 'daily');
-            document.getElementById('rep-score-inputs').classList.toggle('hidden', mode !== 'score');
-        }
-
-        function updateReportSummary() {
-            const classFilter = document.getElementById('rep-summary-class').value;
-            const titleEl = document.getElementById('rep-summary-title');
-            
-            titleEl.innerText = classFilter || 'ทุกห้อง';
-            document.getElementById('rep-summary-count').innerText = "0";
-            document.getElementById('rep-summary-percent').innerText = "0%";
-            document.getElementById('rep-table-body').innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">กรุณากดค้นหาข้อมูล</td></tr>`;
-        }
-
-        function fetchReportData() {
-            if(!currentWorkspace) return;
-            const classFilter = document.getElementById('rep-summary-class').value;
-            
-            let students = currentWorkspace.students;
-            if(classFilter) {
-                students = students.filter(s => s.class === classFilter);
-            }
-
-            if(students.length === 0) {
-                document.getElementById('rep-summary-count').innerText = "0";
-                document.getElementById('rep-summary-percent').innerText = "0%";
-                document.getElementById('rep-table-body').innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">ไม่พบข้อมูลนักเรียน</td></tr>`;
-                return;
-            }
-
-            document.getElementById('rep-summary-count').innerText = students.length;
-            
-            let successRate = Math.floor(Math.random() * (100 - 80 + 1) + 80); 
-            document.getElementById('rep-summary-percent').innerText = successRate + "%";
-
-            let html = '';
-            let dateVal = currentMode.reports === 'daily' ? (document.getElementById('rep-daily-date').value || 'ล่าสุด') : 'ล่าสุด';
-            
-            students.forEach(s => {
-                let isSuccess = Math.random() > 0.15; 
-                let badge = '';
-                if(currentMode.reports === 'daily') {
-                    badge = isSuccess 
-                        ? `<span class="px-2 py-1 rounded bg-emerald-50 text-emerald-600 font-bold text-[10px]"><i class="fa-solid fa-check mr-1"></i> มาเรียน</span>` 
-                        : `<span class="px-2 py-1 rounded bg-rose-50 text-rose-600 font-bold text-[10px]"><i class="fa-solid fa-xmark mr-1"></i> ขาด/ลา</span>`;
-                } else {
-                    badge = isSuccess 
-                        ? `<span class="px-2 py-1 rounded bg-indigo-50 text-indigo-600 font-bold text-[10px]">${Math.floor(Math.random() * 5 + 5)} คะแนน</span>` 
-                        : `<span class="px-2 py-1 rounded bg-slate-100 text-slate-500 font-bold text-[10px]">ยังไม่ส่ง</span>`;
-                }
-
-                html += `
-                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
-                    <td class="px-3 py-2.5"><span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[9px] font-bold">${s.class}</span></td>
-                    <td class="px-3 py-2.5 text-center text-slate-400 font-bold">${s.num}</td>
-                    <td class="px-3 py-2.5"><div class="font-bold text-slate-700">${s.name}</div><div class="text-[9px] text-slate-400">${s.code}</div></td>
-                    <td class="px-3 py-2.5 text-center">${badge}</td>
-                    <td class="px-3 py-2.5 text-center text-[10px] text-slate-400">${dateVal}</td>
-                </tr>`;
-            });
-            document.getElementById('rep-table-body').innerHTML = html;
-        }
-
-        function exportExcel() {
-            Swal.fire({ title: 'Export to Excel', text: 'การส่งออกจะทำงานเมื่อเชื่อมต่อฐานข้อมูลจริง', icon: 'info', confirmButtonColor: 'var(--theme-main)' });
-        }
-
-        /* ==================== TEACHER: RANDOMIZER MODULE ==================== */
-        let randomInterval;
-        function startRandomizer() {
-            const className = document.getElementById('random-class-select').value;
-            if(!className) { Swal.fire('แจ้งเตือน', 'กรุณาเลือกห้องเรียนก่อนทำการสุ่ม', 'warning'); return; }
-            
-            const students = currentWorkspace.students.filter(s => s.class === className);
-            if(students.length === 0) { Swal.fire('แจ้งเตือน', 'ไม่พบรายชื่อนักเรียนในห้องนี้', 'warning'); return; }
-
-            const btn = document.getElementById('btn-random');
-            const display = document.getElementById('random-display');
-            const placeholder = document.getElementById('random-placeholder');
-            const resultWrap = document.getElementById('random-result');
-            const numEl = document.getElementById('random-number');
-            const nameEl = document.getElementById('random-name');
-
-            if(btn.disabled) return;
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังสุ่ม...';
-            
-            placeholder.classList.add('hidden');
-            resultWrap.classList.remove('hidden');
-            resultWrap.classList.add('flex');
-            
-            // Reset state
-            display.classList.remove('border-brand-main', 'bg-brand-light/30', 'border-emerald-500', 'bg-emerald-50');
-            display.classList.add('border-slate-200');
-            numEl.classList.remove('scale-125', 'text-emerald-600');
-            numEl.classList.add('text-brand-main');
-            nameEl.classList.remove('text-emerald-700');
-            
-            let ticks = 0;
-            const maxTicks = 25; 
-            
-            randomInterval = setInterval(() => {
-                const randomStudent = students[Math.floor(Math.random() * students.length)];
-                numEl.innerText = randomStudent.num;
-                nameEl.innerText = randomStudent.name;
-                
-                ticks++;
-                if(ticks >= maxTicks) {
-                    clearInterval(randomInterval);
-                    const winner = students[Math.floor(Math.random() * students.length)];
-                    numEl.innerText = winner.num;
-                    nameEl.innerText = winner.name;
-                    
-                    // Winner Effect
-                    display.classList.add('border-emerald-500', 'bg-emerald-50');
-                    display.classList.remove('border-slate-200');
-                    numEl.classList.remove('text-brand-main');
-                    numEl.classList.add('text-emerald-600', 'scale-125');
-                    nameEl.classList.add('text-emerald-700');
-                    
-                    document.getElementById('beep-sound').play().catch(e=>{});
-                    
-                    setTimeout(() => numEl.classList.remove('scale-125'), 300);
-                    
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-rotate-right mr-2"></i> สุ่มใหม่อีกครั้ง';
-                }
-            }, 80);
-        }
-
-        /* ==================== THEMES ==================== */
-        let tempTheme = null;
-
-        function initTheme() { 
-            const saved = localStorage.getItem('syscheck_theme') || 'indigo';
-            tempTheme = saved;
-            applyThemeStyles(saved); 
-        }
-        
-        function applyThemeStyles(key) {
-            const t = themes[key]; if(!t) return;
-            document.documentElement.style.setProperty('--theme-main', t.main);
-            document.documentElement.style.setProperty('--theme-light', t.light);
-            document.documentElement.style.setProperty('--theme-dark', t.dark);
-            document.documentElement.style.setProperty('--theme-accent', t.accent);
-        }
-
-        function selectTempTheme(key) {
-            tempTheme = key;
-            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-            const btn = document.getElementById(`theme-btn-${key}`);
-            if(btn) btn.classList.add('active');
-            applyThemeStyles(key);
-        }
-
-        function confirmTheme() {
-            if(tempTheme) {
-                localStorage.setItem('syscheck_theme', tempTheme);
-                Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', text: 'บันทึกชุดสีเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false});
-            }
-        }
-
-        function renderThemeSelector() {
-            let html = '';
-            let current = tempTheme || localStorage.getItem('syscheck_theme') || 'indigo';
-            for (const [k, v] of Object.entries(themes)) { 
-                let isActive = current === k ? 'active' : '';
-                html += `<div class="flex flex-col items-center gap-2"><button id="theme-btn-${k}" onclick="selectTempTheme('${k}')" class="theme-btn w-10 h-10 rounded-full shadow-md ${isActive}" style="background: linear-gradient(135deg, ${v.main} 0%, ${v.dark} 100%);"></button><span class="text-[11px] text-slate-500 font-medium">${v.name}</span></div>`; 
-            }
-            document.getElementById('theme-selector-container').innerHTML = html;
-        }
-    </script>
+<!-- ==================== LOGIN VIEW ==================== -->
+<div id="view-login" class="absolute inset-0 z-[100] flex flex-col items-center justify-between p-6 transition-opacity duration-500 bg-slate-900/10 backdrop-blur-md overflow-y-auto">
+<!-- Animated Background Orbs -->
+<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-brand-main/30 to-brand-accent/30 rounded-full blur-3xl -z-10 pointer-events-none animate-pulse"></div>
+<div class="absolute bottom-10 right-10 w-72 h-72 bg-emerald-400/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+<div class="my-auto w-full max-w-sm py-8">
+<div class="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(79,70,229,0.2)] border border-white p-7 md:p-9 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-main via-brand-accent to-emerald-400"></div>
+<div class="text-center mb-8">
+<!-- School Logo Container with Ring -->
+<div class="relative w-24 h-24 mx-auto mb-5 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-2 border-dashed border-brand-main/40 animate-spin-slow"></div>
+<div class="w-20 h-20 bg-gradient-to-tr from-brand-main to-brand-accent rounded-full p-1 shadow-xl shadow-brand-main/30 flex items-center justify-center transform hover:scale-105 transition-all duration-300">
+<!-- Logo Image placeholder or Icon fallback -->
+<div class="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden border border-white/50">
+<i class="fa-solid fa-school text-3xl text-brand-main"></i>
+</div>
+</div>
+</div>
+<!-- Title & Badges -->
+<h1 class="text-3xl font-black tracking-tight text-slate-800">
+System <span class="bg-gradient-to-r from-brand-main to-brand-accent bg-clip-text text-transparent">Check</span>
+</h1>
+<div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-light/80 text-brand-dark text-xs font-bold mt-2 border border-brand-main/20 shadow-sm">
+<i class="fa-solid fa-qrcode text-brand-main"></i>
+<span>เช็คชื่อ & เช็คงาน 2IN1</span>
+</div>
+</div>
+<!-- Login Form -->
+<div class="space-y-4">
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1.5 ml-1">บัญชีผู้ใช้งาน (อีเมล)</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-regular fa-envelope text-lg"></i></div>
+<input type="email" id="login-email" placeholder="อีเมลโรงเรียน / ผู้ใช้งาน" class="w-full pl-12 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl outline-none transition-all text-base font-medium focus:bg-white focus:border-brand-main" value="">
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1.5 ml-1">รหัสผ่าน</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-lock text-lg"></i></div>
+<input type="password" id="login-pass" placeholder="รหัสผ่าน" class="w-full pl-12 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl outline-none transition-all text-base font-medium focus:bg-white focus:border-brand-main" value="">
+</div>
+</div>
+<button onclick="doLogin()" class="w-full bg-gradient-to-r from-brand-main via-brand-accent to-purple-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-brand-main/30 hover:shadow-brand-main/50 hover:-translate-y-0.5 active:translate-y-0 transition-all mt-6 text-lg flex items-center justify-center gap-2">
+<span>เข้าสู่ระบบ</span>
+<i class="fa-solid fa-arrow-right text-sm"></i>
+</button>
+</div>
+</div>
+</div>
+<!-- School Footer Slogan -->
+<footer class="w-full text-center py-4 text-xs font-black tracking-widest text-slate-400 uppercase">
+<span class="hover:text-brand-main transition-colors">• INNOVATION</span>
+<span class="mx-1">•</span>
+<span class="hover:text-brand-accent transition-colors">TECHNOLOGY</span>
+<span class="mx-1">•</span>
+<span class="hover:text-emerald-500 transition-colors">EDUCATION •</span>
+</footer>
+</div>
+<!-- ==================== MAIN APP ==================== -->
+<div id="view-app" class="hidden flex-col h-full bg-transparent">
+<!-- Header -->
+<header class="bg-white/80 backdrop-blur-lg border-b border-brand-main/10 px-4 py-3 flex items-center justify-between z-40 sticky top-0 no-print transition-colors shadow-sm">
+<div class="flex items-center gap-3">
+<button onclick="toggleSidebar()" class="text-slate-500 text-2xl hover:text-brand-main transition-colors p-1"><i class="fa-solid fa-bars-staggered"></i></button>
+<div class="leading-none flex items-center gap-2">
+<div class="w-9 h-9 bg-gradient-to-tr from-brand-main to-brand-accent rounded-xl flex items-center justify-center text-white shadow-md transition-colors">
+<i class="fa-solid fa-qrcode text-base"></i>
+</div>
+<div>
+<div class="font-bold text-slate-800 text-base">System Check</div>
+<div id="header-subtitle" class="text-[10px] font-bold text-brand-main tracking-wide uppercase transition-colors">Workspace</div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 bg-white text-slate-700 px-3 py-1.5 rounded-full text-sm font-medium border border-brand-main/20 shadow-sm cursor-pointer hover:bg-brand-light/50 hover:text-brand-main transition-colors" onclick="logout()" title="คลิกเพื่อออกจากระบบ">
+<div id="header-avatar" class="w-7 h-7 rounded-full bg-brand-main text-white flex items-center justify-center font-bold transition-colors">?</div>
+<div class="hidden md:flex flex-col text-left mr-1">
+<span id="display-user-name" class="font-bold leading-tight">นายทดสอบ</span>
+<span id="display-user-role" class="text-[10px] text-slate-500 uppercase">Role</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Sidebar Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden transition-opacity" onclick="toggleSidebar()"></div>
+<!-- Sidebar Menu -->
+<aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col no-print border-r border-brand-main/10">
+<div class="p-5 pb-4 border-b border-brand-light/50 bg-gradient-to-b from-brand-light/30 to-white">
+<div class="flex justify-between items-start mb-5">
+<div class="w-12 h-12 bg-gradient-to-tr from-brand-main to-brand-accent rounded-2xl flex items-center justify-center text-white shadow-lg shadow-brand-main/20 transition-all">
+<i class="fa-solid fa-qrcode text-xl"></i>
+</div>
+<button onclick="toggleSidebar()" class="text-slate-400 hover:text-rose-500 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-base"></i></button>
+</div>
+<h2 class="text-lg font-bold text-slate-800">เมนูหลัก</h2>
+<p id="sidebar-role-desc" class="text-xs text-slate-500 font-medium mt-0.5">จัดการระบบ</p>
+</div>
+<nav id="nav-teacher" class="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 hidden">
+<a href="#" onclick="navTo('scan')" id="menu-scan" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-expand text-sm"></i></div>
+<span class="text-[15px]">สแกน QR Code</span>
+</a>
+<a href="#" onclick="navTo('check')" id="menu-check" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-clipboard-check text-sm"></i></div>
+<span class="text-[15px]">ตรวจงาน / เช็คชื่อ</span>
+</a>
+<div class="my-2 border-t border-slate-100"></div>
+<a href="#" onclick="navTo('students')" id="menu-students" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-users text-sm"></i></div>
+<span class="text-[15px]">ฐานข้อมูลนักเรียน</span>
+</a>
+<a href="#" onclick="navTo('cards')" id="menu-cards" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-id-badge text-sm"></i></div>
+<span class="text-[15px]">พิมพ์บัตรประจำตัว</span>
+</a>
+<a href="#" onclick="navTo('setup')" id="menu-setup" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-database text-sm"></i></div>
+<span class="text-[15px]">วิชา / ชิ้นงาน (Setup)</span>
+</a>
+<div class="my-2 border-t border-slate-100"></div>
+<a href="#" onclick="navTo('random')" id="menu-random" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-dice text-sm"></i></div>
+<span class="text-[15px]">สุ่มนักเรียน (Random)</span>
+</a>
+<a href="#" onclick="navTo('reports')" id="menu-reports" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-chart-pie text-sm"></i></div>
+<span class="text-[15px]">รายงาน (Reports)</span>
+</a>
+<a href="#" onclick="navTo('settings')" id="menu-settings" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-gear text-sm"></i></div>
+<span class="text-[15px]">ตั้งค่าระบบ (Settings)</span>
+</a>
+</nav>
+<nav id="nav-admin" class="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 hidden">
+<a href="#" onclick="navTo('admin-users')" id="menu-admin-users" class="menu-item flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-brand-light/40 hover:text-brand-dark font-medium transition-colors group">
+<div class="menu-icon w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-brand-main group-hover:text-white group-hover:shadow-md transition-all"><i class="fa-solid fa-users-gear text-sm"></i></div>
+<span class="text-[15px]">เครื่องมือจัดการสมาชิก</span>
+</a>
+</nav>
+<div class="p-4 border-t border-brand-light/50 bg-slate-50/50">
+<button onclick="logout()" class="w-full flex items-center justify-center gap-2 text-slate-600 text-sm font-bold py-3 hover:bg-rose-100 hover:text-rose-600 rounded-xl transition-colors border border-slate-200 hover:border-rose-200"><i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto p-3 md:p-6 pb-24 print:p-0 print:overflow-visible">
+<!-- ADMIN SECTION: USER MANAGEMENT -->
+<section id="sec-admin-users" class="max-w-5xl mx-auto hidden animate-fade-in no-print">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+<div>
+<h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-brand-light text-brand-main flex items-center justify-center shadow-sm"><i class="fa-solid fa-users-gear"></i></div> จัดการสมาชิก</h2>
+<p class="text-sm text-slate-500 mt-1">เพิ่มสมาชิกใหม่, อนุมัติ, ระงับการใช้งาน หรือลบบัญชีคุณครูในระบบ</p>
+</div>
+<button onclick="adminAddUserModal()" class="bg-gradient-to-r from-brand-main to-brand-accent text-white px-5 py-3 rounded-2xl font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm flex items-center gap-2">
+<i class="fa-solid fa-user-plus"></i> เพิ่มสมาชิกใหม่
+</button>
+</div>
+<div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-brand-light/40 text-brand-dark text-sm font-bold uppercase tracking-wider border-b border-brand-main/10">
+<tr><th class="px-5 py-4">ชื่อผู้ใช้งาน</th><th class="px-5 py-4">อีเมล (บัญชีล็อกอิน)</th><th class="px-5 py-4 text-center">สถานะ</th><th class="px-5 py-4 text-center">เครื่องมือจัดการ</th></tr>
+</thead>
+<tbody id="admin-users-tbody" class="divide-y divide-slate-100"></tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- TEACHER SECTION: SCAN -->
+<section id="sec-scan" class="max-w-lg mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in no-print">
+<div class="text-center mb-6">
+<div id="scan-display-logo-container" class="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-brand-light to-white text-brand-main mb-4 transition-colors overflow-hidden shadow-sm border border-brand-main/20">
+<i id="scan-display-icon" class="fa-solid fa-qrcode text-4xl"></i>
+<img id="scan-display-img" src="" class="w-full h-full object-cover hidden" alt="โลโก้">
+</div>
+<h2 id="scan-display-title" class="text-2xl font-bold text-slate-800 leading-tight">สแกน QR Code 2IN1</h2>
+</div>
+<div class="segmented-control mb-6 bg-slate-100 p-1.5 rounded-2xl">
+<div id="scan-btn-daily" onclick="setScanMode('daily')" class="segment-btn active rounded-xl"><i class="fa-regular fa-calendar-check text-lg mb-1.5"></i><span class="text-sm">กิจกรรมรายวัน</span></div>
+<div id="scan-btn-score" onclick="setScanMode('score')" class="segment-btn rounded-xl"><i class="fa-solid fa-book-open text-lg mb-1.5"></i><span class="text-sm">ชิ้นงาน/คะแนน</span></div>
+</div>
+<div class="space-y-4 mb-6">
+<!-- Daily Mode -->
+<div id="scan-daily-inputs" class="space-y-4">
+<select id="scan-daily-select" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all hover:bg-white"><option value="">-- เลือกกิจกรรมรายวัน --</option></select>
+</div>
+<!-- Score Mode -->
+<div id="scan-score-inputs" class="space-y-4 hidden">
+<select id="scan-subject" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all hover:bg-white"><option value="">-- เลือกวิชา --</option></select>
+<div class="flex gap-3">
+<select id="scan-assignment" class="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all hover:bg-white"><option value="">-- เลือกชิ้นงาน --</option></select>
+<input type="number" id="scan-score-val" placeholder="คะแนน" class="w-24 px-3 py-4 bg-slate-50 border border-slate-200 text-brand-main text-base font-black rounded-2xl outline-none text-center transition-all focus:bg-white">
+</div>
+</div>
+</div>
+<button onclick="toggleCamera()" id="btn-camera" class="w-full py-4 bg-gradient-to-r from-slate-800 to-slate-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 mb-5 hover:shadow-lg transition-all text-lg">
+<i class="fa-solid fa-camera"></i> <span>เปิดกล้องสแกน</span>
+</button>
+<div id="camera-container" class="hidden mb-5 relative rounded-2xl overflow-hidden shadow-inner border border-slate-200">
+<div id="qr-reader" class="w-full"></div>
+</div>
+<div class="flex mb-5 shadow-sm rounded-2xl overflow-hidden border border-slate-200">
+<input type="text" id="scan-manual-input" placeholder="พิมพ์รหัสด้วยตนเอง..." class="flex-1 px-5 py-4 bg-white outline-none text-base transition-all font-medium" onkeypress="if(event.key==='Enter') processScanManual()">
+<button onclick="processScanManual()" class="px-6 bg-brand-main text-white font-bold hover:bg-brand-dark transition-colors text-lg"><i class="fa-solid fa-arrow-right"></i></button>
+</div>
+<div id="scan-log" class="text-center text-base font-medium p-4 flex flex-col items-center justify-center text-slate-500 bg-slate-50 border border-slate-100 rounded-2xl min-h-[5rem] transition-all">รอรับข้อมูลสแกน...</div>
+</section>
+<!-- TEACHER SECTION: CHECK (LIST) -->
+<section id="sec-check" class="max-w-3xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in no-print">
+<div class="flex items-center justify-between mb-6 pb-5 border-b border-brand-light/50">
+<h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-clipboard-check"></i></div>บันทึกแบบรายชื่อ</h2>
+</div>
+<div class="segmented-control mb-6 max-w-lg mx-auto bg-slate-100 p-1.5 rounded-2xl">
+<div id="check-btn-daily" onclick="setCheckMode('daily')" class="segment-btn active rounded-xl"><i class="fa-regular fa-calendar-check mb-1.5 text-lg"></i> <span class="text-sm">กิจกรรมรายวัน</span></div>
+<div id="check-btn-score" onclick="setCheckMode('score')" class="segment-btn rounded-xl"><i class="fa-solid fa-book-open mb-1.5 text-lg"></i> <span class="text-sm">ชิ้นงาน/คะแนน</span></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-50/50 p-5 rounded-3xl border border-slate-100">
+<div id="check-daily-inputs" class="md:col-span-2">
+<label class="block text-sm font-bold text-slate-600 mb-2">เลือกกิจกรรม</label>
+<select id="check-daily-select" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 shadow-sm text-base"><option value="">-- เลือกกิจกรรมรายวัน --</option></select>
+</div>
+<div id="check-score-inputs" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+<div><label class="block text-sm font-bold text-slate-600 mb-2">วิชา</label><select id="check-subject" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 shadow-sm text-base"><option value="">-- เลือกวิชา --</option></select></div>
+<div><label class="block text-sm font-bold text-slate-600 mb-2">ชิ้นงาน</label><select id="check-assignment" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 shadow-sm text-base"><option value="">-- เลือกชิ้นงาน --</option></select></div>
+</div>
+<div><label class="block text-sm font-bold text-slate-600 mb-2">วันที่บันทึก</label><input type="date" id="check-date" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-brand-main shadow-sm transition-colors text-base"></div>
+<div><label class="block text-sm font-bold text-slate-600 mb-2">ห้องเรียน</label><select id="check-class" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 shadow-sm text-base"><option value="">-- เลือกห้อง --</option></select></div>
+<div class="md:col-span-2 pt-2"><button onclick="fetchListForCheck()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl hover:bg-slate-700 transition-all flex items-center justify-center gap-2 text-base shadow-md"><i class="fa-solid fa-list-ol"></i> ดึงรายชื่อนักเรียน</button></div>
+</div>
+<div id="check-list-container" class="hidden animate-fade-in">
+<div class="flex justify-between items-center mb-4 px-1">
+<h3 class="font-bold text-slate-700 text-base">รายชื่อนักเรียน</h3>
+<button onclick="saveCheckList()" class="bg-gradient-to-r from-brand-main to-brand-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> บันทึกข้อมูล</button>
+</div>
+<div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+<table class="w-full text-base text-left"><thead class="bg-brand-light/40 text-brand-dark text-sm font-bold border-b border-brand-main/10 uppercase tracking-wider"><tr><th class="px-5 py-4 text-center w-16">เลขที่</th><th class="px-5 py-4">รหัส / ชื่อ-สกุล</th><th class="px-5 py-4 text-center w-32" id="check-th-action">สถานะ</th></tr></thead><tbody id="check-table-body" class="divide-y divide-slate-100 bg-white"></tbody></table>
+</div>
+</div>
+</section>
+<!-- TEACHER SECTION: STUDENTS -->
+<section id="sec-students" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in no-print">
+<div class="flex justify-between items-center border-b border-brand-light/50 pb-5 mb-5">
+<h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-users"></i></div> ฐานข้อมูลนักเรียน</h2>
+<button onclick="addStudentMock()" class="bg-brand-main text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-brand-dark transition-colors"><i class="fa-solid fa-plus mr-1"></i> เพิ่มนักเรียน</button>
+</div>
+<div class="flex gap-3 mb-5 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+<input type="text" id="stu-search" placeholder="ค้นหารหัส หรือชื่อ..." class="flex-1 px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-medium focus:border-brand-main transition-colors" oninput="renderStudentsTable()">
+<select id="stu-filter-class" class="px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold text-brand-main w-1/3 min-w-[120px] focus:border-brand-main transition-colors" onchange="renderStudentsTable()"><option value="">ทุกห้อง</option></select>
+</div>
+<div class="overflow-x-auto rounded-3xl border border-slate-200 shadow-sm">
+<table class="w-full text-base text-left"><thead class="bg-brand-light/40 text-brand-dark text-sm border-b border-brand-main/10 uppercase tracking-wider font-bold"><tr><th class="px-5 py-4">รหัส</th><th class="px-5 py-4">ชื่อ - นามสกุล</th><th class="px-5 py-4 text-center">ห้องเรียน</th></tr></thead><tbody id="student-table-body" class="divide-y divide-slate-100 bg-white"></tbody></table>
+</div>
+</section>
+<!-- TEACHER SECTION: CARDS (PRINT QR) -->
+<section id="sec-cards" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in print-full-width">
+<div class="flex justify-between items-center border-b border-brand-light/50 pb-5 mb-5 no-print">
+<h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-id-badge"></i></div> เครื่องมือพิมพ์บัตร QR</h2>
+<button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-slate-700 transition-all"><i class="fa-solid fa-print mr-1"></i> พิมพ์ / PDF</button>
+</div>
+<!-- เครื่องมือปรับแต่งบัตร -->
+<div class="mb-6 no-print bg-slate-50/50 p-6 rounded-3xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-5">
+<div class="md:col-span-2">
+<h3 class="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-3 text-base"><i class="fa-solid fa-wand-magic-sparkles text-brand-main mr-2"></i>ปรับแต่งรูปแบบบัตร</h3>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-solid fa-pen mr-1"></i> ข้อความหัวบัตร</label>
+<input type="text" id="card-custom-title" value="บัตรประจำตัวนักเรียน" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold transition-all focus:border-brand-main" oninput="renderCardsPreview()">
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-solid fa-palette mr-1"></i> สีหัวบัตร</label>
+<div class="flex gap-3">
+<input type="color" id="card-custom-color" value="#4F46E5" class="w-12 h-12 rounded-xl border border-slate-200 cursor-pointer bg-white p-1 shrink-0" onchange="renderCardsPreview()">
+<input type="text" id="card-custom-color-text" value="#4F46E5" class="flex-1 px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold uppercase transition-all focus:border-brand-main" oninput="document.getElementById('card-custom-color').value=this.value; renderCardsPreview()">
+</div>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-solid fa-users mr-1"></i> เลือกห้องเรียน</label>
+<select id="card-class-select" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold text-brand-main transition-all focus:border-brand-main" onchange="renderCardsPreview()"><option value="">-- กรุณาเลือกห้อง --</option></select>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-solid fa-qrcode mr-1"></i> รูปแบบรหัส</label>
+<select class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold transition-all focus:border-brand-main"><option>สี่เหลี่ยม (QR Code)</option></select>
+</div>
+</div>
+<div class="print-only print-full-width">
+<div id="cards-preview-container" class="card-container flex flex-wrap gap-4 justify-center">
+<div class="text-center text-slate-400 py-12 w-full no-print border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50"><p class="font-bold text-base">กรุณาเลือกห้องเรียนเพื่อสร้างบัตร</p></div>
+</div>
+</div>
+</section>
+<!-- TEACHER SECTION: SETUP -->
+<section id="sec-setup" class="max-w-4xl mx-auto hidden animate-fade-in no-print">
+<div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+<h2 class="text-2xl font-bold text-slate-800 leading-tight">จัดการรายวิชา
+และงาน</h2>
+<div class="flex flex-col sm:flex-row gap-3">
+<button class="bg-cyan-500 text-white px-5 py-3.5 rounded-2xl font-bold shadow-md hover:bg-cyan-600 transition-colors flex items-center justify-center gap-2 text-sm">
+<i class="fa-solid fa-right-left"></i> จัดการวิชาที่เรียน
+</button>
+<button onclick="openAddSetupModal()" class="bg-emerald-500 text-white px-5 py-3.5 rounded-2xl font-bold shadow-md hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 text-sm">
+<i class="fa-solid fa-plus"></i> เพิ่มวิชา/งาน
+</button>
+</div>
+</div>
+<div class="bg-white p-5 rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 mb-5 flex flex-col md:flex-row gap-4 items-center">
+<div class="flex-1 w-full">
+<label class="block text-sm font-bold text-slate-600 mb-2">กรองตามวิชา</label>
+<select id="setup-filter-subject" class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-slate-700 text-base focus:border-brand-main transition-colors" onchange="renderSetupList()">
+<option value="">-- วิชาทั้งหมด --</option>
+</select>
+</div>
+<button class="w-full md:w-auto bg-amber-500 text-white px-6 py-3.5 md:mt-[28px] rounded-2xl font-bold shadow-md hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 text-base">
+<i class="fa-solid fa-pen-to-square"></i> แก้ชื่อวิชา
+</button>
+</div>
+<div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+<div id="setup-list-container" class="divide-y divide-slate-100 flex flex-col">
+<!-- List items render here -->
+</div>
+</div>
+</section>
+<!-- TEACHER SECTION: REPORTS -->
+<section id="sec-reports" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in print-full-width">
+<div class="flex items-center gap-3 mb-6 no-print">
+<div class="w-10 h-10 rounded-xl bg-brand-light text-brand-main flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-pie text-lg"></i></div>
+<h2 class="text-2xl font-bold text-slate-800">Dashboard</h2>
+</div>
+<!-- Sub Tabs -->
+<div class="flex gap-3 mb-6 overflow-x-auto pb-2 scrollbar-hide no-print">
+<button onclick="setReportTab('stats')" id="rep-tab-stats" class="px-6 py-2.5 rounded-full font-bold text-sm bg-brand-main text-white shrink-0 shadow-md shadow-brand-main/30 transition-all">สถิติรายงาน</button>
+<button onclick="setReportTab('monthly')" id="rep-tab-monthly" class="px-6 py-2.5 rounded-full font-bold text-sm bg-slate-50 text-slate-500 border border-slate-200 shrink-0 hover:bg-slate-100 hover:text-slate-700 transition-all">รายเดือน</button>
+<button onclick="setReportTab('overview')" id="rep-tab-overview" class="px-6 py-2.5 rounded-full font-bold text-sm bg-slate-50 text-slate-500 border border-slate-200 shrink-0 hover:bg-slate-100 hover:text-slate-700 transition-all">ภาพรวมห้อง</button>
+</div>
+<!-- Mode Switcher -->
+<div class="segmented-control mb-6 max-w-lg mx-auto no-print bg-slate-100 p-1.5 rounded-2xl">
+<div id="rep-btn-daily" onclick="setReportMode('daily')" class="segment-btn active rounded-xl"><i class="fa-regular fa-calendar-check mb-1.5 text-lg"></i> <span class="text-sm">กิจกรรม (รายวัน)</span></div>
+<div id="rep-btn-score" onclick="setReportMode('score')" class="segment-btn rounded-xl"><i class="fa-solid fa-book-open mb-1.5 text-lg"></i> <span class="text-sm">ชิ้นงาน/คะแนน</span></div>
+</div>
+<!-- Filters -->
+<div class="bg-slate-50/50 border border-slate-100 rounded-3xl p-5 shadow-sm mb-6 no-print">
+<div id="rep-daily-inputs" class="space-y-4">
+<select id="rep-daily-select" class="w-full px-5 py-3.5 bg-white border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all focus:border-brand-main shadow-sm"><option value="">-- เลือกกิจกรรมรายวัน --</option></select>
+<input type="date" id="rep-daily-date" class="w-full px-5 py-3.5 bg-white border border-slate-200 text-brand-main font-bold rounded-2xl outline-none transition-all text-center uppercase text-base tracking-wide focus:border-brand-main shadow-sm">
+</div>
+<div id="rep-score-inputs" class="space-y-4 hidden">
+<select id="rep-score-subject" class="w-full px-5 py-3.5 bg-white border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all focus:border-brand-main shadow-sm"><option value="">-- เลือกวิชา --</option></select>
+<select id="rep-score-assignment" class="w-full px-5 py-3.5 bg-white border border-slate-200 text-slate-700 text-base font-bold rounded-2xl outline-none transition-all focus:border-brand-main shadow-sm"><option value="">-- เลือกชิ้นงาน --</option></select>
+</div>
+<button onclick="fetchReportData()" class="w-full mt-5 bg-gradient-to-r from-brand-main to-brand-accent text-white font-bold py-3.5 rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-base">
+<i class="fa-solid fa-magnifying-glass"></i> ค้นหาข้อมูล
+</button>
+</div>
+<!-- Summary Section -->
+<div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm mb-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-brand-light/30 rounded-full blur-3xl -mr-10 -mt-10"></div>
+<div class="flex justify-between items-center mb-6 relative z-10">
+<h3 class="font-bold text-slate-800 text-base">สรุปภาพรวม — <span id="rep-summary-title" class="text-brand-main">ทุกห้อง</span></h3>
+<select id="rep-summary-class" class="px-4 py-2 bg-brand-light/40 border border-brand-main/20 text-brand-dark font-bold rounded-xl outline-none text-sm shadow-sm hover:bg-brand-light/60 transition-colors" onchange="updateReportSummary()">
+<option value="">-- ทุกห้อง --</option>
+</select>
+</div>
+<div class="text-center mb-6 relative z-10">
+<div class="text-6xl md:text-7xl font-black text-slate-800 tracking-tight" id="rep-summary-count">0</div>
+<div class="text-slate-500 font-bold mt-2 text-sm">คน</div>
+</div>
+<div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center justify-center gap-3 relative z-10">
+<div class="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0 shadow-md"><i class="fa-solid fa-check"></i></div>
+<div class="font-bold text-emerald-700 text-base">อัตราความสำเร็จ <span id="rep-summary-percent" class="text-emerald-600 text-xl ml-1">0%</span></div>
+</div>
+</div>
+<!-- Details Section -->
+<div class="bg-white border border-slate-100 rounded-3xl p-5 md:p-6 shadow-sm mb-5">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4 no-print">
+<h3 class="font-bold text-slate-800 flex items-center gap-2 text-base"><i class="fa-solid fa-list-ul text-brand-main"></i> รายละเอียด (รายบุคคล)</h3>
+<div class="flex gap-2 w-full md:w-auto">
+<button onclick="exportExcel()" class="flex-1 md:flex-none justify-center bg-emerald-500 text-white shadow-sm shadow-emerald-500/30 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-600 hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fa-solid fa-file-excel"></i> โหลด Excel</button>
+<button onclick="window.print()" class="flex-1 md:flex-none justify-center bg-rose-500 text-white shadow-sm shadow-rose-500/30 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-rose-600 hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fa-solid fa-file-pdf"></i> พิมพ์ PDF</button>
+</div>
+</div>
+<div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm print:border-none print:shadow-none">
+<table class="w-full text-base text-left whitespace-nowrap">
+<thead class="bg-brand-light/40 text-brand-dark font-bold border-b border-brand-main/10 uppercase tracking-wider text-xs">
+<tr>
+<th class="px-4 py-4">ห้อง</th>
+<th class="px-4 py-4 text-center">เลขที่</th>
+<th class="px-4 py-4">ชื่อ - สกุล</th>
+<th class="px-4 py-4 text-center">สถานะ</th>
+<th class="px-4 py-4 text-center">เวลา</th>
+</tr>
+</thead>
+<tbody id="rep-table-body" class="divide-y divide-slate-100 bg-white">
+<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold text-base">กรุณากดค้นหาข้อมูล</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="text-center text-[11px] text-slate-400 font-bold mt-8 border-t border-slate-100 pt-6 uppercase tracking-widest no-print">
+</> พัฒนาโดย Kru M Memtem and Gemini
+</div>
+</section>
+<!-- TEACHER SECTION: SETTINGS -->
+<section id="sec-settings" class="max-w-3xl mx-auto bg-white rounded-3xl shadow-md shadow-brand-main/5 border border-brand-main/10 p-5 md:p-8 hidden animate-fade-in no-print">
+<div class="flex items-center gap-3 border-b border-brand-light/50 pb-5 mb-6">
+<div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-gear text-lg"></i></div>
+<h2 class="text-2xl font-bold text-slate-800">ตั้งค่าระบบ (Settings)</h2>
+</div>
+<!-- ตั้งค่าหน้าสแกน -->
+<div class="mb-8 border-b border-slate-100 pb-8">
+<div class="flex items-center gap-3 mb-5"><div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-base shadow-sm"><i class="fa-solid fa-image"></i></div><h3 class="text-lg font-bold text-slate-800">ตั้งค่าหน้าสแกน QR Code</h3></div>
+<div class="space-y-5 bg-slate-50/50 p-5 rounded-3xl border border-slate-100">
+<div>
+<label class="block text-sm font-bold text-slate-600 mb-2">ข้อความหัวหน้าสแกน</label>
+<input type="text" id="setting-scan-title" placeholder="เช่น สแกน QR Code 2IN1" class="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none transition-all text-base font-bold focus:border-brand-main shadow-sm">
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-600 mb-2">โลโก้หน้าสแกน (รูปภาพ)</label>
+<div class="flex items-center gap-4">
+<div id="setting-logo-preview" class="w-16 h-16 rounded-2xl border border-slate-200 bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+<i class="fa-regular fa-image text-slate-400 text-xl"></i>
+</div>
+<div class="flex-1">
+<input type="file" id="setting-scan-logo" accept="image/*" class="w-full text-base text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-brand-light file:text-brand-main hover:file:bg-brand-main hover:file:text-white transition-all cursor-pointer" onchange="previewLogoUpload(event)">
+<p class="text-xs text-slate-400 mt-2 font-medium">แนะนำขนาด 200x200 px (สี่เหลี่ยมจัตุรัส)</p>
+</div>
+</div>
+</div>
+<button onclick="saveScanSettings()" class="bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold shadow-md hover:bg-slate-700 hover:-translate-y-0.5 transition-all text-sm flex items-center gap-2">
+<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลหน้าสแกน
+</button>
+</div>
+</div>
+<!-- ตั้งค่าธีมสี -->
+<div class="mb-4">
+<div class="flex items-center gap-3 mb-5"><div class="w-8 h-8 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center text-base shadow-sm"><i class="fa-solid fa-palette"></i></div><h3 class="text-lg font-bold text-slate-800">ตั้งค่าธีมสีระบบ</h3></div>
+<div class="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+<div class="grid grid-cols-3 md:grid-cols-6 gap-y-6 gap-x-4 mb-8" id="theme-selector-container"></div>
+<div class="flex justify-center md:justify-start">
+<button onclick="confirmTheme()" class="bg-brand-main text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-brand-main/30 hover:bg-brand-dark hover:-translate-y-0.5 transition-all flex items-center gap-2 text-base">
+<i class="fa-solid fa-check"></i> ตกลง (บันทึกชุดสี)
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- TEACHER SECTION: RANDOMIZER -->
+<section id="sec-random" class="max-w-3xl mx-auto hidden animate-fade-in no-print">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-xl bg-brand-light text-brand-main flex items-center justify-center shadow-sm"><i class="fa-solid fa-dice text-xl"></i></div>
+<h2 class="text-2xl font-bold text-slate-800">สุ่มนักเรียน (Randomizer)</h2>
+</div>
+<div class="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl shadow-brand-main/5 border border-white p-6 md:p-10 text-center">
+<div class="max-w-[280px] mx-auto mb-8">
+<label class="block text-sm font-bold text-slate-600 mb-2">เลือกห้องเรียน</label>
+<select id="random-class-select" class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-slate-700 text-base font-bold transition-all focus:border-brand-main shadow-sm hover:bg-white"><option value="">-- กรุณาเลือกห้อง --</option></select>
+</div>
+<div id="random-display" class="w-full h-56 md:h-72 bg-slate-50 border-4 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center mb-8 transition-all relative overflow-hidden shadow-inner">
+<div class="text-slate-400 font-bold text-lg" id="random-placeholder"><i class="fa-solid fa-wand-magic-sparkles text-3xl mb-3 block text-brand-light"></i> พร้อมสุ่มผู้โชคดี!</div>
+<div class="hidden flex-col items-center justify-center w-full h-full p-5 relative z-10" id="random-result">
+<div class="text-7xl md:text-9xl font-black text-brand-main mb-4 transition-transform duration-300 drop-shadow-sm" id="random-number">--</div>
+<div class="text-xl md:text-3xl font-bold text-slate-700 truncate w-full px-4" id="random-name">------------</div>
+</div>
+</div>
+<button onclick="startRandomizer()" id="btn-random" class="bg-gradient-to-r from-brand-main to-brand-accent text-white px-10 py-4 rounded-3xl font-bold text-xl shadow-xl shadow-brand-main/30 hover:shadow-brand-main/50 hover:-translate-y-1 transition-all active:scale-95">
+<i class="fa-solid fa-play mr-2"></i> สุ่มเลย!
+</button>
+</div>
+</section>
+</main>
+</div>
+<!-- Modal: Add Subject/Work -->
+<div id="modal-add-setup" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] hidden items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+<div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh] transform scale-95 transition-transform duration-300 border border-white" id="modal-add-setup-content">
+<div class="p-5 border-b border-brand-main/10 flex justify-between items-center bg-white z-10 sticky top-0">
+<h3 class="text-lg font-bold text-brand-main flex items-center gap-3"><div class="bg-brand-light text-brand-main w-9 h-9 rounded-xl flex items-center justify-center"><i class="fa-solid fa-folder-plus text-base"></i></div> เพิ่มวิชา/งาน</h3>
+<button onclick="closeAddSetupModal()" class="text-slate-400 hover:text-rose-500 w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-sm"></i></button>
+</div>
+<div class="p-6 overflow-y-auto flex-1 space-y-5 bg-slate-50/30">
+<div>
+<label class="block text-sm font-bold text-slate-700 mb-2">ประเภทกิจกรรม</label>
+<select id="modal-setup-type" class="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-slate-700 font-bold text-base shadow-sm focus:border-brand-main transition-colors" onchange="toggleSetupModalType()">
+<option value="academic">📚 ชิ้นงานวิชาการ (มีรายวิชา)</option>
+<option value="daily">📅 กิจกรรมประจำวัน (ไม่มีรายวิชา)</option>
+</select>
+</div>
+<div id="modal-setup-subject-group">
+<label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-book text-brand-main mr-1"></i> รายวิชา</label>
+<select id="modal-setup-subject" class="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-slate-700 font-bold mb-3 text-base shadow-sm focus:border-brand-main transition-colors" onchange="checkNewSubject()">
+<option value="">-- กรุณาเลือกวิชา (ที่มีอยู่แล้ว) --</option>
+<option value="new">+ สร้างรายวิชาใหม่ (พิมพ์ชื่อเอง)...</option>
+</select>
+<input type="text" id="modal-setup-new-subject" placeholder="พิมพ์ชื่อรายวิชาใหม่..." class="w-full px-4 py-3.5 bg-white border-2 border-brand-main/50 rounded-2xl outline-none hidden focus:border-brand-main transition-all text-base font-bold shadow-sm">
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-list-check text-brand-main mr-1"></i> รายการงาน</label>
+<div id="modal-setup-tasks" class="space-y-3">
+<div class="flex gap-2 task-row">
+<input type="text" placeholder="ชื่องาน (เช่น ใบงานที่ 1)" class="flex-1 px-4 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-base font-bold task-name shadow-sm focus:border-brand-main transition-colors">
+<input type="number" placeholder="10" class="w-20 px-3 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none text-center text-base font-black text-brand-main task-score shadow-sm focus:border-brand-main transition-colors">
+</div>
+</div>
+<button onclick="addModalTaskRow()" class="w-full mt-4 py-3.5 border-2 border-dashed border-brand-main/40 text-brand-main font-bold rounded-2xl hover:bg-brand-light transition-colors flex items-center justify-center gap-2 text-sm">
+<i class="fa-solid fa-plus"></i> เพิ่มช่องงาน (พิมพ์หลายงานพร้อมกัน)
+</button>
+</div>
+</div>
+<div class="p-5 border-t border-slate-100 bg-white sticky bottom-0 z-10">
+<button onclick="saveSetupData()" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:bg-emerald-600 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-base">
+<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลวิชา/งาน
+</button>
+</div>
+</div>
+</div>
+<audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+<script>
+/* ==================== SUPABASE CONFIG & DATABASE ==================== */
+const SUPABASE_URL = 'https://iyqmurdgbsrhaggtwrub.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5cW11cmRnYnNyaGFnZ3R3cnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2ODAxMjksImV4cCI6MjE0OTI1NjEyOX0.ROhI8PhC9P5iUF36sxT3HLQhFI0MAcfzYQja42dMozw';
+let supabaseClient = null;
+if (window.supabase) {
+supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+let db = {
+users: [
+{ id: 'admin_1', email: 'admin@school.com', pass: '1234', name: 'ผู้ดูแลระบบ', role: 'admin', status: 'active' }
+],
+teacherData: {}
+};
+const themes = {
+'indigo': { name: 'Indigo', main: '#4F46E5', light: '#EEF2FF', dark: '#3730A3', accent: '#8B5CF6' },
+'emerald': { name: 'Emerald', main: '#10B981', light: '#ECFDF5', dark: '#047857', accent: '#34D399' },
+'rose': { name: 'Rose', main: '#E11D48', light: '#FFF1F2', dark: '#9F1239', accent: '#FB7185' },
+'sky': { name: 'Sky', main: '#0EA5E9', light: '#F0F9FF', dark: '#0369A1', accent: '#38BDF8' },
+'amber': { name: 'Amber', main: '#D97706', light: '#FFFBEB', dark: '#92400E', accent: '#FBBF24' },
+'slate': { name: 'Slate', main: '#475569', light: '#F8FAFC', dark: '#1E293B', accent: '#94A3B8' }
+};
+let currentUser = null;
+let currentWorkspace = null;
+let currentMode = { scan: 'daily', check: 'daily', reports: 'daily' };
+let currentReportTab = 'stats';
+let html5QrcodeScanner = null;
+let isCameraOpen = false;
+/* ==================== INIT ==================== */
+document.addEventListener('DOMContentLoaded', () => {
+initTheme();
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('check-date').value = today;
+document.getElementById('rep-daily-date').value = today;
+const savedUser = localStorage.getItem('syscheck_user_pro');
+if(savedUser) {
+let userObj = JSON.parse(savedUser);
+let checkUser = db.users.find(u => u.email === userObj.email);
+if(checkUser && checkUser.status === 'active') {
+currentUser = checkUser;
+setupSession();
+} else {
+localStorage.removeItem('syscheck_user_pro');
+}
+}
+});
+/* ==================== AUTH & ROUTING ==================== */
+function doLogin() {
+const email = document.getElementById('login-email').value.trim();
+const pass = document.getElementById('login-pass').value.trim();
+const user = db.users.find(u => u.email === email && u.pass === pass);
+if(user) {
+if(user.status === 'pending') { Swal.fire('รอการอนุมัติ', 'บัญชีของคุณกำลังรอผู้ดูแลระบบอนุมัติการใช้งาน', 'info'); return; }
+if(user.status === 'disabled') { Swal.fire('ถูกระงับ', 'บัญชีของคุณถูกระงับการใช้งาน', 'error'); return; }
+currentUser = user;
+localStorage.setItem('syscheck_user_pro', JSON.stringify({email: user.email}));
+setupSession();
+} else { Swal.fire('ผิดพลาด', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'error'); }
+}
+function logout() {
+localStorage.removeItem('syscheck_user_pro');
+currentUser = null; currentWorkspace = null;
+document.getElementById('view-app').classList.add('hidden');
+document.getElementById('view-app').classList.remove('flex');
+document.getElementById('view-login').classList.remove('opacity-0', 'hidden');
+if(html5QrcodeScanner && isCameraOpen) toggleCamera();
+}
+function setupSession() {
+document.getElementById('display-user-name').innerText = currentUser.name;
+document.getElementById('header-avatar').innerText = currentUser.name.charAt(0) || 'U';
+const loginView = document.getElementById('view-login');
+loginView.classList.add('opacity-0');
+setTimeout(() => {
+loginView.classList.add('hidden');
+document.getElementById('view-app').classList.remove('hidden');
+document.getElementById('view-app').classList.add('flex');
+if (currentUser.role === 'admin') {
+document.getElementById('display-user-role').innerText = 'Administrator';
+document.getElementById('sidebar-role-desc').innerText = 'ระบบจัดการสำหรับแอดมิน';
+document.getElementById('nav-teacher').classList.add('hidden');
+document.getElementById('nav-admin').classList.remove('hidden');
+document.getElementById('header-subtitle').innerText = 'Admin Management';
+navTo('admin-users');
+renderAdminUsers();
+} else {
+document.getElementById('display-user-role').innerText = 'Teacher Workspace';
+document.getElementById('sidebar-role-desc').innerText = 'ระบบจัดการสำหรับครู';
+document.getElementById('nav-admin').classList.add('hidden');
+document.getElementById('nav-teacher').classList.remove('hidden');
+document.getElementById('header-subtitle').innerText = 'Teacher Workspace';
+currentWorkspace = db.teacherData[currentUser.id];
+populateDropdowns();
+renderThemeSelector();
+loadScanSettings();
+navTo('scan');
+}
+}, 500);
+}
+/* ==================== NAVIGATION ==================== */
+function toggleSidebar() {
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebar-overlay');
+if(sidebar.classList.contains('-translate-x-full')) {
+sidebar.classList.remove('-translate-x-full');
+overlay.classList.remove('hidden');
+setTimeout(() => overlay.classList.add('opacity-100'), 10);
+} else {
+sidebar.classList.add('-translate-x-full');
+overlay.classList.remove('opacity-100');
+setTimeout(() => overlay.classList.add('hidden'), 300);
+}
+}
+function navTo(section) {
+const allSections = ['admin-users', 'scan', 'check', 'students', 'cards', 'setup', 'reports', 'settings', 'random'];
+allSections.forEach(sec => {
+const el = document.getElementById(⁠sec-${sec}⁠);
+if(el) el.classList.add('hidden');
+const menu = document.getElementById(⁠menu-${sec}⁠);
+if(menu) {
+menu.classList.remove('bg-brand-light/50', 'text-brand-dark');
+menu.classList.add('text-slate-600');
+const icon = menu.querySelector('.menu-icon');
+if(icon) icon.classList.remove('bg-white', 'text-brand-main', 'shadow-sm');
+}
+});
+const targetSec = document.getElementById(⁠sec-${section}⁠);
+if(targetSec) targetSec.classList.remove('hidden');
+const targetMenu = document.getElementById(⁠menu-${section}⁠);
+if(targetMenu) {
+targetMenu.classList.remove('text-slate-600');
+targetMenu.classList.add('bg-brand-light/50', 'text-brand-dark');
+const icon = targetMenu.querySelector('.menu-icon');
+if(icon) icon.classList.add('bg-white', 'text-brand-main', 'shadow-sm');
+}
+if(window.innerWidth < 1024 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleSidebar();
+if(section !== 'scan' && isCameraOpen) toggleCamera();
+if(section === 'students') renderStudentsTable();
+}
+/* ==================== ADMIN: USER MANAGEMENT ==================== */
+function renderAdminUsers() {
+const tbody = document.getElementById('admin-users-tbody');
+let html = '';
+db.users.filter(u => u.role !== 'admin').forEach(u => {
+let badge = u.status === 'active' ? '<span class="px-2 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-md text-[11px] font-bold shadow-sm inline-flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div>ใช้งานปกติ</span>' :
+u.status === 'pending' ? '<span class="px-2 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-md text-[11px] font-bold shadow-sm inline-flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-amber-500"></div>รออนุมัติ</span>' :
+'<span class="px-2 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-md text-[11px] font-bold shadow-sm inline-flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rose-500"></div>ระงับใช้งาน</span>';
+let actionBtn = u.status === 'active'
+? ⁠<button onclick="confirmToggleStatus('${u.id}', 'disabled', '${u.name}')" class="text-xs bg-rose-50 text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-100 font-bold border border-rose-200 transition-colors shadow-sm"><i class="fa-solid fa-lock mr-1"></i> ปิดใช้งาน</button>⁠
+: ⁠<button onclick="confirmToggleStatus('${u.id}', 'active', '${u.name}')" class="text-xs bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-100 font-bold border border-emerald-200 transition-colors shadow-sm"><i class="fa-solid fa-unlock mr-1"></i> เปิดใช้งาน</button>⁠;
+let delBtn = ⁠<button onclick="deleteUser('${u.id}', '${u.name}')" class="text-xs bg-slate-50 text-slate-400 px-3 py-1.5 rounded-lg hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 font-bold border border-slate-200 transition-colors shadow-sm ml-2" title="ลบผู้ใช้นี้"><i class="fa-solid fa-trash-can"></i></button>⁠;
+html += ⁠<tr class="hover:bg-slate-50 transition-colors"><td class="px-5 py-3 font-bold text-slate-700 whitespace-nowrap">${u.name}</td><td class="px-5 py-3 text-slate-500">${u.email}</td><td class="px-5 py-3 text-center whitespace-nowrap">${badge}</td><td class="px-5 py-3 text-center whitespace-nowrap">${actionBtn}${delBtn}</td></tr>⁠;
+});
+tbody.innerHTML = html || '<tr><td colspan="4" class="text-center py-10 text-slate-400 font-medium">ยังไม่มีข้อมูลคุณครูในระบบ</td></tr>';
+}
+async function adminAddUserModal() {
+const { value: formValues } = await Swal.fire({
+title: 'เพิ่มสมาชิกครูใหม่',
+html: ⁠<div class="space-y-3 text-left"> <div> <label class="block text-xs font-bold text-slate-600 mb-1">ชื่อ-นามสกุล</label> <input id="admin-add-name" class="swal2-input !m-0 !w-full" placeholder="นายครู สมชาย"> </div> <div> <label class="block text-xs font-bold text-slate-600 mb-1">อีเมล (สำหรับเข้าใช้งาน)</label> <input id="admin-add-email" type="email" class="swal2-input !m-0 !w-full" placeholder="teacher@school.com"> </div> <div> <label class="block text-xs font-bold text-slate-600 mb-1">รหัสผ่าน</label> <input id="admin-add-pass" type="password" class="swal2-input !m-0 !w-full" placeholder="อย่างน้อย 4 หลัก"> </div> <div> <label class="block text-xs font-bold text-slate-600 mb-1">สถานะเริ่มต้น</label> <select id="admin-add-status" class="swal2-select !m-0 !w-full"> <option value="active">เปิดใช้งานทันที (Active)</option> <option value="pending">รออนุมัติ (Pending)</option> </select> </div> </div>⁠,
+focusConfirm: false,
+showCancelButton: true,
+confirmButtonText: 'บันทึกสมาชิกใหม่',
+cancelButtonText: 'ยกเลิก',
+confirmButtonColor: 'var(--theme-main)',
+cancelButtonColor: '#94a3b8',
+preConfirm: () => {
+const name = document.getElementById('admin-add-name').value.trim();
+const email = document.getElementById('admin-add-email').value.trim();
+const pass = document.getElementById('admin-add-pass').value.trim();
+const status = document.getElementById('admin-add-status').value;
+if(!name || !email || !pass) {
+Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+return false;
+}
+if(db.users.find(u => u.email === email)) {
+Swal.showValidationMessage('อีเมลนี้มีอยู่ในระบบแล้ว');
+return false;
+}
+return { name, email, pass, status };
+}
+});
+if (formValues) {
+let newId = 'u' + (db.users.length + 1);
+db.users.push({
+id: newId,
+email: formValues.email,
+pass: formValues.pass,
+name: formValues.name,
+role: 'teacher',
+status: formValues.status
+});
+db.teacherData[newId] = {
+classes: ['ป.1', 'ป.2'],
+subjects: ['วิทยาการคำนวณ'],
+activities: ['เข้าแถวเช้า'],
+assignments: ['ชิ้นงานที่ 1'],
+students: [
+{ code: 'ST101', num: 1, name: 'เด็กชายสมชาย ใจดี', class: 'ป.1' },
+{ code: 'ST102', num: 2, name: 'เด็กหญิงสมหญิง รักเรียน', class: 'ป.1' }
+],
+logs: [],
+settings: {}
+};
+renderAdminUsers();
+Swal.fire({
+icon: 'success',
+title: 'เพิ่มสมาชิกสำเร็จ',
+text: ⁠เพิ่มบัญชี ${formValues.name} เรียบร้อยแล้ว⁠,
+timer: 1500,
+showConfirmButton: false
+});
+}
+}
+function confirmToggleStatus(id, newStatus, name) {
+const isEnable = newStatus === 'active';
+Swal.fire({
+title: isEnable ? 'ยืนยันเปิดใช้งาน' : 'ยืนยันระงับบัญชี',
+html: ⁠คุณต้องการ${isEnable ? '<b class="text-emerald-500">เปิด</b>' : '<b class="text-rose-500">ระงับ</b>'}การใช้งานบัญชีของ<br><b>${name}</b> ใช่หรือไม่?⁠,
+icon: isEnable ? 'question' : 'warning',
+showCancelButton: true,
+confirmButtonColor: isEnable ? '#10b981' : '#f43f5e',
+cancelButtonColor: '#94a3b8',
+confirmButtonText: isEnable ? 'ใช่, เปิดใช้งาน' : 'ใช่, ระงับบัญชี'
+}).then((result) => {
+if (result.isConfirmed) {
+let user = db.users.find(u => u.id === id);
+if(user) {
+user.status = newStatus;
+renderAdminUsers();
+Swal.fire({icon: 'success', title: 'สำเร็จ', text: 'เปลี่ยนสถานะเรียบร้อย', timer: 1500, showConfirmButton: false});
+}
+}
+});
+}
+function deleteUser(id, name) {
+Swal.fire({
+title: 'ยืนยันการลบผู้ใช้',
+html: ⁠คุณแน่ใจที่จะลบ <b>${name}</b>?<br><span class="text-xs text-rose-500">การกระทำนี้ไม่สามารถยกเลิกได้</span>⁠,
+icon: 'error',
+showCancelButton: true,
+confirmButtonColor: '#f43f5e',
+cancelButtonColor: '#94a3b8',
+confirmButtonText: 'ลบข้อมูล'
+}).then((result) => {
+if (result.isConfirmed) {
+db.users = db.users.filter(u => u.id !== id);
+delete db.teacherData[id];
+renderAdminUsers();
+Swal.fire({icon: 'success', title: 'ลบสำเร็จ', text: 'ลบผู้ใช้ออกจากระบบแล้ว', timer: 1500, showConfirmButton: false});
+}
+});
+}
+/* ==================== TEACHER: SETTINGS (SCAN LOGO/TITLE) ==================== */
+function loadScanSettings() {
+if(!currentWorkspace.settings) currentWorkspace.settings = { scanTitle: 'สแกน QR Code 2IN1', scanLogo: '' };
+const s = currentWorkspace.settings;
+document.getElementById('setting-scan-title').value = s.scanTitle || '';
+const titleEl = document.getElementById('scan-display-title');
+const iconEl = document.getElementById('scan-display-icon');
+const imgEl = document.getElementById('scan-display-img');
+const previewEl = document.getElementById('setting-logo-preview');
+titleEl.innerText = s.scanTitle || 'สแกน QR Code 2IN1';
+if(s.scanLogo) {
+previewEl.innerHTML = ⁠<img src="${s.scanLogo}" class="w-full h-full object-cover">⁠;
+previewEl.dataset.tempUrl = s.scanLogo;
+iconEl.classList.add('hidden');
+imgEl.src = s.scanLogo;
+imgEl.classList.remove('hidden');
+} else {
+previewEl.innerHTML = ⁠<i class="fa-regular fa-image text-slate-400"></i>⁠;
+delete previewEl.dataset.tempUrl;
+iconEl.classList.remove('hidden');
+imgEl.classList.add('hidden');
+}
+}
+function previewLogoUpload(event) {
+const file = event.target.files[0];
+if (file) {
+const reader = new FileReader();
+reader.onload = function(e) {
+const dataUrl = e.target.result;
+document.getElementById('setting-logo-preview').innerHTML = ⁠<img src="${dataUrl}" class="w-full h-full object-cover">⁠;
+document.getElementById('setting-logo-preview').dataset.tempUrl = dataUrl;
+};
+reader.readAsDataURL(file);
+}
+}
+function saveScanSettings() {
+const title = document.getElementById('setting-scan-title').value.trim() || 'สแกน QR Code 2IN1';
+const tempUrl = document.getElementById('setting-logo-preview').dataset.tempUrl;
+if(!currentWorkspace.settings) currentWorkspace.settings = {};
+currentWorkspace.settings.scanTitle = title;
+currentWorkspace.settings.scanLogo = tempUrl || '';
+loadScanSettings();
+Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', text: 'อัปเดตข้อมูลหน้าสแกนเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false});
+}
+/* ==================== TEACHER: POPULATE DROPDOWNS ==================== */
+function populateDropdowns() {
+if(!currentWorkspace) return;
+const fillSelect = (ids, data, defaultTxt) => {
+ids.forEach(id => {
+let el = document.getElementById(id);
+if(el) {
+let inner = defaultTxt ? ⁠<option value="">-- ${defaultTxt} --</option>⁠ : '';
+inner += data.map(i => ⁠<option value="${i}">${i}</option>⁠).join('');
+el.innerHTML = inner;
+}
+});
+};
+fillSelect(['check-class', 'stu-filter-class', 'rep-summary-class'], currentWorkspace.classes, 'ทุกห้อง');
+fillSelect(['card-class-select', 'random-class-select'], currentWorkspace.classes, 'กรุณาเลือกห้อง');
+fillSelect(['scan-subject', 'check-subject', 'setup-filter-subject', 'rep-score-subject'], currentWorkspace.subjects, 'เลือกวิชา');
+fillSelect(['scan-assignment', 'check-assignment', 'rep-score-assignment'], currentWorkspace.assignments, 'เลือกชิ้นงาน');
+fillSelect(['scan-daily-select', 'check-daily-select', 'rep-daily-select'], currentWorkspace.activities, 'เลือกกิจกรรมรายวัน');
+let modalSubjectSelect = document.getElementById('modal-setup-subject');
+if(modalSubjectSelect) {
+modalSubjectSelect.innerHTML = ⁠<option value="">-- กรุณาเลือกวิชา (ที่มีอยู่แล้ว) --</option>⁠ + currentWorkspace.subjects.map(s => ⁠<option value="${s}">${s}</option>⁠).join('') + ⁠<option value="new" class="font-bold text-brand-main">+ สร้างรายวิชาใหม่ (พิมพ์ชื่อเอง)...</option>⁠;
+}
+renderSetupList();
+}
+/* ==================== TEACHER: SETUP MODULE ==================== */
+function openAddSetupModal() {
+const modal = document.getElementById('modal-add-setup');
+const content = document.getElementById('modal-add-setup-content');
+modal.classList.remove('hidden');
+setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+document.getElementById('modal-setup-type').value = 'academic';
+toggleSetupModalType();
+document.getElementById('modal-setup-subject').value = '';
+checkNewSubject();
+document.getElementById('modal-setup-tasks').innerHTML = ⁠<div class="flex gap-2 task-row"> <input type="text" placeholder="ชื่องาน (เช่น ใบงานที่ 1)" class="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm font-medium task-name"> <input type="number" placeholder="10" class="w-16 px-2 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-center text-sm font-bold task-score"> </div>⁠;
+}
+function closeAddSetupModal() {
+const modal = document.getElementById('modal-add-setup');
+const content = document.getElementById('modal-add-setup-content');
+modal.classList.add('opacity-0'); content.classList.add('scale-95');
+setTimeout(() => modal.classList.add('hidden'), 300);
+}
+function toggleSetupModalType() {
+const type = document.getElementById('modal-setup-type').value;
+const subGroup = document.getElementById('modal-setup-subject-group');
+if(type === 'academic') subGroup.classList.remove('hidden'); else subGroup.classList.add('hidden');
+}
+function checkNewSubject() {
+const val = document.getElementById('modal-setup-subject').value;
+const newSubInput = document.getElementById('modal-setup-new-subject');
+if(val === 'new') newSubInput.classList.remove('hidden'); else newSubInput.classList.add('hidden');
+}
+function addModalTaskRow() {
+const container = document.getElementById('modal-setup-tasks');
+const row = document.createElement('div');
+row.className = 'flex gap-2 task-row mt-2';
+row.innerHTML = ⁠<input type="text" placeholder="ชื่องาน (เช่น ใบงานที่ 1)" class="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm font-medium task-name"> <input type="number" placeholder="10" class="w-16 px-2 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-center text-sm font-bold task-score"> <button onclick="this.parentElement.remove()" class="w-10 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-colors"><i class="fa-solid fa-trash-can"></i></button>⁠;
+container.appendChild(row);
+}
+function saveSetupData() {
+const type = document.getElementById('modal-setup-type').value;
+let subject = '';
+if (type === 'academic') {
+const subSelect = document.getElementById('modal-setup-subject').value;
+subject = subSelect === 'new' ? document.getElementById('modal-setup-new-subject').value.trim() : subSelect;
+if(!subject) { Swal.fire('แจ้งเตือน', 'กรุณาระบุรายวิชา', 'warning'); return; }
+if(subSelect === 'new' && !currentWorkspace.subjects.includes(subject)) { currentWorkspace.subjects.push(subject); }
+}
+const tasks = document.querySelectorAll('.task-row');
+let addedCount = 0;
+tasks.forEach(row => {
+const name = row.querySelector('.task-name').value.trim();
+if (name) {
+if (type === 'academic') currentWorkspace.assignments.push(name);
+else currentWorkspace.activities.push(name);
+addedCount++;
+}
+});
+if(addedCount === 0 && subject) {
+populateDropdowns(); closeAddSetupModal();
+Swal.fire({icon: 'success', title: 'สำเร็จ', text: 'เพิ่มรายวิชาเรียบร้อย', showConfirmButton: false, timer: 1500});
+return;
+}
+if(addedCount > 0) {
+populateDropdowns(); closeAddSetupModal();
+Swal.fire({icon: 'success', title: 'สำเร็จ', text: ⁠เพิ่มข้อมูล ${addedCount} รายการเรียบร้อย⁠, showConfirmButton: false, timer: 1500});
+} else { Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่องานอย่างน้อย 1 รายการ', 'warning'); }
+}
+function renderSetupList() {
+if(!currentWorkspace) return;
+const filter = document.getElementById('setup-filter-subject') ? document.getElementById('setup-filter-subject').value : '';
+const container = document.getElementById('setup-list-container');
+if(!container) return;
+let html = '';
+let items = [];
+currentWorkspace.activities.forEach(a => items.push({name: a, type: 'daily', typeLabel: 'รายวัน'}));
+currentWorkspace.assignments.forEach(a => items.push({name: a, type: 'academic', typeLabel: 'ชิ้นงาน'}));
+if (filter) items = items.filter(i => i.type === 'academic');
+if(items.length === 0) {
+container.innerHTML = '<div class="p-8 text-center text-slate-400 font-medium border-b border-slate-100">ไม่พบข้อมูล</div>'; return;
+}
+items.forEach((i, idx) => {
+let badgeColor = i.type === 'daily' ? 'bg-[#06b6d4]' : 'bg-brand-main';
+let tagColor = i.type === 'daily' ? 'border-cyan-200 text-cyan-600 bg-cyan-50' : 'border-indigo-200 text-indigo-600 bg-indigo-50';
+html += ⁠ <div class="flex items-center gap-2 w-full p-3 md:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors"> <div class="w-14 md:w-20 shrink-0"><span class="px-2 py-1 border ${tagColor} rounded-full text-[9px] md:text-[10px] font-bold whitespace-nowrap">ห้อง: ทุกห้อง</span></div> <div class="flex-1 font-bold text-brand-dark text-sm truncate pl-1">${i.name}</div> <div class="shrink-0 flex items-center gap-2 md:gap-3"> <span class="px-2 py-1 ${badgeColor} text-white rounded-lg text-[9px] md:text-[10px] font-bold shadow-sm whitespace-nowrap">${i.typeLabel}</span> <button onclick="removeMockData('${i.type === 'daily' ? 'activities' : 'assignments'}', ${i.type === 'daily' ? currentWorkspace.activities.indexOf(i.name) : currentWorkspace.assignments.indexOf(i.name)})" class="text-slate-300 hover:text-rose-500 transition-colors p-1"><i class="fa-solid fa-trash-can text-sm"></i></button> </div> </div>⁠;
+});
+container.innerHTML = html;
+}
+function removeMockData(type, index) { currentWorkspace[type].splice(index, 1); populateDropdowns(); }
+/* ==================== TEACHER: SCAN MODULE ==================== */
+function setScanMode(mode) {
+currentMode.scan = mode;
+document.getElementById('scan-btn-daily').classList.toggle('active', mode === 'daily');
+document.getElementById('scan-btn-score').classList.toggle('active', mode === 'score');
+document.getElementById('scan-daily-inputs').classList.toggle('hidden', mode !== 'daily');
+document.getElementById('scan-score-inputs').classList.toggle('hidden', mode !== 'score');
+}
+function toggleCamera() {
+const container = document.getElementById('camera-container');
+const btn = document.getElementById('btn-camera');
+if(!isCameraOpen) {
+container.classList.remove('hidden');
+btn.classList.add('bg-rose-50', 'text-rose-500'); btn.classList.remove('bg-slate-800', 'text-white');
+btn.innerHTML = '<i class="fa-solid fa-camera-rotate"></i> ปิดกล้องสแกน';
+if(!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("qr-reader");
+html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
+(text) => { html5QrcodeScanner.pause(); processScanData(text); setTimeout(() => { if(isCameraOpen) html5QrcodeScanner.resume(); }, 1500); },
+(err) => {}
+);
+isCameraOpen = true;
+} else {
+if(html5QrcodeScanner) html5QrcodeScanner.stop();
+container.classList.add('hidden');
+btn.classList.remove('bg-rose-50', 'text-rose-500'); btn.classList.add('bg-slate-800', 'text-white');
+btn.innerHTML = '<i class="fa-solid fa-camera"></i> เปิดกล้องสแกน';
+isCameraOpen = false;
+}
+}
+function processScanManual() {
+const input = document.getElementById('scan-manual-input');
+if(input.value.trim()) { processScanData(input.value.trim()); input.value = ''; }
+}
+function processScanData(code) {
+const student = currentWorkspace.students.find(s => s.code === code);
+const logEl = document.getElementById('scan-log');
+if(!student) { logEl.innerHTML = ⁠<span class="text-rose-500 font-bold"><i class="fa-solid fa-circle-xmark"></i> ไม่พบรหัสนักเรียน</span>⁠; return; }
+document.getElementById('beep-sound').play().catch(e=>{});
+logEl.classList.remove('scan-success-flash'); void logEl.offsetWidth; logEl.classList.add('scan-success-flash');
+let txt = currentMode.scan === 'daily' ? (document.getElementById('scan-daily-select').value || 'กิจกรรม') : (document.getElementById('scan-assignment').value || 'ชิ้นงาน');
+currentWorkspace.logs.push({ code, time: new Date() });
+logEl.innerHTML = ⁠<span class="text-emerald-600 font-bold mb-0.5"><i class="fa-solid fa-circle-check"></i> ${student.name}</span><span class="text-xs text-slate-500">${txt}</span>⁠;
+}
+/* ==================== TEACHER: CHECK LIST ==================== */
+function setCheckMode(mode) {
+currentMode.check = mode;
+document.getElementById('check-btn-daily').classList.toggle('active', mode === 'daily');
+document.getElementById('check-btn-score').classList.toggle('active', mode === 'score');
+document.getElementById('check-daily-inputs').classList.toggle('hidden', mode !== 'daily');
+document.getElementById('check-score-inputs').classList.toggle('hidden', mode !== 'score');
+document.getElementById('check-th-action').innerText = mode === 'daily' ? 'สถานะ' : 'คะแนน';
+document.getElementById('check-list-container').classList.add('hidden');
+}
+function fetchListForCheck() {
+const className = document.getElementById('check-class').value;
+if(!className) { Swal.fire({icon: 'warning', text:'กรุณาเลือกห้องเรียน'}); return; }
+const students = currentWorkspace.students.filter(s => s.class === className);
+let html = students.length === 0 ? '<tr><td colspan="3" class="text-center py-6 text-slate-400">ไม่มีนักเรียน</td></tr>' : '';
+students.forEach(s => {
+let inputHtml = currentMode.check === 'daily'
+? ⁠<label class="relative inline-block w-10 align-middle select-none"><input type="checkbox" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer"></label></label>⁠
+: ⁠<input type="number" class="w-14 px-2 py-1.5 border border-slate-300 rounded-lg text-center outline-none focus:border-brand-main font-bold text-brand-main text-sm" placeholder="0">⁠;
+html += ⁠<tr class="hover:bg-slate-50"><td class="px-3 py-2.5 text-center text-slate-400">${s.num}</td><td class="px-3 py-2.5"><div class="font-bold text-slate-700">${s.name}</div><div class="text-[9px] text-slate-400">${s.code}</div></td><td class="px-3 py-2.5 text-center">${inputHtml}</td></tr>⁠;
+});
+document.getElementById('check-table-body').innerHTML = html;
+document.getElementById('check-list-container').classList.remove('hidden');
+}
+function saveCheckList() { Swal.fire({icon: 'success', title: 'สำเร็จ', text:'บันทึกข้อมูลเรียบร้อย', confirmButtonColor: 'var(--theme-main)'}); }
+/* ==================== TEACHER: STUDENTS ==================== */
+function renderStudentsTable() {
+if(!currentWorkspace) return;
+const search = document.getElementById('stu-search').value.toLowerCase();
+const filterClass = document.getElementById('stu-filter-class').value;
+let filtered = currentWorkspace.students;
+if(filterClass) filtered = filtered.filter(s => s.class === filterClass);
+if(search) filtered = filtered.filter(s => s.name.toLowerCase().includes(search) || s.code.includes(search));
+let html = '';
+filtered.forEach(s => { html += ⁠<tr class="hover:bg-slate-50"><td class="px-4 py-3 font-mono font-bold text-brand-main">${s.code}</td><td class="px-4 py-3"><span class="inline-block w-5 h-5 text-center rounded bg-slate-200 text-[10px] font-bold mr-1.5">${s.num}</span><span class="font-medium text-slate-700">${s.name}</span></td><td class="px-4 py-3 text-center"><span class="px-2 py-1 rounded-md bg-brand-light text-brand-dark text-[10px] font-bold">${s.class}</span></td></tr>⁠; });
+document.getElementById('student-table-body').innerHTML = html || '<tr><td colspan="3" class="text-center py-8 text-slate-400 font-medium">ไม่พบข้อมูลนักเรียน</td></tr>';
+}
+function addStudentMock() { Swal.fire('Demo', 'ในระบบจำลองสามารถดึงข้อมูลได้เท่านั้น', 'info'); }
+/* ==================== TEACHER: CARDS ==================== */
+function renderCardsPreview() {
+const className = document.getElementById('card-class-select').value;
+const container = document.getElementById('cards-preview-container');
+const cardTitle = document.getElementById('card-custom-title').value || 'บัตรประจำตัวนักเรียน';
+const cardColor = document.getElementById('card-custom-color').value || 'var(--theme-main)';
+const colorTextEl = document.getElementById('card-custom-color-text');
+if (colorTextEl && colorTextEl.value !== document.getElementById('card-custom-color').value) {
+colorTextEl.value = document.getElementById('card-custom-color').value;
+}
+if(!className) { container.innerHTML = '<div class="text-center text-slate-400 py-10 w-full no-print bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200"><p class="font-medium text-sm">กรุณาเลือกห้องเรียนเพื่อสร้างบัตร</p></div>'; return; }
+const students = currentWorkspace.students.filter(s => s.class === className);
+container.innerHTML = '';
+if(students.length === 0) {
+container.innerHTML = '<div class="text-center text-slate-400 py-10 w-full no-print bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200"><p class="font-medium text-sm">ไม่พบรายชื่อนักเรียนในห้องนี้</p></div>'; return;
+}
+students.forEach(s => {
+const qrId = ⁠qr-${s.code}⁠;
+const cardDiv = document.createElement('div');
+cardDiv.className = 'student-card bg-white rounded-xl overflow-hidden border border-slate-200 w-full max-w-[320px] shadow-sm';
+cardDiv.innerHTML = ⁠<div class="py-2 px-3 text-white font-bold text-xs text-center" style="background-color: ${cardColor}">${cardTitle}</div><div class="p-4 flex gap-3 items-center"><div class="flex-1"><h3 class="font-bold text-slate-800 leading-tight mb-1.5 text-sm">${s.name}</h3><div class="text-[11px] text-slate-500 pb-0.5">รหัส: <span class="text-slate-800 font-bold">${s.code}</span></div><div class="text-[11px] text-slate-500 pb-0.5">ชั้น: <span class="text-slate-800 font-bold">${s.class}</span></div></div><div class="w-[72px] h-[72px] border border-slate-100 rounded-lg p-1 bg-white shrink-0" id="${qrId}"></div></div>⁠;
+container.appendChild(cardDiv);
+setTimeout(() => { new QRCode(document.getElementById(qrId), { text: s.code, width: 62, height: 62, colorDark : "#1e293b", colorLight : "#ffffff", correctLevel: QRCode.CorrectLevel.H }); }, 50);
+});
+}
+/* ==================== TEACHER: REPORTS MODULE ==================== */
+function setReportTab(tab) {
+currentReportTab = tab;
+['stats', 'monthly', 'overview'].forEach(t => {
+const btn = document.getElementById(⁠rep-tab-${t}⁠);
+if(t === tab) {
+btn.classList.remove('bg-slate-50', 'text-slate-500', 'border-slate-200', 'hover:bg-slate-100');
+btn.classList.add('bg-brand-main', 'text-white', 'shadow-md');
+} else {
+btn.classList.remove('bg-brand-main', 'text-white', 'shadow-md');
+btn.classList.add('bg-slate-50', 'text-slate-500', 'border-slate-200', 'hover:bg-slate-100');
+}
+});
+document.getElementById('rep-table-body').innerHTML = ⁠<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">กรุณากดค้นหาข้อมูล</td></tr>⁠;
+updateReportSummary();
+}
+function setReportMode(mode) {
+currentMode.reports = mode;
+document.getElementById('rep-btn-daily').classList.toggle('active', mode === 'daily');
+document.getElementById('rep-btn-score').classList.toggle('active', mode === 'score');
+document.getElementById('rep-daily-inputs').classList.toggle('hidden', mode !== 'daily');
+document.getElementById('rep-score-inputs').classList.toggle('hidden', mode !== 'score');
+}
+function updateReportSummary() {
+const classFilter = document.getElementById('rep-summary-class').value;
+const titleEl = document.getElementById('rep-summary-title');
+titleEl.innerText = classFilter || 'ทุกห้อง';
+document.getElementById('rep-summary-count').innerText = "0";
+document.getElementById('rep-summary-percent').innerText = "0%";
+document.getElementById('rep-table-body').innerHTML = ⁠<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">กรุณากดค้นหาข้อมูล</td></tr>⁠;
+}
+function fetchReportData() {
+if(!currentWorkspace) return;
+const classFilter = document.getElementById('rep-summary-class').value;
+let students = currentWorkspace.students;
+if(classFilter) {
+students = students.filter(s => s.class === classFilter);
+}
+if(students.length === 0) {
+document.getElementById('rep-summary-count').innerText = "0";
+document.getElementById('rep-summary-percent').innerText = "0%";
+document.getElementById('rep-table-body').innerHTML = ⁠<tr><td colspan="5" class="py-10 text-center text-slate-400 font-medium">ไม่พบข้อมูลนักเรียน</td></tr>⁠;
+return;
+}
+document.getElementById('rep-summary-count').innerText = students.length;
+let successRate = Math.floor(Math.random() * (100 - 80 + 1) + 80);
+document.getElementById('rep-summary-percent').innerText = successRate + "%";
+let html = '';
+let dateVal = currentMode.reports === 'daily' ? (document.getElementById('rep-daily-date').value || 'ล่าสุด') : 'ล่าสุด';
+students.forEach(s => {
+let isSuccess = Math.random() > 0.15;
+let badge = '';
+if(currentMode.reports === 'daily') {
+badge = isSuccess
+? ⁠<span class="px-2 py-1 rounded bg-emerald-50 text-emerald-600 font-bold text-[10px]"><i class="fa-solid fa-check mr-1"></i> มาเรียน</span>⁠
+: ⁠<span class="px-2 py-1 rounded bg-rose-50 text-rose-600 font-bold text-[10px]"><i class="fa-solid fa-xmark mr-1"></i> ขาด/ลา</span>⁠;
+} else {
+badge = isSuccess
+? ⁠<span class="px-2 py-1 rounded bg-indigo-50 text-indigo-600 font-bold text-[10px]">${Math.floor(Math.random() * 5 + 5)} คะแนน</span>⁠
+: ⁠<span class="px-2 py-1 rounded bg-slate-100 text-slate-500 font-bold text-[10px]">ยังไม่ส่ง</span>⁠;
+}
+html += ⁠ <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0"> <td class="px-3 py-2.5"><span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[9px] font-bold">${s.class}</span></td> <td class="px-3 py-2.5 text-center text-slate-400 font-bold">${s.num}</td> <td class="px-3 py-2.5"><div class="font-bold text-slate-700">${s.name}</div><div class="text-[9px] text-slate-400">${s.code}</div></td> <td class="px-3 py-2.5 text-center">${badge}</td> <td class="px-3 py-2.5 text-center text-[10px] text-slate-400">${dateVal}</td> </tr>⁠;
+});
+document.getElementById('rep-table-body').innerHTML = html;
+}
+function exportExcel() {
+Swal.fire({ title: 'Export to Excel', text: 'การส่งออกจะทำงานเมื่อเชื่อมต่อฐานข้อมูลจริง', icon: 'info', confirmButtonColor: 'var(--theme-main)' });
+}
+/* ==================== TEACHER: RANDOMIZER MODULE ==================== */
+let randomInterval;
+function startRandomizer() {
+const className = document.getElementById('random-class-select').value;
+if(!className) { Swal.fire('แจ้งเตือน', 'กรุณาเลือกห้องเรียนก่อนทำการสุ่ม', 'warning'); return; }
+const students = currentWorkspace.students.filter(s => s.class === className);
+if(students.length === 0) { Swal.fire('แจ้งเตือน', 'ไม่พบรายชื่อนักเรียนในห้องนี้', 'warning'); return; }
+const btn = document.getElementById('btn-random');
+const display = document.getElementById('random-display');
+const placeholder = document.getElementById('random-placeholder');
+const resultWrap = document.getElementById('random-result');
+const numEl = document.getElementById('random-number');
+const nameEl = document.getElementById('random-name');
+if(btn.disabled) return;
+btn.disabled = true;
+btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังสุ่ม...';
+placeholder.classList.add('hidden');
+resultWrap.classList.remove('hidden');
+resultWrap.classList.add('flex');
+// Reset state
+display.classList.remove('border-brand-main', 'bg-brand-light/30', 'border-emerald-500', 'bg-emerald-50');
+display.classList.add('border-slate-200');
+numEl.classList.remove('scale-125', 'text-emerald-600');
+numEl.classList.add('text-brand-main');
+nameEl.classList.remove('text-emerald-700');
+let ticks = 0;
+const maxTicks = 25;
+randomInterval = setInterval(() => {
+const randomStudent = students[Math.floor(Math.random() * students.length)];
+numEl.innerText = randomStudent.num;
+nameEl.innerText = randomStudent.name;
+ticks++;
+if(ticks >= maxTicks) {
+clearInterval(randomInterval);
+const winner = students[Math.floor(Math.random() * students.length)];
+numEl.innerText = winner.num;
+nameEl.innerText = winner.name;
+// Winner Effect
+display.classList.add('border-emerald-500', 'bg-emerald-50');
+display.classList.remove('border-slate-200');
+numEl.classList.remove('text-brand-main');
+numEl.classList.add('text-emerald-600', 'scale-125');
+nameEl.classList.add('text-emerald-700');
+document.getElementById('beep-sound').play().catch(e=>{});
+setTimeout(() => numEl.classList.remove('scale-125'), 300);
+btn.disabled = false;
+btn.innerHTML = '<i class="fa-solid fa-rotate-right mr-2"></i> สุ่มใหม่อีกครั้ง';
+}
+}, 80);
+}
+/* ==================== THEMES ==================== */
+let tempTheme = null;
+function initTheme() {
+const saved = localStorage.getItem('syscheck_theme') || 'indigo';
+tempTheme = saved;
+applyThemeStyles(saved);
+}
+function applyThemeStyles(key) {
+const t = themes[key]; if(!t) return;
+document.documentElement.style.setProperty('--theme-main', t.main);
+document.documentElement.style.setProperty('--theme-light', t.light);
+document.documentElement.style.setProperty('--theme-dark', t.dark);
+document.documentElement.style.setProperty('--theme-accent', t.accent);
+}
+function selectTempTheme(key) {
+tempTheme = key;
+document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+const btn = document.getElementById(⁠theme-btn-${key}⁠);
+if(btn) btn.classList.add('active');
+applyThemeStyles(key);
+}
+function confirmTheme() {
+if(tempTheme) {
+localStorage.setItem('syscheck_theme', tempTheme);
+Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', text: 'บันทึกชุดสีเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false});
+}
+}
+function renderThemeSelector() {
+let html = '';
+let current = tempTheme || localStorage.getItem('syscheck_theme') || 'indigo';
+for (const [k, v] of Object.entries(themes)) {
+let isActive = current === k ? 'active' : '';
+html += ⁠<div class="flex flex-col items-center gap-2"><button id="theme-btn-${k}" onclick="selectTempTheme('${k}')" class="theme-btn w-10 h-10 rounded-full shadow-md ${isActive}" style="background: linear-gradient(135deg, ${v.main} 0%, ${v.dark} 100%);"></button><span class="text-[11px] text-slate-500 font-medium">${v.name}</span></div>⁠;
+}
+document.getElementById('theme-selector-container').innerHTML = html;
+}
+</script>
 </body>
 </html>
