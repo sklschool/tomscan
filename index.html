@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <style>
 :root{--main:#4F46E5;--light:#EEF2FF;--dark:#3730A3;--accent:#8B5CF6}
 *{box-sizing:border-box;font-family:Kanit,sans-serif}
@@ -156,31 +157,60 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const newWS=()=>({classes:['ป.1','ป.2'],subjects:['วิทยาการคำนวณ'],activities:['เข้าแถวเช้า'],assignments:[{name:'ชิ้นงานที่ 1',subject:'วิทยาการคำนวณ'}],
  students:[{code:'ST101',num:1,name:'เด็กชายสมชาย ใจดี',class:'ป.1'},{code:'ST102',num:2,name:'เด็กหญิงสมหญิง รักเรียน',class:'ป.1'}],logs:[],settings:{scanTitle:'สแกน QR Code 2IN1',scanLogo:''}});
-let db;
-try{db=JSON.parse(localStorage.getItem('sc_db'))}catch(e){}
-if(!db||!db.users){db={users:[{id:'admin_1',email:'admin@school.com',pass:'1234',name:'ผู้ดูแลระบบ',role:'admin',status:'active'},
- {id:'u1',email:'teacher@school.com',pass:'1234',name:'ครูตัวอย่าง',role:'teacher',status:'active'}],teacherData:{u1:newWS()}}}
-const save=()=>{try{localStorage.setItem('sc_db',JSON.stringify(db))}catch(e){}};
+const SB_URL='https://iyqmurdgbsrhaggtwrub.supabase.co',SB_KEY='sb_publishable_vfa92rWZX43Yw6YaOg2Fig_7KQ66lMz';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+let saveT,SRC='local';
+const TBL='users',LK='sc_local';
+function L(){let d;try{d=JSON.parse(localStorage.getItem(LK))}catch(e){}
+ if(!d||!d.users)d={users:[{id:'admin_1',email:'admin@school.com',pass:'1234',name:'ผู้ดูแลระบบ',role:'admin',status:'active'},{id:'u1',email:'teacher@school.com',pass:'1234',name:'ครูตัวอย่าง',role:'teacher',status:'active'}],ws:{}};return d}
+const LS=d=>localStorage.setItem(LK,JSON.stringify(d));
+const save=()=>{if(!me||me.role==='admin'||!ws)return;
+ if(SRC!=='auth'){const d=L();d.ws[me.id]=ws;LS(d);return}
+ clearTimeout(saveT);saveT=setTimeout(async()=>{
+ const r=await sb.from('workspaces').upsert({user_id:me.id,data:ws,updated_at:new Date().toISOString()});
+ if(r.error)Swal.fire({toast:true,position:'top',icon:'error',title:'บันทึกไม่สำเร็จ',timer:2500,showConfirmButton:false})},400)};
 let me=null,ws=null,mode={scan:'daily',check:'daily',reports:'daily'},cam=null,camOn=false,tempTheme='indigo',tempLogo='',repRows=[];
 
 /* AUTH */
-function doLogin(){
- const e=$('l-email').value.trim(),p=$('l-pass').value.trim();
- const u=db.users.find(x=>x.email===e&&x.pass===p);
- if(!u)return Swal.fire('ผิดพลาด','อีเมลหรือรหัสผ่านไม่ถูกต้อง','error');
- if(u.status==='pending')return Swal.fire('รอการอนุมัติ','บัญชีกำลังรอผู้ดูแลอนุมัติ','info');
- if(u.status==='disabled')return Swal.fire('ถูกระงับ','บัญชีถูกระงับการใช้งาน','error');
- me=u;localStorage.setItem('sc_user',u.email);start();
+async function enter(user){
+ const {data:p,error:pe}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+ if(pe||!p){await sb.auth.signOut();SRC='local';return Swal.fire('ไม่พบโปรไฟล์ในระบบ',(pe?esc(pe.message):'บัญชีนี้ยังไม่มีข้อมูลในตาราง profiles')+'<br><small>รัน setup.sql แล้วลองใหม่</small>','error')}
+ return gate({id:user.id,email:user.email,name:p.name||user.email,role:p.role,status:p.status});
 }
-function logout(){localStorage.removeItem('sc_user');if(camOn)toggleCamera();me=null;ws=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');$('side').classList.remove('open');$('ov').classList.add('hidden')}
-function start(){
+async function gate(m){
+ const out=async(t,x,i)=>{if(SRC==='auth')await sb.auth.signOut();Swal.fire(t,x,i)};
+ if(m.status==='pending')return out('รอการอนุมัติ','บัญชีกำลังรอผู้ดูแลอนุมัติ','info');
+ if(m.status==='disabled')return out('ถูกระงับ','บัญชีถูกระงับการใช้งาน','error');
+ me=m;localStorage.setItem('sc_sess',JSON.stringify({src:SRC,me:m}));await start();
+}
+async function doLogin(){
+ const e=$('l-email').value.trim(),p=$('l-pass').value,btn=document.querySelector('#login .go');btn.disabled=true;
+ try{
+  const r=await sb.auth.signInWithPassword({email:e,password:p});
+  if(!r.error){SRC='auth';btn.disabled=false;return enter(r.data.user)}
+  var authErr=r.error.message;
+ }catch(x){var authErr=String(x)}
+ try{
+  const t=await sb.from(TBL).select('*').eq('email',e).limit(1),u=t.data&&t.data[0];
+  if(u&&[u.pass,u.password,u.passwd].some(v=>v!=null&&String(v)===p)){SRC='table';btn.disabled=false;
+   return gate({id:u.id,email:u.email,name:u.name||u.email,role:u.role||'teacher',status:u.status||'active'})}
+ }catch(x){}
+ const lu=L().users.find(x=>x.email===e&&String(x.pass)===p);btn.disabled=false;
+ if(lu){SRC='local';return gate({...lu})}
+ Swal.fire('เข้าสู่ระบบไม่ได้','อีเมลหรือรหัสผ่านไม่ถูกต้อง<br><small style="color:#94a3b8">'+esc(authErr||'')+'</small>','error');
+}
+async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await sb.auth.signOut();if(camOn)toggleCamera();me=null;ws=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');$('side').classList.remove('open');$('ov').classList.add('hidden')}
+async function start(){
  $('login').classList.add('hidden');$('app').classList.remove('hidden');$('uname').textContent=me.name;
  const admin=me.role==='admin';
  $('sub').textContent=admin?'Admin Management':'Teacher Workspace';
  const items=admin?[['admin','👥 จัดการสมาชิก']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
  $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
- if(admin){renderAdmin();navTo('admin')}
- else{if(!db.teacherData[me.id]){db.teacherData[me.id]=newWS();save()}ws=db.teacherData[me.id];
+ if(admin){navTo('admin');renderAdmin()}
+ else{
+  if(SRC==='auth'){const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
+   ws=data&&data.data&&data.data.students?data.data:newWS();if(!data)save()}
+  else{ws=L().ws[me.id]||newWS();save()}
   $('chk-date').value=$('rep-date').value=new Date().toISOString().slice(0,10);populate();loadScan();renderThemes();navTo('scan')}
 }
 function toggleSide(){$('side').classList.toggle('open');$('ov').classList.toggle('hidden')}
@@ -199,23 +229,52 @@ function setMode(k,m){
 }
 
 /* ADMIN */
-function renderAdmin(){
+async function listUsers(){
+ if(SRC==='auth')return sb.from('profiles').select('*').neq('role','admin').order('name');
+ if(SRC==='table'){const r=await sb.from(TBL).select('*');return{data:(r.data||[]).filter(u=>u.role!=='admin'),error:r.error}}
+ return{data:L().users.filter(u=>u.role!=='admin'),error:null};
+}
+async function setStatus(id,status){
+ if(SRC==='auth')return sb.from('profiles').update({status}).eq('id',id);
+ if(SRC==='table')return sb.from(TBL).update({status}).eq('id',id);
+ const d=L(),u=d.users.find(x=>String(x.id)===String(id));if(u)u.status=status;LS(d);return{};
+}
+async function removeUser(id){
+ if(SRC==='auth')return sb.from('profiles').delete().eq('id',id);
+ if(SRC==='table')return sb.from(TBL).delete().eq('id',id);
+ const d=L();d.users=d.users.filter(x=>String(x.id)!==String(id));delete d.ws[id];LS(d);return{};
+}
+async function createUser(v){
+ if(SRC==='auth'){
+  const tmp=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const {data,error}=await tmp.auth.signUp({email:v.e,password:v.p,options:{data:{name:v.n}}});
+  if(error)return{error};const id=data.user&&data.user.id;
+  if(id){await sb.from('profiles').update({status:v.s,name:v.n}).eq('id',id);await sb.from('profiles').update({email:v.e}).eq('id',id)}
+  return{};
+ }
+ if(SRC==='table')return sb.from(TBL).insert({email:v.e,pass:v.p,name:v.n,role:'teacher',status:v.s});
+ const d=L();if(d.users.some(u=>u.email===v.e))return{error:{message:'อีเมลนี้มีอยู่แล้ว'}};
+ d.users.push({id:'u'+Date.now(),email:v.e,pass:v.p,name:v.n,role:'teacher',status:v.s});LS(d);return{};
+}
+async function renderAdmin(){
  const st={active:['b-ok','ใช้งานปกติ'],pending:['b-wait','รออนุมัติ'],disabled:['b-no','ระงับ']};
- $('admin-body').innerHTML=db.users.filter(u=>u.role!=='admin').map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td><span class="badge ${st[u.status][0]}">${st[u.status][1]}</span></td>
- <td><button class="${u.status==='active'?'r':'ok'}" onclick="toggleUser('${u.id}')">${u.status==='active'?'ปิด':'เปิด'}</button> <button class="g" onclick="delUser('${u.id}')">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ยังไม่มีคุณครูในระบบ</td></tr>';
+ const {data,error}=await listUsers();
+ if(error)return $('admin-body').innerHTML='<tr><td colspan="4" style="color:#e11d48">โหลดข้อมูลไม่สำเร็จ: '+esc(error.message)+'</td></tr>';
+ $('admin-body').innerHTML=(data||[]).map(u=>{const stt=u.status||'active',k=st[stt]||st.pending,id=esc(u.id);return `<tr><td>${esc(u.name)}</td><td>${esc(u.email||'-')}</td><td><span class="badge ${k[0]}">${k[1]}</span></td>
+ <td><button class="${stt==='active'?'r':'ok'}" onclick="toggleUser('${id}','${stt==='active'?'disabled':'active'}')">${stt==='active'?'ปิด':'เปิด'}</button> <button class="g" onclick="delUser('${id}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ยังไม่มีคุณครูในระบบ</td></tr>';
 }
 async function addUser(){
- const {value:v}=await Swal.fire({title:'เพิ่มสมาชิกครู',html:'<input id="a-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="a-e" type="email" class="swal2-input" placeholder="อีเมล"><input id="a-p" type="password" class="swal2-input" placeholder="รหัสผ่าน"><select id="a-s" class="swal2-select"><option value="active">เปิดใช้งานทันที</option><option value="pending">รออนุมัติ</option></select>',
+ const {value:v}=await Swal.fire({title:'เพิ่มสมาชิกครู',html:'<input id="a-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="a-e" type="email" class="swal2-input" placeholder="อีเมล"><input id="a-p" type="password" class="swal2-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><select id="a-s" class="swal2-select"><option value="active">เปิดใช้งานทันที</option><option value="pending">รออนุมัติ</option></select>',
  showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
-  const n=$('a-n').value.trim(),e=$('a-e').value.trim(),p=$('a-p').value.trim();
+  const n=$('a-n').value.trim(),e=$('a-e').value.trim(),p=$('a-p').value;
   if(!n||!e||!p)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
-  if(db.users.some(u=>u.email===e))return Swal.showValidationMessage('อีเมลนี้มีอยู่แล้ว')||false;
   return{n,e,p,s:$('a-s').value}}});
- if(!v)return;const id='u'+Date.now();
- db.users.push({id,email:v.e,pass:v.p,name:v.n,role:'teacher',status:v.s});db.teacherData[id]=newWS();save();renderAdmin();
+ if(!v)return;const r=await createUser(v);
+ if(r&&r.error)return Swal.fire('ผิดพลาด',esc(r.error.message),'error');
+ renderAdmin();Swal.fire({icon:'success',title:'เพิ่มสมาชิกแล้ว',timer:1400,showConfirmButton:false});
 }
-function toggleUser(id){const u=db.users.find(x=>x.id===id);u.status=u.status==='active'?'disabled':'active';save();renderAdmin()}
-function delUser(id){Swal.fire({title:'ลบผู้ใช้นี้?',icon:'warning',showCancelButton:true,confirmButtonColor:'#f43f5e',confirmButtonText:'ลบ',cancelButtonText:'ยกเลิก'}).then(r=>{if(r.isConfirmed){db.users=db.users.filter(u=>u.id!==id);delete db.teacherData[id];save();renderAdmin()}})}
+async function toggleUser(id,status){const r=await setStatus(id,status);if(r&&r.error)Swal.fire('ผิดพลาด',esc(r.error.message),'error');renderAdmin()}
+function delUser(id){Swal.fire({title:'ลบผู้ใช้นี้?',icon:'warning',showCancelButton:true,confirmButtonColor:'#f43f5e',confirmButtonText:'ลบ',cancelButtonText:'ยกเลิก'}).then(async r=>{if(r.isConfirmed){await removeUser(id);renderAdmin()}})}
 
 /* DROPDOWNS */
 const opts=(a,t)=>(t?`<option value="">-- ${t} --</option>`:'')+a.map(i=>`<option value="${esc(i)}">${esc(i)}</option>`).join('');
@@ -372,10 +431,10 @@ function pickTheme(k){tempTheme=k;applyTheme(k);renderThemes()}
 function confirmTheme(){localStorage.setItem('sc_theme',tempTheme);Swal.fire({icon:'success',title:'บันทึกชุดสีแล้ว',timer:1200,showConfirmButton:false})}
 
 /* INIT */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async()=>{
  tempTheme=localStorage.getItem('sc_theme')||'indigo';applyTheme(tempTheme);
- const e=localStorage.getItem('sc_user'),u=e&&db.users.find(x=>x.email===e&&x.status==='active');
- if(u){me=u;start()}
+ try{const {data}=await sb.auth.getSession();if(data.session){SRC='auth';return enter(data.session.user)}}catch(e){}
+ try{const x=JSON.parse(localStorage.getItem('sc_sess'));if(x&&x.src!=='auth'&&x.me){SRC=x.src;me=x.me;await start()}}catch(e){}
 });
 </script>
 </body>
