@@ -60,10 +60,23 @@ main{padding:14px 12px 80px}
 .b-ok{background:#d1fae5;color:#047857}.b-no{background:#ffe4e6;color:#be123c}.b-wait{background:#fef3c7;color:#b45309}
 #qr-reader{border-radius:14px;overflow:hidden;margin-bottom:10px}
 #scan-log{text-align:center;padding:16px;background:#f8fafc;border-radius:14px;min-height:64px}
-#cards{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-.scard{width:300px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;page-break-inside:avoid}
-.scard .t{color:#fff;text-align:center;padding:6px;font-weight:600;font-size:13px}
-.scard .b{display:flex;gap:10px;align-items:center;padding:12px;font-size:13px}.scard .b>div:first-child{flex:1}
+#cards{display:flex;flex-direction:column;align-items:center;gap:14px}
+
+/* ID Card Sheet settings for A4 Portrait */
+.sheet{width:210mm;height:297mm;padding:9.5mm 0;background:#fff;box-sizing:border-box;box-shadow:0 2px 10px #0003;display:grid;grid-template-columns:repeat(2,85.6mm);grid-template-rows:repeat(5,54mm);justify-content:center;align-content:center;column-gap:8mm;row-gap:2mm;margin:0 auto 20px;}
+.scard{width:85.6mm;height:54mm;border:.25mm solid #cbd5e1;border-radius:3mm;overflow:hidden;background:#fff;display:flex;flex-direction:column;break-inside:avoid;page-break-inside:avoid}
+.scard .t{display:flex;align-items:center;gap:2mm;color:#fff;padding:1.6mm 3mm;font-weight:700;font-size:3.6mm;line-height:1.1}
+.scard .t img{height:7mm;width:7mm;object-fit:contain;background:#fff;border-radius:50%;padding:.4mm;flex:none}
+.scard .b{flex:1;display:flex;gap:3mm;align-items:center;padding:2mm 3.5mm}
+.scard .b>div:first-child{flex:1;min-width:0}
+.scard .nm{font-weight:700;font-size:4.2mm;line-height:1.25;margin-bottom:1.5mm;word-break:break-word}
+.scard .ln{font-size:3.2mm;color:#475569;line-height:1.5}
+.scard .f{height:4.6mm;font-size:2.6mm;display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.3mm}
+.qrb{width:25mm;height:25mm;flex:none;padding:1mm;border:.2mm solid #e2e8f0;border-radius:1.5mm;background:#fff}
+.qrb img{width:100%!important;height:100%!important;display:block}.qrb canvas{display:none!important}
+@media screen{.sheet{zoom:.55; transform-origin: top center;}}
+@media screen and (min-width:800px){.sheet{zoom:.8}}
+
 .big{font-size:64px;font-weight:700;color:var(--main);text-align:center}
 .themes{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
 .themes span{width:38px;height:38px;border-radius:50%;cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 1px #cbd5e1}
@@ -81,7 +94,18 @@ header b{font-size:18px}
 .swal2-popup input,.swal2-popup select,.swal2-popup .swal2-input,.swal2-popup .swal2-select{width:100%!important;max-width:100%!important;margin:6px 0!important;box-sizing:border-box}
 .swal2-popup{width:min(92vw,420px)!important;padding:20px 16px!important}
 #login .reg{width:100%;margin-top:10px;padding:13px;font-size:16px;border-radius:16px;background:#fff;color:var(--main);border:2px solid #4F46E555;box-shadow:none}
-@media print{header,#side,.np,#ov{display:none!important}.card{box-shadow:none;max-width:none}}
+
+@media print{
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ @page{size:A4 portrait;margin:0}
+ body{background:#fff;margin:0;padding:0}
+ main{padding:0!important}
+ .pc main{padding:0!important}.pc #s-cards{padding:0!important;margin:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important}
+ #cards{display:block;gap:0}.sheet{box-shadow:none!important;margin:0!important;padding:9.5mm 0!important;break-after:page;page-break-after:always}
+ .sheet:last-child{break-after:auto;page-break-after:auto}
+ header,#side,.np,#ov{display:none!important}
+ .card{box-shadow:none;max-width:none}
+}
 </style>
 </head>
 <body>
@@ -136,12 +160,13 @@ header b{font-size:18px}
 <section id="s-cards" class="card hidden"><div class="np"><div class="row" style="align-items:center"><h2>พิมพ์บัตรประจำตัว</h2><button style="flex:0 0 auto" onclick="window.print()">🖨 พิมพ์/PDF</button></div>
 <label>ข้อความหัวบัตร</label><input id="cd-title" value="บัตรประจำตัวนักเรียน" oninput="renderCards()">
 <label>สีหัวบัตร</label><input type="color" id="cd-color" value="#4F46E5" style="height:46px" oninput="renderCards()">
-<label>ห้องเรียน</label><select id="cd-class" onchange="renderCards()"></select></div>
+<label>ห้องเรียน</label><select id="cd-class" onchange="renderCards()"></select>
+<p style="font-size:12px;color:#64748b;margin:8px 0 0">💡 บัตรขนาด 85.6×54 มม. หน้าละ 10 ใบ จัดหน้า A4 แนวตั้งอัตโนมัติ (ตอนพิมพ์เลือก Scale 100% หรือ Default)</p></div>
 <div id="cards" style="margin-top:12px"></div></section>
 
 <section id="s-setup" class="card hidden np"><div class="row" style="align-items:center"><h2>วิชา / ชิ้นงาน</h2><button class="ok" style="flex:0 0 auto" onclick="addSetup()">+ เพิ่ม</button></div>
 <select id="setup-filter" onchange="renderSetup()"></select>
-<div class="tw"><table><thead><tr><th>ชื่อ</th><th>วิชา</th><th>ประเภท</th><th></th></tr></thead><tbody id="setup-body"></tbody></table></div></section>
+<div class="tw"><table><thead><tr><th>ชื่อ</th><th>วิชา</th><th>ประเภท</th><th>จัดการ</th></tr></thead><tbody id="setup-body"></tbody></table></div></section>
 
 <section id="s-random" class="card hidden np"><h2>🎡 วงล้อสุ่มนักเรียน</h2><select id="rnd-class" onchange="drawWheel()"></select>
 <div style="position:relative;max-width:340px;margin:22px auto 10px"><div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);z-index:2;font-size:36px;line-height:1;color:#f43f5e;filter:drop-shadow(0 2px 2px #0005)">▼</div><canvas id="wheel" style="width:100%;aspect-ratio:1;display:block"></canvas></div>
@@ -170,6 +195,8 @@ header b{font-size:18px}
 <script>
 const THEMES={indigo:['#4F46E5','#EEF2FF','#3730A3','#8B5CF6'],emerald:['#10B981','#ECFDF5','#047857','#34D399'],rose:['#E11D48','#FFF1F2','#9F1239','#FB7185'],sky:['#0EA5E9','#F0F9FF','#0369A1','#38BDF8'],amber:['#D97706','#FFFBEB','#92400E','#FBBF24'],slate:['#475569','#F1F5F9','#1E293B','#94A3B8']};
 const $=id=>document.getElementById(id);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const nowT=()=>new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const newWS=()=>({classes:['ป.1','ป.2'],subjects:['วิทยาการคำนวณ'],activities:['เข้าแถวเช้า'],assignments:[{name:'ชิ้นงานที่ 1',subject:'วิทยาการคำนวณ'}],
  students:[{code:'ST101',num:1,name:'เด็กชายสมชาย ใจดี',class:'ป.1'},{code:'ST102',num:2,name:'เด็กหญิงสมหญิง รักเรียน',class:'ป.1'}],logs:[],settings:{scanTitle:'สแกน QR Code 2IN1',scanLogo:''}});
@@ -228,7 +255,7 @@ async function start(){
   if(SRC==='auth'){const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
    ws=data&&data.data&&data.data.students?data.data:newWS();if(!data)save()}
   else{ws=L().ws[me.id]||newWS();save()}
-  $('chk-date').value=$('rep-date').value=new Date().toISOString().slice(0,10);populate();loadScan();renderThemes();navTo('scan')}
+  $('chk-date').value=$('rep-date').value=today();populate();loadScan();renderThemes();navTo('scan')}
 }
 function toggleSide(){$('side').classList.toggle('open');$('ov').classList.toggle('hidden')}
 function navTo(s){
@@ -236,7 +263,7 @@ function navTo(s){
  document.querySelectorAll('#menu button').forEach(b=>b.classList.toggle('act',b.id==='m-'+s));
  $('side').classList.remove('open');$('ov').classList.add('hidden');
  if(s!=='scan'&&camOn)toggleCamera();
- if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();
+ if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();document.body.classList.toggle('pc',s==='cards');if(s==='cards')renderCards();
 }
 function setMode(k,m){
  mode[k]=m;const p={scan:['sc','sc-daily','sc-score'],check:['ck','ck-daily','ck-score'],reports:['rp','rp-daily','rp-score']}[k];
@@ -354,7 +381,7 @@ function fillAssign(t,s){const sub=$(s).value;$(t).innerHTML=opts(ws.assignments
 /* SETUP */
 function sT(t){const d=t==='daily';$('s-sub').style.display=d?'none':'block';$('s-n').placeholder=d?'ชื่อกิจกรรม (เช่น อบรมลูกเสือ, เข้าแถวเช้า)':'ชื่อชิ้นงาน/ใบงาน (เช่น ใบงานที่ 1)'}
 async function addSetup(){
- const {value:v}=await Swal.fire({title:'เพิ่มวิชา/งาน',html:'<select id="s-t" onchange="sT(this.value)"><option value="academic">📚 ชิ้นงานวิชาการ (มีรายวิชา)</option><option value="daily">📅 กิจกรรมประจำวัน (ไม่มีรายวิชา)</option></select><input id="s-sub" list="s-list" placeholder="ชื่อรายวิชา (พิมพ์ใหม่ หรือเลือกที่มีอยู่)"><datalist id="s-list">'+ws.subjects.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist><input id="s-n" placeholder="ชื่อชิ้นงาน/ใบงาน (เช่น ใบงานที่ 1)">',
+ const {value:v}=await Swal.fire({title:'เพิ่มวิชา/งาน',html:'<select id="s-t" class="swal2-select" onchange="sT(this.value)"><option value="academic">📚 ชิ้นงานวิชาการ (มีรายวิชา)</option><option value="daily">📅 กิจกรรมประจำวัน (ไม่มีรายวิชา)</option></select><input id="s-sub" class="swal2-input" list="s-list" placeholder="ชื่อรายวิชา (พิมพ์ใหม่ หรือเลือกที่มีอยู่)"><datalist id="s-list">'+ws.subjects.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist><input id="s-n" class="swal2-input" placeholder="ชื่อชิ้นงาน/ใบงาน (เช่น ใบงานที่ 1)">',
  showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
   const t=$('s-t').value,sub=$('s-sub').value.trim(),n=$('s-n').value.trim();
   if(t==='academic'&&!sub)return Swal.showValidationMessage('ระบุชื่อรายวิชา')||false;
@@ -369,7 +396,31 @@ function renderSetup(){
  const f=$('setup-filter').value;let it=[];
  if(!f)ws.activities.forEach((a,i)=>it.push({n:a,s:'-',t:'รายวัน',k:'a',i}));
  ws.assignments.forEach((a,i)=>{if(!f||a.subject===f)it.push({n:a.name,s:a.subject,t:'ชิ้นงาน',k:'s',i})});
- $('setup-body').innerHTML=it.map(x=>`<tr><td>${esc(x.n)}</td><td>${esc(x.s)}</td><td><span class="badge">${x.t}</span></td><td><button class="g" onclick="delSetup('${x.k}',${x.i})">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
+ $('setup-body').innerHTML=it.map(x=>`<tr><td>${esc(x.n)}</td><td>${esc(x.s)}</td><td><span class="badge">${x.t}</span></td><td style="white-space:nowrap"><button class="g" onclick="editSetup('${x.k}',${x.i})" title="แก้ไข">✏️</button> <button class="g" onclick="delSetup('${x.k}',${x.i})" title="ลบ">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
+}
+async function editSetup(k,i){
+ const isAct = k==='a';
+ const item = isAct ? ws.activities[i] : ws.assignments[i];
+ 
+ if (isAct) {
+  const {value:v} = await Swal.fire({title:'แก้ไขกิจกรรม',input:'text',inputValue:item,showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',inputValidator:(val)=>!val.trim()&&'กรุณาระบุชื่อกิจกรรม'});
+  if(v) { ws.activities[i] = v.trim(); save(); populate(); }
+ } else {
+  const {value:v} = await Swal.fire({title:'แก้ไขชิ้นงาน',html:`
+   <input id="e-sub" list="e-list" class="swal2-input" placeholder="วิชา" value="${esc(item.subject)}">
+   <datalist id="e-list">${ws.subjects.map(x=>'<option value="'+esc(x)+'">').join('')}</datalist>
+   <input id="e-n" class="swal2-input" placeholder="ชื่อชิ้นงาน" value="${esc(item.name)}">
+  `,showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
+   const sub = $('e-sub').value.trim(), n = $('e-n').value.trim();
+   if(!sub||!n)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
+   return {sub,n};
+  }});
+  if(v) { 
+   if(!ws.subjects.includes(v.sub)) ws.subjects.push(v.sub);
+   ws.assignments[i] = {name:v.n, subject:v.sub}; 
+   save(); populate(); 
+  }
+ }
 }
 function delSetup(k,i){(k==='a'?ws.activities:ws.assignments).splice(i,1);save();populate()}
 
@@ -387,16 +438,39 @@ function toggleCamera(){
 function scanManual(){const i=$('scan-man');if(i.value.trim()){scanData(i.value.trim());i.value=''}}
 function scanData(code){
  const s=ws.students.find(x=>x.code===code),el=$('scan-log');
- if(!s){el.innerHTML='<b style="color:#e11d48">❌ ไม่พบรหัสนักเรียน</b>';return}
+ if(!s){el.innerHTML='<b style="color:#e11d48">❌ ไม่พบรหัสนักเรียน</b>';Swal.fire({icon:'error',title:'ไม่พบรหัสนักเรียน',text:code,timer:1500,showConfirmButton:false});return}
  const d=mode.scan==='daily',item=d?$('scan-act').value:$('scan-asg').value;
  if(!item){el.innerHTML='<b style="color:#b45309">⚠ กรุณาเลือก'+(d?'กิจกรรม':'ชิ้นงาน')+'ก่อน</b>';return}
  const val=d?'มา':$('scan-val').value;
  if(!d&&val===''){el.innerHTML='<b style="color:#b45309">⚠ กรุณากรอกคะแนน</b>';return}
- addLog(d?'daily':'score',item,new Date().toISOString().slice(0,10),code,val);save();
- el.innerHTML=`<b style="color:#059669">✅ ${esc(s.name)}</b><br><small>${esc(item)}${d?'':' · '+esc(val)+' คะแนน'}</small>`;
+ const type=d?'daily':'score',date=today();
+ const old=ws.logs.find(l=>l.type===type&&l.item===item&&l.date===date&&l.code===code&&(!d||l.value==='มา'));
+ 
+ if(old){
+  el.innerHTML=`<b style="color:#b45309">⚠ ${esc(s.name)} สแกนไปแล้ว</b>`;
+  Swal.fire({
+    icon:'warning',
+    title:'สแกนซ้ำ',
+    html:`<b>${esc(s.name)}</b><br>${d?'ได้ทำการเช็คชื่อ/สแกนชื่อเรียบร้อยแล้ว':'ได้ส่งชิ้นงานนี้เรียบร้อยแล้ว ('+esc(old.value)+' คะแนน)'}<br><small>เมื่อเวลา ${esc(old.time||'-')} น.</small>`,
+    timer:2500,
+    showConfirmButton:false
+  });
+  return;
+ }
+ 
+ const t=nowT();addLog(type,item,date,code,val,t);save();
+ el.innerHTML=`<b style="color:#059669">✅ ${esc(s.name)}</b><br><small>${esc(item)}${d?'':' · '+esc(val)+' คะแนน'} · ${t} น.</small>`;
+ 
+ Swal.fire({
+  icon:'success',
+  title:'บันทึกสำเร็จ',
+  html:`<b>${esc(s.name)}</b><br>${d?'ได้เข้าร่วมกิจกรรมเวลา '+t+' น.':'ส่งชิ้นงาน <b>'+esc(item)+'</b> ได้ <b>'+esc(val)+'</b> คะแนน<br>เวลา '+t+' น.'}`,
+  timer:1800,
+  showConfirmButton:false
+ });
 }
-function addLog(type,item,date,code,value){
- ws.logs=ws.logs.filter(l=>!(l.type===type&&l.item===item&&l.date===date&&l.code===code));ws.logs.push({type,item,date,code,value});
+function addLog(type,item,date,code,value,t){
+ ws.logs=ws.logs.filter(l=>!(l.type===type&&l.item===item&&l.date===date&&l.code===code));ws.logs.push({type,item,date,code,value,time:t||nowT()});
 }
 
 /* CHECK LIST */
@@ -438,12 +512,20 @@ function delStudent(code){ws.students=ws.students.filter(s=>s.code!==code);save(
 function renderCards(){
  const c=$('cd-class').value,box=$('cards'),col=$('cd-color').value,t=esc($('cd-title').value);
  if(!c){box.innerHTML='<p style="color:#94a3b8">กรุณาเลือกห้องเรียนเพื่อสร้างบัตร</p>';return}
+ const st=ws.students.filter(s=>s.class===c);
+ if(!st.length){box.innerHTML='<p style="color:#94a3b8">ไม่พบนักเรียนในห้องนี้</p>';return}
+ const logo=esc((ws.settings&&ws.settings.scanLogo)||'https://i0.wp.com/kroocool.com/wp-content/uploads/2024/03/%E0%B8%AA%E0%B8%9E%E0%B8%90.png');
  box.innerHTML='';
- ws.students.filter(s=>s.class===c).forEach((s,i)=>{
-  const d=document.createElement('div');d.className='scard';
-  d.innerHTML=`<div class="t" style="background:${col}">${t}</div><div class="b"><div><b>${esc(s.name)}</b><div>รหัส: <b>${esc(s.code)}</b></div><div>ชั้น: <b>${esc(s.class)}</b></div></div><div id="qr-${i}"></div></div>`;
-  box.appendChild(d);new QRCode($('qr-'+i),{text:s.code,width:72,height:72,correctLevel:QRCode.CorrectLevel.H});
- });
+ for(let p=0;p<st.length;p+=10){
+  const sh=document.createElement('div');sh.className='sheet'; const part=st.slice(p,p+10);
+  part.forEach((s,j)=>{
+   const d=document.createElement('div');d.className='scard';
+   d.innerHTML=`<div class="t" style="background:${col}"><img src="${logo}" alt="" onerror="this.style.display='none'"><span>${t}</span></div><div class="b"><div><div class="nm">${esc(s.name)}</div><div class="ln">รหัส: <b>${esc(s.code)}</b></div><div class="ln">ชั้น: <b>${esc(s.class)}</b>${s.num?' &nbsp; เลขที่: <b>'+s.num+'</b>':''}</div></div><div class="qrb" id="qr-${p+j}"></div></div><div class="f" style="background:${col}">สแกน QR Code เพื่อเช็คชื่อ</div>`;
+   sh.appendChild(d);
+  });
+  box.appendChild(sh);
+  part.forEach((s,j)=>new QRCode($('qr-'+(p+j)),{text:s.code,width:160,height:160,correctLevel:QRCode.CorrectLevel.H}));
+ }
 }
 
 /* REPORTS */
