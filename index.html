@@ -99,7 +99,7 @@ header b{font-size:18px}
 
 <!-- APP -->
 <div id="app" class="hidden">
-<header class="np"><div style="display:flex;gap:10px;align-items:center"><button class="g hb" onclick="toggleSide()" aria-label="เมนู">☰</button><div><b>System Check</b><div id="sub" style="font-size:11px;color:#64748b"></div></div></div>
+<header class="np"><div style="display:flex;gap:10px;align-items:center"><button class="g hb" onclick="toggleSide()" aria-label="เมนู">☰</button><div><b>System Check</b><div id="sub" style="font-size:13px;font-weight:600;color:#64748b"></div></div></div>
 <div style="display:flex;align-items:center;gap:10px"><span id="uname" class="un"></span><button class="r lo" onclick="logout()">⎋ ออกจากระบบ</button></div></header>
 <div id="ov" class="hidden" onclick="toggleSide()"></div>
 <aside id="side"><h3 style="margin:0 0 8px">เมนูหลัก</h3><div id="menu" style="display:flex;flex-direction:column;gap:4px"></div>
@@ -220,7 +220,7 @@ async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await
 async function start(){
  $('login').classList.add('hidden');$('app').classList.remove('hidden');$('uname').textContent=me.name;
  const admin=me.role==='admin';
- $('sub').textContent=admin?'Admin Management':'Teacher Workspace';
+ $('sub').textContent=admin?'Admin Management':me.name+' 👤';
  const items=admin?[['admin','👥 จัดการสมาชิก']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
  $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
  if(admin){navTo('admin');renderAdmin()}
