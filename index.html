@@ -64,17 +64,17 @@ main{padding:14px 12px 80px}
 #cards{display:flex;flex-direction:column;align-items:center;gap:14px}
 
 /* ID Card Sheet settings for A4 Portrait */
-.sheet{width:210mm;height:297mm;padding:9.5mm 0;background:#fff;box-sizing:border-box;box-shadow:0 2px 10px #0003;display:grid;grid-template-columns:repeat(2,85.6mm);grid-template-rows:repeat(5,54mm);justify-content:center;align-content:center;column-gap:8mm;row-gap:2mm;margin:0 auto 20px;}
-.scard{width:85.6mm;height:54mm;border:.25mm solid #cbd5e1;border-radius:3mm;overflow:hidden;background:#fff;display:flex;flex-direction:column;break-inside:avoid;page-break-inside:avoid}
+.sheet{width:210mm;height:296mm;padding:8mm 0;background:#fff;box-sizing:border-box;box-shadow:0 2px 10px #0003;display:grid;grid-template-columns:repeat(2,85.6mm);grid-template-rows:repeat(5,54mm);justify-content:center;align-content:center;column-gap:8mm;row-gap:2mm;margin:0 auto 20px;}
+.scard{width:85.6mm!important;height:54mm!important;border:.25mm solid #cbd5e1;border-radius:3mm;overflow:hidden;background:#fff;display:flex;flex-direction:column;break-inside:avoid;page-break-inside:avoid;box-sizing:border-box}
 .scard .t{display:flex;align-items:center;gap:2mm;color:#fff;padding:1.6mm 3mm;font-weight:700;font-size:3.6mm;line-height:1.1}
 .scard .t img{height:7mm;width:7mm;object-fit:contain;background:#fff;border-radius:50%;padding:.4mm;flex:none}
-.scard .b{flex:1;display:flex;gap:3mm;align-items:center;padding:2mm 3.5mm}
+.scard .b{flex:1;display:flex;gap:3mm;align-items:center;padding:2mm 3.5mm;overflow:hidden}
 .scard .b>div:first-child{flex:1;min-width:0}
 .scard .nm{font-weight:700;font-size:4.2mm;line-height:1.25;margin-bottom:1.5mm;word-break:break-word}
 .scard .ln{font-size:3.2mm;color:#475569;line-height:1.5}
 .scard .f{height:4.6mm;font-size:2.6mm;display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.3mm}
-.qrb{width:25mm;height:25mm;flex:none;padding:1mm;border:.2mm solid #e2e8f0;border-radius:1.5mm;background:#fff}
-.qrb img{width:100%!important;height:100%!important;display:block}.qrb canvas{display:none!important}
+.qrb{width:25mm;height:25mm;flex:none;padding:1mm;border:.2mm solid #e2e8f0;border-radius:1.5mm;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.qrb img, .qrb canvas{width:100%!important;height:auto!important;max-height:100%!important;display:block;margin:0 auto;}
 @media screen{.sheet{zoom:.55; transform-origin: top center;}}
 @media screen and (min-width:800px){.sheet{zoom:.8}}
 
@@ -101,15 +101,18 @@ header b{font-size:18px}
 .dash-box .l{font-size:13px;color:var(--dark);font-weight:600}
 
 @media print{
- *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
- @page{size:A4 portrait;margin:0}
- body{background:#fff;margin:0;padding:0}
- main{padding:0!important}
- .pc main{padding:0!important}.pc #s-cards{padding:0!important;margin:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important}
- #cards{display:block;gap:0}.sheet{box-shadow:none!important;margin:0!important;padding:9.5mm 0!important;break-after:page;page-break-after:always}
- .sheet:last-child{break-after:auto;page-break-after:auto}
- header,#side,.np,#ov{display:none!important}
- .card{box-shadow:none;max-width:none}
+ *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+ @page{size:A4 portrait;margin:0;}
+ body,html{background:#fff;margin:0;padding:0;}
+ main{padding:0!important;}
+ .pc main{padding:0!important;}
+ .pc #s-cards{padding:0!important;margin:0!important;box-shadow:none!important;border:none!important;max-width:none!important;}
+ #cards{display:block;gap:0;}
+ .sheet{margin:0 auto!important;padding:8mm 0!important;box-shadow:none!important;break-after:page;page-break-after:always;zoom:1!important;transform:none!important;height:296mm!important;}
+ .sheet:last-child{break-after:auto;page-break-after:auto;}
+ header,#side,.np,#ov{display:none!important;}
+ .card{box-shadow:none;max-width:none;}
+ .scard{border:0.5mm dashed #cbd5e1!important;}
 }
 </style>
 </head>
@@ -140,6 +143,7 @@ header b{font-size:18px}
 
 <section id="s-scan" class="card hidden np">
 <div class="row" style="margin-bottom:14px">
+    <div class="dash-box" style="background:#e0f2fe"><div class="n" id="dash-class" style="color:#0284c7">0</div><div class="l" style="color:#075985">จำนวนห้อง</div></div>
     <div class="dash-box"><div class="n" id="dash-total">0</div><div class="l">นักเรียนทั้งหมด</div></div>
     <div class="dash-box" style="background:#d1fae5"><div class="n" id="dash-scan" style="color:#047857">0</div><div class="l" style="color:#065f46">สแกนวันนี้</div></div>
 </div>
@@ -291,18 +295,20 @@ async function start(){
  $('login').classList.add('hidden');$('app').classList.remove('hidden');$('uname').textContent=me.name;
  const admin=me.role==='admin';
  $('sub').textContent=admin?'Admin Management':me.name+' 👤';
- const items=admin?[['admin','👥 จัดการสมาชิก']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
+ const items=admin?[['admin','👥 จัดการสมาชิก'],['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
  $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
- if(admin){navTo('admin');renderAdmin()}
- else{
-  if(SRC==='auth'){const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
-   ws=data&&data.data&&data.data.students?data.data:newWS();if(!data)save()}
-  else{ws=L().ws[me.id]||newWS();save()}
-  
-  /* ตัวป้องกันบั๊กสำหรับผู้ใช้เก่าที่เพิ่งได้อัปเดตระบบและยังไม่มี behaviors ในฐานข้อมูลเดิม */
-  if(!ws.behaviors) { ws.behaviors = ['ตอบคำถามถูก','จิตอาสา','ช่วยเหลืองานครู','ทำเวร']; save(); }
-  
-  $('chk-date').value=$('rep-date').value=today();populate();loadScan();renderThemes();navTo('scan')}
+ 
+ if(SRC==='auth'){const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
+  ws=data&&data.data&&data.data.students?data.data:newWS();if(!data)save()}
+ else{ws=L().ws[me.id]||newWS();save()}
+ 
+ if(!ws.behaviors) { ws.behaviors = ['ตอบคำถามถูก','จิตอาสา','ช่วยเหลืองานครู','ทำเวร']; save(); }
+ 
+ $('chk-date').value=$('rep-date').value=today();populate();loadScan();renderThemes();
+ if(admin){renderAdmin();}
+ 
+ // ตั้งค่าเริ่มต้นให้ชี้เป้าไปที่ "หน้าสแกน" 100% 
+ navTo('scan');
 }
 function toggleSide(){$('side').classList.toggle('open');$('ov').classList.toggle('hidden')}
 function navTo(s){
@@ -310,7 +316,8 @@ function navTo(s){
  document.querySelectorAll('#menu button').forEach(b=>b.classList.toggle('act',b.id==='m-'+s));
  $('side').classList.remove('open');$('ov').classList.add('hidden');
  if(s!=='scan'&&camOn)toggleCamera();
- if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();document.body.classList.toggle('pc',s==='cards');if(s==='cards')renderCards();
+ if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();
+ document.body.classList.toggle('pc',s==='cards');if(s==='cards')renderCards();
  if(s==='scan')updateDash();
 }
 function setMode(k,m){
@@ -322,7 +329,8 @@ function setMode(k,m){
 }
 function updateDash(){
  if(!ws) return;
- $('dash-total').textContent = ws.students.length;
+ $('dash-class').textContent = ws.classes ? ws.classes.length : 0;
+ $('dash-total').textContent = ws.students ? ws.students.length : 0;
  const d=today(), isDaily=mode.scan==='daily', isBeh=mode.scan==='behavior';
  const item = isDaily ? $('scan-act').value : (isBeh ? $('scan-beh').value : $('scan-asg').value);
  if(!item){ $('dash-scan').textContent = 0; return; }
@@ -330,9 +338,9 @@ function updateDash(){
  $('dash-scan').textContent = scanned;
 }
 
-/* REGISTER */
+/* REGISTER (ปรับปรุงใหม่เพื่อบังคับลง Database) */
 async function registerUser(){
- const {value:v}=await Swal.fire({title:'สมัครสมาชิกใหม่',html:'<input id="r-n" placeholder="ชื่อ-นามสกุล"><input id="r-e" autocapitalize="none" placeholder="ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)"><input id="r-p" type="password" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><input id="r-p2" type="password" placeholder="ยืนยันรหัสผ่าน"><p style="font-size:12px;color:#64748b;margin:6px 0 0">หลังสมัคร ต้องรอผู้ดูแลระบบอนุมัติก่อนจึงเข้าใช้งานได้</p>',
+ const {value:v}=await Swal.fire({title:'สมัครสมาชิกใหม่',html:'<input id="r-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="r-e" class="swal2-input" autocapitalize="none" placeholder="ชื่อผู้ใช้ (อีเมล)"><input id="r-p" type="password" class="swal2-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><input id="r-p2" type="password" class="swal2-input" placeholder="ยืนยันรหัสผ่าน"><p style="font-size:12px;color:#64748b;margin:6px 0 0">หลังสมัคร ต้องรอผู้ดูแลระบบอนุมัติก่อนจึงเข้าใช้งานได้</p>',
  showCancelButton:true,confirmButtonText:'สมัครสมาชิก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
   const n=$('r-n').value.trim(),e=$('r-e').value.trim(),p=$('r-p').value;
   if(!n||!e||!p)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
@@ -340,20 +348,45 @@ async function registerUser(){
   if(p!==$('r-p2').value)return Swal.showValidationMessage('รหัสผ่านไม่ตรงกัน')||false;
   return{n,e,p}}});
  if(!v)return;
+ 
  Swal.fire({title:'กำลังบันทึกข้อมูล...',allowOutsideClick:false,didOpen:()=>{Swal.showLoading()}});
+ 
  let uid = 'u'+Date.now();
- try{
-  const tmp=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-  const {data,error}=await tmp.auth.signUp({email:norm(v.e),password:v.p,options:{data:{name:v.n}}});
+ let isSuccessDB = false;
+ let dbErr = '';
+ 
+ try {
+  const tmp = window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const {data,error} = await tmp.auth.signUp({email:norm(v.e),password:v.p,options:{data:{name:v.n}}});
+  
   if(error && /registered|exists|password/i.test(error.message)) return Swal.fire('สมัครไม่ได้',esc(error.message),'error');
-  if(!error && data?.user?.id){
-   uid = data.user.id; await sb.from('profiles').insert({id:uid,email:norm(v.e),name:v.n,role:'teacher',status:'pending'}).catch(()=>{});
+  if(data?.user?.id) uid = data.user.id;
+  
+  const activeClient = data?.session ? tmp : sb;
+  const pRes = await activeClient.from('profiles').upsert({id:uid,email:norm(v.e),name:v.n,role:'teacher',status:'pending'});
+  const uRes = await activeClient.from(TBL).upsert({id:uid,email:v.e,pass:v.p,name:v.n,role:'teacher',status:'pending'});
+  
+  if ((pRes.error === null && pRes.status !== 404) || (uRes.error === null && uRes.status !== 404)) {
+    isSuccessDB = true;
+  } else {
+    dbErr = (pRes.error ? pRes.error.message : '') + (pRes.error && uRes.error ? ' / ' : '') + (uRes.error ? uRes.error.message : '');
   }
- }catch(x){}
- try{ await sb.from(TBL).insert({id:uid,email:v.e,pass:v.p,name:v.n,role:'teacher',status:'pending'}).catch(()=>{}); }catch(x){}
+ } catch(x) { 
+  dbErr = String(x); 
+ }
+ 
  const d=L();
  if(!d.users.some(u=>u.email===v.e)){d.users.push({id:uid,email:v.e,pass:v.p,name:v.n,role:'teacher',status:'pending'}); LS(d);}
- Swal.fire({icon:'success',title:'สมัครสำเร็จ',text:'กรุณารอผู้ดูแลระบบอนุมัติบัญชี'});
+ 
+ if (isSuccessDB) {
+  Swal.fire({icon:'success',title:'สมัครสำเร็จ!',text:'ข้อมูลถูกส่งเข้าฐานข้อมูลระบบเรียบร้อยแล้ว กรุณารอผู้ดูแลระบบอนุมัติ'});
+ } else {
+  Swal.fire({
+    icon:'warning', title:'ติดระบบความปลอดภัยฐานข้อมูล!',
+    html:`ระบบเซฟข้อมูลในเครื่องให้แล้ว แต่<b>ส่งขึ้น Supabase ไม่ได้</b> เพราะติด RLS (Row Level Security)<br><br><small style="color:#ef4444">Error: ${esc(dbErr)}</small><br><br><b>วิธีแก้เพื่อให้ข้อมูลเข้า DB 100%:</b><br><small>ไปที่ SQL Editor ในเว็บ Supabase ของคุณ แล้วรันคำสั่งนี้เพื่ออนุญาตการสมัคร:</small><br><textarea readonly style="width:100%;height:80px;font-size:11px;margin-top:5px;border-radius:4px;border:1px solid #ccc;padding:6px;background:#f8fafc;outline:none;" onclick="this.select()">CREATE POLICY "Allow public insert" ON profiles FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public insert" ON users FOR INSERT WITH CHECK (true);</textarea>`,
+  });
+ }
 }
 
 /* ADMIN */
@@ -554,7 +587,7 @@ function saveCheck(){
    addLog('daily',item,date,r.dataset.code,sel.value);
   } else {
    const i = r.querySelector('input');
-   let v = i.value; if(b && v==='') v='1'; // Default +1 for behavior if left blank
+   let v = i.value; if(b && v==='') v='1';
    if(v!=='') addLog(b?'behavior':'score',item,date,r.dataset.code,v);
   }
  });
@@ -613,15 +646,26 @@ function renderCards(){
  if(!st.length){box.innerHTML='<p style="color:#94a3b8">ไม่พบนักเรียนในห้องนี้</p>';return}
  const logo=esc((ws.settings&&ws.settings.scanLogo)||'https://i0.wp.com/kroocool.com/wp-content/uploads/2024/03/%E0%B8%AA%E0%B8%9E%E0%B8%90.png');
  box.innerHTML='';
+ 
  for(let p=0;p<st.length;p+=10){
   const sh=document.createElement('div');sh.className='sheet'; const part=st.slice(p,p+10);
   part.forEach((s,j)=>{
+   const qrId = 'qr-code-' + p + '-' + j;
    const d=document.createElement('div');d.className='scard';
-   d.innerHTML=`<div class="t" style="background:${col}"><img src="${logo}" alt="" onerror="this.style.display='none'"><span>${t}</span></div><div class="b"><div><div class="nm">${esc(s.name)}</div><div class="ln">รหัส: <b>${esc(s.code)}</b></div><div class="ln">ชั้น: <b>${esc(s.class)}</b>${s.num?' &nbsp; เลขที่: <b>'+s.num+'</b>':''}</div></div><div class="qrb" id="qr-${p+j}"></div></div><div class="f" style="background:${col}">สแกน QR Code เพื่อเช็คชื่อ</div>`;
+   d.innerHTML=`<div class="t" style="background:${col}"><img src="${logo}" alt="" onerror="this.style.display='none'"><span>${t}</span></div><div class="b"><div><div class="nm">${esc(s.name)}</div><div class="ln">รหัส: <b>${esc(s.code)}</b></div><div class="ln">ชั้น: <b>${esc(s.class)}</b>${s.num?' &nbsp; เลขที่: <b>'+s.num+'</b>':''}</div></div><div class="qrb" id="${qrId}"></div></div><div class="f" style="background:${col}">สแกน QR Code เพื่อเช็คชื่อ</div>`;
    sh.appendChild(d);
   });
   box.appendChild(sh);
-  part.forEach((s,j)=>new QRCode($('qr-'+(p+j)),{text:s.code,width:160,height:160,correctLevel:QRCode.CorrectLevel.H}));
+  
+  // ให้สคริปต์ทำงานทีหลังมั่นใจว่า id นี้มีตัวตนแล้ว
+  setTimeout(() => {
+   part.forEach((s,j)=>{
+    const qrId = 'qr-code-' + p + '-' + j;
+    if(document.getElementById(qrId)){
+     new QRCode(document.getElementById(qrId),{text:String(s.code||'-'),width:128,height:128,correctLevel:QRCode.CorrectLevel.H});
+    }
+   });
+  }, 10);
  }
 }
 
