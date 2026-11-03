@@ -70,13 +70,13 @@ main{padding:14px 12px 80px}
 .themes span.act{box-shadow:0 0 0 3px var(--main)}
 
 .hb{width:52px;height:52px;padding:0;font-size:30px;line-height:1;border-radius:14px}
-.lo{padding:12px 16px;font-size:16px;border-radius:14px;box-shadow:0 4px 12px #f43f5e55;white-space:nowrap}
+.lo{padding:8px 12px;font-size:14px;border-radius:10px;box-shadow:0 2px 8px #f43f5e33;white-space:nowrap}
 .un{font-weight:600;font-size:14px;color:#475569;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:520px){.un{display:none}}
 #side{width:300px}
-#side h3{font-size:22px}
-#side #menu button{font-size:19px;padding:15px 16px;border-radius:14px}
-#side>button.r{font-size:18px;padding:15px}
+#side h3{font-size:20px}
+#side #menu button{font-size:15px;padding:10px 14px;border-radius:10px}
+#side>button.r{font-size:14px;padding:10px}
 header b{font-size:18px}
 @media print{header,#side,.np,#ov{display:none!important}.card{box-shadow:none;max-width:none}}
 </style>
@@ -103,7 +103,7 @@ header b{font-size:18px}
 <main>
 
 <section id="s-admin" class="card hidden"><div class="row" style="align-items:center"><h2>จัดการสมาชิก</h2><button style="flex:0 0 auto" onclick="addUser()">+ เพิ่มสมาชิก</button></div>
-<div class="tw"><table><thead><tr><th>ชื่อ</th><th>อีเมล</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="admin-body"></tbody></table></div></section>
+<div class="tw"><table><thead><tr><th>ชื่อ</th><th>ชื่อผู้ใช้</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="admin-body"></tbody></table></div></section>
 
 <section id="s-scan" class="card hidden np">
 <div style="text-align:center"><div id="scan-logo" style="font-size:44px"></div><h2 id="scan-title">สแกน QR Code 2IN1</h2></div>
@@ -167,12 +167,12 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const newWS=()=>({classes:['ป.1','ป.2'],subjects:['วิทยาการคำนวณ'],activities:['เข้าแถวเช้า'],assignments:[{name:'ชิ้นงานที่ 1',subject:'วิทยาการคำนวณ'}],
  students:[{code:'ST101',num:1,name:'เด็กชายสมชาย ใจดี',class:'ป.1'},{code:'ST102',num:2,name:'เด็กหญิงสมหญิง รักเรียน',class:'ป.1'}],logs:[],settings:{scanTitle:'สแกน QR Code 2IN1',scanLogo:''}});
-const SB_URL='https://iyqmurdgbsrhaggtwrub.supabase.co',SB_KEY='sb_publishable_vfa92rWZX43Yw6YaOg2Fig_7KQ66lMz';
+const SB_URL='https://iyqmurdgbsrhaggtwrub.supabase.co',SB_KEY='**_***********_**********************_********';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 let saveT,SRC='local';
 const TBL='users',LK='sc_local';
 function L(){let d;try{d=JSON.parse(localStorage.getItem(LK))}catch(e){}
- if(!d||!d.users)d={users:[{id:'admin_1',email:'admin@school.com',pass:'1234',name:'ผู้ดูแลระบบ',role:'admin',status:'active'},{id:'u1',email:'teacher@school.com',pass:'1234',name:'ครูตัวอย่าง',role:'teacher',status:'active'}],ws:{}};return d}
+ if(!d||!d.users)d={users:[{id:'admin_1',email:'*****@******.***',pass:'1234',name:'ผู้ดูแลระบบ',role:'admin',status:'active'},{id:'u1',email:'*******@******.***',pass:'1234',name:'ครูตัวอย่าง',role:'teacher',status:'active'}],ws:{}};return d}
 const LS=d=>localStorage.setItem(LK,JSON.stringify(d));
 const save=()=>{if(!me||me.role==='admin'||!ws)return;
  if(SRC!=='auth'){const d=L();d.ws[me.id]=ws;LS(d);return}
@@ -263,18 +263,46 @@ async function createUser(v){
   return{};
  }
  if(SRC==='table')return sb.from(TBL).insert({email:v.e,pass:v.p,name:v.n,role:'teacher',status:v.s});
- const d=L();if(d.users.some(u=>u.email===v.e))return{error:{message:'อีเมลนี้มีอยู่แล้ว'}};
+ const d=L();if(d.users.some(u=>u.email===v.e))return{error:{message:'ชื่อผู้ใช้นี้มีอยู่แล้ว'}};
  d.users.push({id:'u'+Date.now(),email:v.e,pass:v.p,name:v.n,role:'teacher',status:v.s});LS(d);return{};
+}
+async function editUser(id){
+ const {data}=await listUsers();
+ const u=(data||[]).find(x=>String(x.id)===String(id));
+ if(!u)return;
+ const {value:v}=await Swal.fire({
+  title:'แก้ไขข้อมูลสมาชิก',
+  html:`<input id="e-n" class="swal2-input" placeholder="ชื่อ-นามสกุล" value="${esc(u.name||'')}"><input id="e-e" type="email" class="swal2-input" placeholder="ชื่อผู้ใช้ (อีเมล)" value="${esc(u.email||'')}"><input id="e-p" type="password" class="swal2-input" placeholder="รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน)">`,
+  showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',
+  preConfirm:()=>{
+   const n=$('e-n').value.trim(),e=$('e-e').value.trim(),p=$('e-p').value;
+   if(!n||!e)return Swal.showValidationMessage('กรอกชื่อและชื่อผู้ใช้ให้ครบ')||false;
+   return{n,e,p}
+  }
+ });
+ if(!v)return;
+ if(SRC==='local'){
+  const d=L();const target=d.users.find(x=>String(x.id)===String(id));
+  if(target){target.name=v.n;target.email=v.e;if(v.p)target.pass=v.p;LS(d);}
+ }else if(SRC==='table'){
+  const obj={name:v.n,email:v.e};if(v.p)obj.pass=v.p;
+  const r=await sb.from(TBL).update(obj).eq('id',id);
+  if(r.error)return Swal.fire('ผิดพลาด',esc(r.error.message),'error');
+ }else if(SRC==='auth'){
+  await sb.from('profiles').update({name:v.n,email:v.e}).eq('id',id);
+ }
+ renderAdmin();
+ Swal.fire({icon:'success',title:'บันทึกการแก้ไขแล้ว',timer:1400,showConfirmButton:false});
 }
 async function renderAdmin(){
  const st={active:['b-ok','ใช้งานปกติ'],pending:['b-wait','รออนุมัติ'],disabled:['b-no','ระงับ']};
  const {data,error}=await listUsers();
  if(error)return $('admin-body').innerHTML='<tr><td colspan="4" style="color:#e11d48">โหลดข้อมูลไม่สำเร็จ: '+esc(error.message)+'</td></tr>';
  $('admin-body').innerHTML=(data||[]).map(u=>{const stt=u.status||'active',k=st[stt]||st.pending,id=esc(u.id);return `<tr><td>${esc(u.name)}</td><td>${esc(u.email||'-')}</td><td><span class="badge ${k[0]}">${k[1]}</span></td>
- <td><button class="${stt==='active'?'r':'ok'}" onclick="toggleUser('${id}','${stt==='active'?'disabled':'active'}')">${stt==='active'?'ปิด':'เปิด'}</button> <button class="g" onclick="delUser('${id}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ยังไม่มีคุณครูในระบบ</td></tr>';
+ <td><button class="g" onclick="editUser('${id}')">✏️ แก้ไข</button> <button class="${stt==='active'?'r':'ok'}" onclick="toggleUser('${id}','${stt==='active'?'disabled':'active'}')">${stt==='active'?'ปิด':'เปิด'}</button> <button class="g" onclick="delUser('${id}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ยังไม่มีคุณครูในระบบ</td></tr>';
 }
 async function addUser(){
- const {value:v}=await Swal.fire({title:'เพิ่มสมาชิกครู',html:'<input id="a-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="a-e" type="email" class="swal2-input" placeholder="อีเมล"><input id="a-p" type="password" class="swal2-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><select id="a-s" class="swal2-select"><option value="active">เปิดใช้งานทันที</option><option value="pending">รออนุมัติ</option></select>',
+ const {value:v}=await Swal.fire({title:'เพิ่มสมาชิกครู',html:'<input id="a-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="a-e" type="email" class="swal2-input" placeholder="ชื่อผู้ใช้ (อีเมล)"><input id="a-p" type="password" class="swal2-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><select id="a-s" class="swal2-select"><option value="active">เปิดใช้งานทันที</option><option value="pending">รออนุมัติ</option></select>',
  showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
   const n=$('a-n').value.trim(),e=$('a-e').value.trim(),p=$('a-p').value;
   if(!n||!e||!p)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
