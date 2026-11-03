@@ -68,6 +68,16 @@ main{padding:14px 12px 80px}
 .themes{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
 .themes span{width:38px;height:38px;border-radius:50%;cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 1px #cbd5e1}
 .themes span.act{box-shadow:0 0 0 3px var(--main)}
+
+.hb{width:52px;height:52px;padding:0;font-size:30px;line-height:1;border-radius:14px}
+.lo{padding:12px 16px;font-size:16px;border-radius:14px;box-shadow:0 4px 12px #f43f5e55;white-space:nowrap}
+.un{font-weight:600;font-size:14px;color:#475569;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:520px){.un{display:none}}
+#side{width:300px}
+#side h3{font-size:22px}
+#side #menu button{font-size:19px;padding:15px 16px;border-radius:14px}
+#side>button.r{font-size:18px;padding:15px}
+header b{font-size:18px}
 @media print{header,#side,.np,#ov{display:none!important}.card{box-shadow:none;max-width:none}}
 </style>
 </head>
@@ -85,8 +95,8 @@ main{padding:14px 12px 80px}
 
 <!-- APP -->
 <div id="app" class="hidden">
-<header class="np"><div style="display:flex;gap:10px;align-items:center"><button class="g" onclick="toggleSide()">☰</button><div><b>System Check</b><div id="sub" style="font-size:11px;color:#64748b"></div></div></div>
-<button class="g" onclick="logout()"><span id="uname"></span> ⎋</button></header>
+<header class="np"><div style="display:flex;gap:10px;align-items:center"><button class="g hb" onclick="toggleSide()" aria-label="เมนู">☰</button><div><b>System Check</b><div id="sub" style="font-size:11px;color:#64748b"></div></div></div>
+<div style="display:flex;align-items:center;gap:10px"><span id="uname" class="un"></span><button class="r lo" onclick="logout()">⎋ ออกจากระบบ</button></div></header>
 <div id="ov" class="hidden" onclick="toggleSide()"></div>
 <aside id="side"><h3 style="margin:0 0 8px">เมนูหลัก</h3><div id="menu" style="display:flex;flex-direction:column;gap:4px"></div>
 <button class="r" style="margin-top:auto;text-align:center!important;color:#fff!important" onclick="logout()">ออกจากระบบ</button></aside>
