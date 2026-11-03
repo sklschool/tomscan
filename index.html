@@ -30,6 +30,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -551,6 +553,11 @@
     <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
+        // Supabase Initialization
+        const SUPABASE_URL = 'https://iyqmurdgbsrhaggtwrub.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_vfa92rWZX43Yw6YaOg2Fig_7KQ66lMz';
+        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
         let db = {
             users: [
                 { id: 'u1', email: 'admin@school.com', pass: '1234', name: 'ผู้ดูแลระบบ', role: 'admin', status: 'active' },
@@ -587,13 +594,51 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
+            loadStudentsFromSupabase();
         });
 
-        function doLogin() {
+        // ดึงข้อมูลนักเรียนจาก Supabase
+        async function loadStudentsFromSupabase() {
+            if (!supabase) return;
+            try {
+                const { data, error } = await supabase.from('students').select('*').order('class', { ascending: true });
+                if (error) {
+                    console.log('Supabase Notice:', error.message);
+                    return;
+                }
+                if (data && data.length > 0) {
+                    if (currentWorkspace) {
+                        currentWorkspace.students = data;
+                        // ดึงรายชื่อห้องทั้งหมดที่มีจากนักเรียน
+                        const classes = [...new Set(data.map(item => item.class))];
+                        if (classes.length > 0) currentWorkspace.classes = classes;
+                        populateDropdowns();
+                        renderStudentsTable();
+                    }
+                }
+            } catch (err) {
+                console.error('Fetch Supabase error:', err);
+            }
+        }
+
+        async function doLogin() {
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
-            const user = db.users.find(u => u.email === email && u.pass === pass);
             
+            // ลองตรวจสอบผ่าน Supabase ตาราง users ก่อน
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase.from('users').select('*').eq('email', email).single();
+                    if (data && data.pass === pass) {
+                        currentUser = data;
+                        setupSession();
+                        return;
+                    }
+                } catch(e) { console.log('Falling back to local users check'); }
+            }
+
+            // ถ้าไม่มีหรือ error ใช้ Local Users ใน Mock
+            const user = db.users.find(u => u.email === email && u.pass === pass);
             if(user) {
                 currentUser = user;
                 setupSession();
@@ -625,7 +670,8 @@
                 document.getElementById('nav-admin').classList.add('hidden');
                 document.getElementById('nav-teacher').classList.remove('hidden');
                 
-                currentWorkspace = db.teacherData[currentUser.id] || { classes: [], subjects: [], activities: [], assignments: [], students: [], logs: [] };
+                currentWorkspace = db.teacherData[currentUser.id] || { classes: ['ป.4', 'ป.5'], subjects: [], activities: [], assignments: [], students: [], logs: [] };
+                loadStudentsFromSupabase();
                 populateDropdowns();
                 renderThemeSelector();
                 navTo('scan');
