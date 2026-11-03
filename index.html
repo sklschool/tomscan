@@ -2,7 +2,6 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <!-- ปรับ initial-scale เป็น 0.85 เพื่อย่อขนาดหน้าจอลงนิดนึงตามที่ต้องการ -->
     <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=1.0, user-scalable=no">
     <title>System Check - เช็คชื่อ/เช็คงาน 2IN1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -213,11 +212,14 @@
             
             <!-- ADMIN SECTION: USER MANAGEMENT -->
             <section id="sec-admin-users" class="max-w-5xl mx-auto hidden animate-fade-in no-print">
-                <div class="flex justify-between items-center mb-5">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-brand-light text-brand-main flex items-center justify-center shadow-sm"><i class="fa-solid fa-users-gear"></i></div> จัดการสมาชิก</h2>
-                        <p class="text-sm text-slate-500 mt-1">อนุมัติ, ระงับการใช้งาน หรือลบบัญชีคุณครูในระบบ</p>
+                        <p class="text-sm text-slate-500 mt-1">เพิ่มสมาชิกใหม่, อนุมัติ, ระงับการใช้งาน หรือลบบัญชีคุณครูในระบบ</p>
                     </div>
+                    <button onclick="adminAddUserModal()" class="bg-gradient-to-r from-brand-main to-brand-accent text-white px-5 py-3 rounded-2xl font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> เพิ่มสมาชิกใหม่
+                    </button>
                 </div>
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="overflow-x-auto">
@@ -814,8 +816,92 @@
 
                 html += `<tr class="hover:bg-slate-50 transition-colors"><td class="px-5 py-3 font-bold text-slate-700 whitespace-nowrap">${u.name}</td><td class="px-5 py-3 text-slate-500">${u.email}</td><td class="px-5 py-3 text-center whitespace-nowrap">${badge}</td><td class="px-5 py-3 text-center whitespace-nowrap">${actionBtn}${delBtn}</td></tr>`;
             });
-            tbody.innerHTML = html || '<tr><td colspan="4" class="text-center py-10 text-slate-400">ยังไม่มีข้อมูลคุณครูในระบบ</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="4" class="text-center py-10 text-slate-400 font-medium">ยังไม่มีข้อมูลคุณครูในระบบ</td></tr>';
         }
+
+        async function adminAddUserModal() {
+            const { value: formValues } = await Swal.fire({
+                title: 'เพิ่มสมาชิกครูใหม่',
+                html: `
+                    <div class="space-y-3 text-left">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">ชื่อ-นามสกุล</label>
+                            <input id="admin-add-name" class="swal2-input !m-0 !w-full" placeholder="นายครู สมชาย">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">อีเมล (สำหรับเข้าใช้งาน)</label>
+                            <input id="admin-add-email" type="email" class="swal2-input !m-0 !w-full" placeholder="teacher@school.com">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">รหัสผ่าน</label>
+                            <input id="admin-add-pass" type="password" class="swal2-input !m-0 !w-full" placeholder="อย่างน้อย 4 หลัก">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">สถานะเริ่มต้น</label>
+                            <select id="admin-add-status" class="swal2-select !m-0 !w-full">
+                                <option value="active">เปิดใช้งานทันที (Active)</option>
+                                <option value="pending">รออนุมัติ (Pending)</option>
+                            </select>
+                        </div>
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกสมาชิกใหม่',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: 'var(--theme-main)',
+                cancelButtonColor: '#94a3b8',
+                preConfirm: () => {
+                    const name = document.getElementById('admin-add-name').value.trim();
+                    const email = document.getElementById('admin-add-email').value.trim();
+                    const pass = document.getElementById('admin-add-pass').value.trim();
+                    const status = document.getElementById('admin-add-status').value;
+
+                    if(!name || !email || !pass) {
+                        Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+                        return false;
+                    }
+                    if(db.users.find(u => u.email === email)) {
+                        Swal.showValidationMessage('อีเมลนี้มีอยู่ในระบบแล้ว');
+                        return false;
+                    }
+                    return { name, email, pass, status };
+                }
+            });
+
+            if (formValues) {
+                let newId = 'u' + (db.users.length + 1);
+                db.users.push({
+                    id: newId,
+                    email: formValues.email,
+                    pass: formValues.pass,
+                    name: formValues.name,
+                    role: 'teacher',
+                    status: formValues.status
+                });
+                db.teacherData[newId] = {
+                    classes: ['ป.1', 'ป.2'],
+                    subjects: ['วิทยาการคำนวณ'],
+                    activities: ['เข้าแถวเช้า'],
+                    assignments: ['ชิ้นงานที่ 1'],
+                    students: [
+                        { code: 'ST101', num: 1, name: 'เด็กชายสมชาย ใจดี', class: 'ป.1' },
+                        { code: 'ST102', num: 2, name: 'เด็กหญิงสมหญิง รักเรียน', class: 'ป.1' }
+                    ],
+                    logs: [],
+                    settings: {}
+                };
+                renderAdminUsers();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'เพิ่มสมาชิกสำเร็จ',
+                    text: `เพิ่มบัญชี ${formValues.name} เรียบร้อยแล้ว`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        }
+
         function confirmToggleStatus(id, newStatus, name) {
             const isEnable = newStatus === 'active';
             Swal.fire({
