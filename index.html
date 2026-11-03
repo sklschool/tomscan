@@ -78,6 +78,9 @@ main{padding:14px 12px 80px}
 #side #menu button{font-size:17px;padding:13px 16px;border-radius:14px}
 #side>button.r{font-size:16px;padding:13px}
 header b{font-size:18px}
+.swal2-popup input,.swal2-popup select,.swal2-popup .swal2-input,.swal2-popup .swal2-select{width:100%!important;max-width:100%!important;margin:6px 0!important;box-sizing:border-box}
+.swal2-popup{width:min(92vw,420px)!important;padding:20px 16px!important}
+#login .reg{width:100%;margin-top:10px;padding:13px;font-size:16px;border-radius:16px;background:#fff;color:var(--main);border:2px solid #4F46E555;box-shadow:none}
 @media print{header,#side,.np,#ov{display:none!important}.card{box-shadow:none;max-width:none}}
 </style>
 </head>
@@ -90,6 +93,7 @@ header b{font-size:18px}
 <div class="f"><label>ชื่อผู้ใช้ / อีเมล</label><div class="iw"><i>✉️</i><input id="l-email" type="text" autocapitalize="none" autocomplete="username" placeholder="ชื่อผู้ใช้ หรืออีเมล"></div></div>
 <div class="f"><label>รหัสผ่าน</label><div class="iw"><i>🔒</i><input id="l-pass" type="password" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()"></div></div>
 <button class="go" onclick="doLogin()">เข้าสู่ระบบ →</button>
+<button class="reg" onclick="registerUser()">✨ สมัครสมาชิกใหม่ (รออนุมัติ)</button>
 </div></div>
 <footer>• <b>Innovation</b> • <b>Technology</b> • <b>Education</b> •</footer></div>
 
@@ -139,9 +143,11 @@ header b{font-size:18px}
 <select id="setup-filter" onchange="renderSetup()"></select>
 <div class="tw"><table><thead><tr><th>ชื่อ</th><th>วิชา</th><th>ประเภท</th><th></th></tr></thead><tbody id="setup-body"></tbody></table></div></section>
 
-<section id="s-random" class="card hidden np"><h2>สุ่มนักเรียน</h2><select id="rnd-class"></select>
-<div style="text-align:center;margin:20px 0;min-height:140px"><div class="big" id="rnd-num">--</div><div id="rnd-name" style="font-size:24px;font-weight:600">พร้อมสุ่ม!</div></div>
-<button id="btn-rnd" style="width:100%;padding:14px;font-size:18px" onclick="startRandom()">สุ่มเลย!</button></section>
+<section id="s-random" class="card hidden np"><h2>🎡 วงล้อสุ่มนักเรียน</h2><select id="rnd-class" onchange="drawWheel()"></select>
+<div style="position:relative;max-width:340px;margin:22px auto 10px"><div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);z-index:2;font-size:36px;line-height:1;color:#f43f5e;filter:drop-shadow(0 2px 2px #0005)">▼</div><canvas id="wheel" style="width:100%;aspect-ratio:1;display:block"></canvas></div>
+<div style="text-align:center;min-height:84px"><div class="big" id="rnd-num" style="font-size:44px">--</div><div id="rnd-name" style="font-size:22px;font-weight:600">พร้อมสุ่ม!</div></div>
+<button id="btn-rnd" style="width:100%;padding:14px;font-size:18px" onclick="startRandom()">🎲 หมุนวงล้อ</button>
+</section>
 
 <section id="s-reports" class="card hidden"><div class="np"><h2>รายงาน (Reports)</h2>
 <div class="seg"><button id="rp-d" class="act" onclick="setMode('reports','daily')">กิจกรรมรายวัน</button><button id="rp-s" onclick="setMode('reports','score')">ชิ้นงาน/คะแนน</button></div>
@@ -230,13 +236,34 @@ function navTo(s){
  document.querySelectorAll('#menu button').forEach(b=>b.classList.toggle('act',b.id==='m-'+s));
  $('side').classList.remove('open');$('ov').classList.add('hidden');
  if(s!=='scan'&&camOn)toggleCamera();
- if(s==='students')renderStudents();if(s==='setup')renderSetup();
+ if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();
 }
 function setMode(k,m){
  mode[k]=m;const p={scan:['sc','sc-daily','sc-score'],check:['ck','ck-daily','ck-score'],reports:['rp','rp-daily','rp-score']}[k];
  $(p[0]+'-d').classList.toggle('act',m==='daily');$(p[0]+'-s').classList.toggle('act',m==='score');
  $(p[1]).classList.toggle('hidden',m!=='daily');$(p[2]).classList.toggle('hidden',m!=='score');
  if(k==='check'){$('chk-th').textContent=m==='daily'?'สถานะ':'คะแนน';$('chk-wrap').classList.add('hidden')}
+}
+
+/* REGISTER */
+async function registerUser(){
+ const {value:v}=await Swal.fire({title:'สมัครสมาชิกใหม่',html:'<input id="r-n" placeholder="ชื่อ-นามสกุล"><input id="r-e" autocapitalize="none" placeholder="ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)"><input id="r-p" type="password" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><input id="r-p2" type="password" placeholder="ยืนยันรหัสผ่าน"><p style="font-size:12px;color:#64748b;margin:6px 0 0">หลังสมัคร ต้องรอผู้ดูแลระบบอนุมัติก่อนจึงเข้าใช้งานได้</p>',
+ showCancelButton:true,confirmButtonText:'สมัครสมาชิก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
+  const n=$('r-n').value.trim(),e=$('r-e').value.trim(),p=$('r-p').value;
+  if(!n||!e||!p)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
+  if(p.length<6)return Swal.showValidationMessage('รหัสผ่านอย่างน้อย 6 ตัว')||false;
+  if(p!==$('r-p2').value)return Swal.showValidationMessage('รหัสผ่านไม่ตรงกัน')||false;
+  return{n,e,p}}});
+ if(!v)return;
+ const ok=()=>Swal.fire({icon:'success',title:'สมัครสำเร็จ',text:'กรุณารอผู้ดูแลระบบอนุมัติบัญชี'});
+ try{
+  const tmp=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const {error}=await tmp.auth.signUp({email:norm(v.e),password:v.p,options:{data:{name:v.n}}});
+  if(!error)return ok();
+  if(/registered|exists|password/i.test(error.message))return Swal.fire('สมัครไม่ได้',esc(error.message),'error');
+ }catch(x){}
+ const d=L();if(d.users.some(u=>u.email===v.e))return Swal.fire('สมัครไม่ได้','ชื่อผู้ใช้นี้มีอยู่แล้ว','error');
+ d.users.push({id:'u'+Date.now(),email:v.e,pass:v.p,name:v.n,role:'teacher',status:'pending'});LS(d);ok();
 }
 
 /* ADMIN */
@@ -325,12 +352,13 @@ function populate(){
 function fillAssign(t,s){const sub=$(s).value;$(t).innerHTML=opts(ws.assignments.filter(a=>!sub||a.subject===sub).map(a=>a.name),'เลือกชิ้นงาน')}
 
 /* SETUP */
+function sT(t){const d=t==='daily';$('s-sub').style.display=d?'none':'block';$('s-n').placeholder=d?'ชื่อกิจกรรม (เช่น อบรมลูกเสือ, เข้าแถวเช้า)':'ชื่อชิ้นงาน/ใบงาน (เช่น ใบงานที่ 1)'}
 async function addSetup(){
- const {value:v}=await Swal.fire({title:'เพิ่มวิชา/งาน',html:'<select id="s-t" class="swal2-select"><option value="academic">📚 ชิ้นงานวิชาการ</option><option value="daily">📅 กิจกรรมประจำวัน</option></select><input id="s-sub" class="swal2-input" placeholder="รายวิชา (ชิ้นงานวิชาการ)"><input id="s-n" class="swal2-input" placeholder="ชื่องาน/กิจกรรม">',
+ const {value:v}=await Swal.fire({title:'เพิ่มวิชา/งาน',html:'<select id="s-t" onchange="sT(this.value)"><option value="academic">📚 ชิ้นงานวิชาการ (มีรายวิชา)</option><option value="daily">📅 กิจกรรมประจำวัน (ไม่มีรายวิชา)</option></select><input id="s-sub" list="s-list" placeholder="ชื่อรายวิชา (พิมพ์ใหม่ หรือเลือกที่มีอยู่)"><datalist id="s-list">'+ws.subjects.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist><input id="s-n" placeholder="ชื่อชิ้นงาน/ใบงาน (เช่น ใบงานที่ 1)">',
  showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
   const t=$('s-t').value,sub=$('s-sub').value.trim(),n=$('s-n').value.trim();
-  if(!n)return Swal.showValidationMessage('ระบุชื่องาน')||false;
-  if(t==='academic'&&!sub)return Swal.showValidationMessage('ระบุรายวิชา')||false;
+  if(t==='academic'&&!sub)return Swal.showValidationMessage('ระบุชื่อรายวิชา')||false;
+  if(!n)return Swal.showValidationMessage(t==='daily'?'ระบุชื่อกิจกรรม':'ระบุชื่อชิ้นงาน')||false;
   return{t,sub,n}}});
  if(!v)return;
  if(v.t==='daily')ws.activities.push(v.n);
@@ -438,13 +466,40 @@ function exportCSV(){
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='report.csv';a.click();
 }
 
-/* RANDOM */
+/* RANDOM WHEEL */
+let wRot=0,wBusy=false;
+const WC=['#6366f1','#8b5cf6','#ec4899','#f43f5e','#f59e0b','#10b981','#06b6d4','#3b82f6'];
+const wheelStudents=()=>{const c=$('rnd-class').value;return c?ws.students.filter(s=>s.class===c):[]};
+function drawWheel(){
+ const cv=$('wheel');if(!cv||!ws)return;
+ const sz=Math.max(220,cv.getBoundingClientRect().width||300),dpr=window.devicePixelRatio||1;
+ cv.width=cv.height=Math.round(sz*dpr);const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,sz,sz);
+ const st=wheelStudents(),n=st.length,R=sz/2-6,c=sz/2;
+ if(!n){g.beginPath();g.arc(c,c,R,0,7);g.fillStyle='#e2e8f0';g.fill();g.fillStyle='#64748b';g.font='600 18px Kanit';g.textAlign='center';g.fillText('เลือกห้องเรียนก่อน',c,c+6);return}
+ const a=2*Math.PI/n,fs=Math.max(9,Math.min(17,R*a*0.5));
+ g.save();g.translate(c,c);g.rotate(wRot);
+ st.forEach((x,i)=>{
+  g.beginPath();g.moveTo(0,0);g.arc(0,0,R,i*a,(i+1)*a);g.closePath();g.fillStyle=WC[i%WC.length];g.fill();g.strokeStyle='#fff';g.lineWidth=2;g.stroke();
+  g.save();g.rotate((i+.5)*a);g.textAlign='right';g.fillStyle='#fff';g.font=`600 ${fs}px Kanit`;
+  const mx=n>40?0:n>22?9:n>12?13:18,t=n>40?String(x.num):(x.num+'. '+x.name),lb=mx&&t.length>mx?t.slice(0,mx)+'…':t;
+  g.fillText(lb,R-14,fs/3);g.restore();
+ });
+ g.restore();
+ g.beginPath();g.arc(c,c,24,0,7);g.fillStyle='#fff';g.fill();g.lineWidth=4;g.strokeStyle='#4F46E5';g.stroke();
+ g.fillStyle='#4F46E5';g.font='700 14px Kanit';g.textAlign='center';g.fillText('สุ่ม',c,c+5);
+}
 function startRandom(){
- const c=$('rnd-class').value;if(!c)return Swal.fire('แจ้งเตือน','เลือกห้องก่อนสุ่ม','warning');
- const st=ws.students.filter(s=>s.class===c);if(!st.length)return Swal.fire('แจ้งเตือน','ไม่พบนักเรียนในห้องนี้','warning');
- const b=$('btn-rnd');b.disabled=true;let t=0;
- const iv=setInterval(()=>{const s=st[Math.floor(Math.random()*st.length)];$('rnd-num').textContent=s.num;$('rnd-name').textContent=s.name;
-  if(++t>=25){clearInterval(iv);b.disabled=false;b.textContent='สุ่มใหม่อีกครั้ง';$('rnd-num').style.color='#10b981'}else $('rnd-num').style.color=''},80);
+ if(wBusy)return;const c=$('rnd-class').value;
+ if(!c)return Swal.fire('แจ้งเตือน','เลือกห้องก่อนสุ่ม','warning');
+ const st=wheelStudents();if(!st.length)return Swal.fire('แจ้งเตือน','ไม่พบนักเรียนในห้องนี้','warning');
+ wBusy=true;const b=$('btn-rnd');b.disabled=true;b.textContent='กำลังหมุน...';$('rnd-num').textContent='?';$('rnd-name').textContent='...';
+ const n=st.length,a=2*Math.PI/n,idx=Math.floor(Math.random()*n),M=x=>((x%(2*Math.PI))+2*Math.PI)%(2*Math.PI),
+  target=-Math.PI/2-(idx+.5+(Math.random()-.5)*.6)*a,start=wRot,
+  total=M(target-start)+2*Math.PI*(5+Math.floor(Math.random()*3)),t0=performance.now(),dur=5000;
+ const f=t=>{const p=Math.min(1,(t-t0)/dur);wRot=start+total*(1-Math.pow(1-p,4));drawWheel();
+  if(p<1)requestAnimationFrame(f);
+  else{wBusy=false;b.disabled=false;b.textContent='🎲 หมุนอีกครั้ง';$('rnd-num').textContent=st[idx].num;$('rnd-name').textContent=st[idx].name;$('rnd-num').style.color='#10b981'}};
+ $('rnd-num').style.color='';f(t0);
 }
 
 /* SETTINGS & THEME */
