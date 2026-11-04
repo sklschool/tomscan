@@ -48,12 +48,14 @@ td,th{padding:9px 10px;text-align:left;border-bottom:1px solid #e2e8f0;font-size
 #login footer{position:relative;z-index:1;padding:18px 0 6px;text-align:center;font-size:12px;font-weight:700;letter-spacing:.18em;color:#94a3b8;text-transform:uppercase}
 #login footer b:nth-child(1){color:#4F46E5}#login footer b:nth-child(2){color:#8B5CF6}#login footer b:nth-child(3){color:#10b981}
 header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;box-shadow:0 1px 6px #0001;position:sticky;top:0;z-index:20}
-header b{color:var(--main)}
-#side{position:fixed;inset:0 auto 0 0;width:270px;background:#fff;z-index:40;transform:translateX(-100%);transition:.3s;padding:16px;box-shadow:4px 0 20px #0003;display:flex;flex-direction:column;gap:6px}
+header b{font-size:18px;color:var(--main)}
+#side{position:fixed;inset:0 auto 0 0;width:300px;background:#fff;z-index:40;transform:translateX(-100%);transition:.3s;padding:16px;box-shadow:4px 0 20px #0003;display:flex;flex-direction:column;gap:6px}
 #side.open{transform:none}
 #ov{position:fixed;inset:0;background:#0006;z-index:30}
-#side button{background:none;color:#475569;text-align:left;font-weight:500}
+#side button{background:none;color:#475569;text-align:left;font-weight:500;font-size:17px;padding:13px 16px;border-radius:14px}
 #side button.act{background:var(--light);color:var(--dark);font-weight:700}
+#side h3{font-size:22px}
+#side>button.r{font-size:16px;padding:13px}
 main{padding:14px 12px 80px}
 .seg{display:flex;background:#f1f5f9;border-radius:14px;padding:4px;margin-bottom:12px}
 .seg button{flex:1;background:none;color:#64748b}.seg button.act{background:#fff;color:var(--main);box-shadow:0 2px 6px #0001}
@@ -87,11 +89,6 @@ main{padding:14px 12px 80px}
 .lo{padding:8px 12px;font-size:14px;border-radius:12px;box-shadow:0 3px 8px #f43f5e44;white-space:nowrap}
 .un{font-weight:600;font-size:14px;color:#475569;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:520px){.un{display:none}}
-#side{width:300px}
-#side h3{font-size:22px}
-#side #menu button{font-size:17px;padding:13px 16px;border-radius:14px}
-#side>button.r{font-size:16px;padding:13px}
-header b{font-size:18px}
 .swal2-popup input,.swal2-popup select,.swal2-popup .swal2-input,.swal2-popup .swal2-select{width:100%!important;max-width:100%!important;margin:6px 0!important;box-sizing:border-box}
 .swal2-popup{width:min(92vw,420px)!important;padding:20px 16px!important}
 #login .reg{width:100%;margin-top:10px;padding:13px;font-size:16px;border-radius:16px;background:#fff;color:var(--main);border:2px solid #4F46E555;box-shadow:none}
@@ -291,6 +288,8 @@ async function doLogin(){
  Swal.fire('เข้าสู่ระบบไม่ได้','อีเมลหรือรหัสผ่านไม่ถูกต้อง<br><small style="color:#94a3b8">'+esc(authErr||'')+'</small>','error');
 }
 async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await sb.auth.signOut();if(camOn)toggleCamera();me=null;ws=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');$('side').classList.remove('open');$('ov').classList.add('hidden')}
+
+/* START & SETUP */
 async function start(){
  $('login').classList.add('hidden');$('app').classList.remove('hidden');$('uname').textContent=me.name;
  const admin=me.role==='admin';
@@ -298,18 +297,42 @@ async function start(){
  const items=admin?[['admin','👥 จัดการสมาชิก'],['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
  $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
  
- if(SRC==='auth'){const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
-  ws=data&&data.data&&data.data.students?data.data:newWS();if(!data)save()}
- else{ws=L().ws[me.id]||newWS();save()}
+ // ดึงข้อมูลอย่างปลอดภัย ป้องกันพัง
+ try {
+  if(SRC==='auth'){
+   const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
+   ws = (data && data.data) ? data.data : newWS();
+   if(!data) save();
+  } else {
+   ws = L().ws[me.id] || newWS();
+   save();
+  }
+ } catch(e) {
+  ws = newWS(); // ถ้ามีปัญหาให้สร้างโครงสร้างเปล่าขึ้นมาเพื่อให้ไปต่อได้
+ }
  
- if(!ws.behaviors) { ws.behaviors = ['ตอบคำถามถูก','จิตอาสา','ช่วยเหลืองานครู','ทำเวร']; save(); }
+ // ซ่อมแซมข้อมูลเก่าที่อาจจะขาดหายไป (กันไม่ให้ไปค้างหน้าขาว)
+ ws.classes = ws.classes || [];
+ ws.subjects = ws.subjects || [];
+ ws.activities = ws.activities || [];
+ ws.assignments = ws.assignments || [];
+ ws.behaviors = ws.behaviors || ['ตอบคำถามถูก','จิตอาสา','ช่วยเหลืองานครู','ทำเวร'];
+ ws.students = ws.students || [];
+ ws.logs = ws.logs || [];
+ ws.settings = ws.settings || {scanTitle:'สแกน QR Code 2IN1',scanLogo:''};
  
- $('chk-date').value=$('rep-date').value=today();populate();loadScan();renderThemes();
- if(admin){renderAdmin();}
+ $('chk-date').value=$('rep-date').value=today();
  
- // ตั้งค่าเริ่มต้นให้ชี้เป้าไปที่ "หน้าสแกน" 100% 
+ // บังคับเด้งไปหน้า "สแกน" เป็นอันดับแรก 100%
  navTo('scan');
+ 
+ // ถึงจะค่อยโหลด UI ตัวเลือกต่างๆ ตามหลัง
+ populate();
+ loadScan();
+ renderThemes();
+ if(admin) renderAdmin();
 }
+
 function toggleSide(){$('side').classList.toggle('open');$('ov').classList.toggle('hidden')}
 function navTo(s){
  document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));$('s-'+s).classList.remove('hidden');
@@ -657,7 +680,6 @@ function renderCards(){
   });
   box.appendChild(sh);
   
-  // ให้สคริปต์ทำงานทีหลังมั่นใจว่า id นี้มีตัวตนแล้ว
   setTimeout(() => {
    part.forEach((s,j)=>{
     const qrId = 'qr-code-' + p + '-' + j;
