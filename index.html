@@ -51,15 +51,42 @@ td,th{padding:9px 10px;text-align:left;border-bottom:1px solid #e2e8f0;font-size
 #login .go:hover{transform:translateY(-2px)}#login .go:active{transform:none}
 #login footer{position:relative;z-index:1;padding:18px 0 6px;text-align:center;font-size:12px;font-weight:700;letter-spacing:.18em;color:#94a3b8;text-transform:uppercase}
 #login footer b:nth-child(1){color:#4F46E5}#login footer b:nth-child(2){color:#8B5CF6}#login footer b:nth-child(3){color:#10b981}
-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;box-shadow:0 1px 6px #0001;position:sticky;top:0;z-index:20}
-header b{font-size:18px;color:var(--main)}
-#side{position:fixed;inset:0 auto 0 0;width:300px;background:#fff;z-index:40;transform:translateX(-100%);transition:.3s;padding:16px;box-shadow:4px 0 20px #0003;display:flex;flex-direction:column;gap:6px}
-#side.open{transform:none}
-#ov{position:fixed;inset:0;background:#0006;z-index:30}
-#side button{background:none;color:#475569;text-align:left;font-weight:500;font-size:17px;padding:13px 16px;border-radius:14px}
-#side button.act{background:var(--light);color:var(--dark);font-weight:700}
-#side h3{font-size:22px}
-#side>button.r{font-size:16px;padding:13px}
+
+.top-nav-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #fff; box-shadow: 0 1px 10px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 45; }
+.tn-logo { display: flex; align-items: center; gap: 10px; cursor:pointer;}
+.tn-title { display: flex; flex-direction: column; }
+.tn-menu { display: flex; gap: 8px; align-items: center; flex: 1; justify-content: center; overflow-x: auto; padding: 0 10px; }
+.tn-menu::-webkit-scrollbar { display: none; }
+.tn-btn { background: transparent; color: #64748b; font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 12px; transition: .2s; border: none; cursor: pointer; white-space: nowrap;}
+.tn-btn i { font-size: 20px; }
+.tn-btn:hover { background: #f8fafc; color: var(--main); }
+.tn-btn.act { color: var(--main); }
+.tn-btn.act i { color: var(--main); transform: scale(1.1); }
+.tn-btn.scan-btn { background: var(--main); color: #fff; padding: 8px 18px; border-radius: 14px; flex-direction: row; gap: 8px;}
+.tn-btn.scan-btn i { font-size: 22px; color: #fff;}
+.tn-btn.scan-btn span { font-size: 16px; }
+.tn-btn.scan-btn:hover { background: var(--dark); color: #fff; transform: translateY(-2px);}
+.tn-btn.scan-btn.act { box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+.tn-actions { display: flex; align-items: center; gap: 12px; }
+.tn-premium { background: #f59e0b; color: #000; font-weight: 700; padding: 8px 16px; border-radius: 99px; font-size:14px; box-shadow: 0 4px 10px rgba(245,158,11,0.2); border: none; cursor: pointer;}
+.tn-premium:hover { background: #d97706; transform: translateY(-1px);}
+.tn-user { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 99px; color: var(--main); font-weight: 600; font-size: 14px; cursor: pointer; position: relative; background: #fff; transition: .2s;}
+.tn-user:hover { background: #f8fafc; border-color: #cbd5e1; }
+#user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); min-width: 160px; overflow: hidden; z-index: 50; border: 1px solid #f1f5f9;}
+#user-dropdown > div { padding: 12px 16px; color: #ef4444; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;}
+#user-dropdown > div:hover { background: #fef2f2; }
+/* ลบ .tn-mobile-btn และปรับ CSS ให้เมนูบนเลื่อนได้ในมือถือ */
+
+@media (max-width: 1100px) {
+    /* ให้เมนูตกลงมาอยู่บรรทัดที่ 2 บนมือถือ และปัดซ้าย-ขวาได้ */
+    .top-nav-header { flex-wrap: wrap; padding: 10px; gap: 10px; }
+    .tn-menu { order: 3; width: 100%; flex: none; justify-content: flex-start; padding-bottom: 4px; }
+    .tn-premium { display: none; }
+    .tn-user span { display: none; }
+    .tn-user { padding: 10px 14px; border-radius: 14px; }
+}
+
+/* ลบ CSS ของเมนูด้านข้าง (side) และ overlay (ov) ออก */
 main{padding:14px 12px 80px}
 .seg{display:flex;background:#f1f5f9;border-radius:14px;padding:4px;margin-bottom:12px}
 .seg button{flex:1;background:none;color:#64748b}.seg button.act{background:#fff;color:var(--main);box-shadow:0 2px 6px #0001}
@@ -105,7 +132,7 @@ main{padding:14px 12px 80px}
  body.pc{background:#fff;}
  body.pc main{padding:0!important;}
  body.pc #s-cards{padding:0!important;margin:0!important;box-shadow:none!important;border:none!important;max-width:none!important;}
- body.pc header, body.pc #side, body.pc .np, body.pc #ov{display:none!important;}
+ body.pc header, body.pc .np {display:none!important;} /* ลบ side, ov ออกจาก print */
  .pc .card{box-shadow:none;max-width:none;}
  .pc #cards{display:block;gap:0;}
  .pc .sheet{margin:0 auto!important;padding:8mm 0!important;box-shadow:none!important;break-after:page;page-break-after:always;zoom:1!important;transform:none!important;height:296mm!important;}
@@ -137,11 +164,29 @@ main{padding:14px 12px 80px}
 
 <!-- APP -->
 <div id="app" class="hidden">
-<header class="np"><div style="display:flex;gap:10px;align-items:center"><button class="g hb" onclick="toggleSide()" aria-label="เมนู">☰</button><div><b>System Check</b><div id="sub" style="font-size:13px;font-weight:600;color:#64748b"></div></div></div>
-<div style="display:flex;align-items:center;gap:10px"><span id="uname" class="un"></span><button class="r lo" onclick="logout()">⎋ ออกจากระบบ</button></div></header>
-<div id="ov" class="hidden" onclick="toggleSide()"></div>
-<aside id="side"><h3 style="margin:0 0 8px">เมนูหลัก</h3><div id="menu" style="display:flex;flex-direction:column;gap:4px"></div>
-<button class="r" style="margin-top:auto;text-align:center!important;color:#fff!important" onclick="logout()">ออกจากระบบ</button></aside>
+<header class="np top-nav-header">
+    <div class="tn-logo" onclick="navTo('scan')">
+        <img src="https://i0.wp.com/kroocool.com/wp-content/uploads/2024/03/%E0%B8%AA%E0%B8%9E%E0%B8%90.png" alt="Logo" style="width:40px;height:40px;object-fit:cover;border-radius:8px" onerror="this.outerHTML='<span style=&quot;font-size:32px&quot;>🏫</span>'">
+        <div class="tn-title">
+            <b style="color:var(--main);font-size:18px;line-height:1">System Check</b>
+            <div id="sub" style="font-size:12px;color:#db2777;font-weight:700">เช็คชื่อ/เช็คงาน 2IN1</div>
+        </div>
+    </div>
+    
+    <div class="tn-menu" id="top-menu"></div>
+
+    <div class="tn-actions">
+        <button class="tn-premium"><i class="fa-solid fa-crown"></i> Premium</button>
+        <div class="tn-user" onclick="toggleUserMenu(event)">
+            <i class="fa-solid fa-user-circle" style="font-size: 20px;"></i> <span id="uname">ผู้ใช้</span> <i class="fa-solid fa-caret-down"></i>
+            <div id="user-dropdown" class="hidden">
+                <div onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> ออกจากระบบ</div>
+            </div>
+        </div>
+        <!-- ลบปุ่ม Hamburger menu ออก -->
+    </div>
+</header>
+<!-- ลบ aside id="side" และ div id="ov" ออกทั้งหมด -->
 <main>
 
 <section id="s-admin" class="card hidden"><div class="row" style="align-items:center"><h2>จัดการสมาชิก</h2><button style="flex:0 0 auto" onclick="adminAddUser()">+ เพิ่มบัญชีครู</button></div>
@@ -202,7 +247,12 @@ main{padding:14px 12px 80px}
 <div id="cards" style="margin-top:12px"></div></section>
 
 <section id="s-setup" class="card hidden np"><div class="row" style="align-items:center"><h2>วิชา / ชิ้นงาน</h2><button class="ok" style="flex:0 0 auto" onclick="addSetup()">+ เพิ่ม</button></div>
-<select id="setup-filter" onchange="renderSetup()"></select>
+<div class="row" style="margin-bottom: 12px; align-items:center;">
+    <select id="setup-filter" onchange="renderSetup()" style="flex:1; margin:0;"></select>
+    <button style="flex:0 0 auto; background:#eab308; color:#fff;" onclick="editSubjectName()">
+        <i class="fa-solid fa-pen-to-square"></i> แก้ชื่อวิชา
+    </button>
+</div>
 <div class="tw"><table><thead><tr><th>ชื่อ</th><th>วิชา</th><th>ประเภท</th><th>จัดการ</th></tr></thead><tbody id="setup-body"></tbody></table></div></section>
 
 <section id="s-random" class="card hidden np"><h2>🎡 วงล้อสุ่มนักเรียน</h2><select id="rnd-class" onchange="drawWheel()"></select>
@@ -315,63 +365,65 @@ async function forgotPassword() {
 
     if (email) {
         Swal.fire({title:'กำลังตรวจสอบอีเมล...', allowOutsideClick:false, didOpen:()=>{Swal.showLoading()}});
-        
         try {
-            const normalizedEmail = norm(email.trim());
-            const { data: profileCheck, error: checkError } = await sb.from('profiles').select('email').eq('email', normalizedEmail).maybeSingle();
-
-            if (checkError) {
-                Swal.fire('เกิดข้อผิดพลาด', esc(checkError.message), 'error');
+            const { data, error } = await sb.from('profiles').select('email').eq('email', email).maybeSingle();
+            if (!data) {
+                Swal.fire('ไม่พบข้อมูล', 'อีเมลไม่ถูกต้อง หรือยังไม่ได้สมัครสมาชิก', 'error');
                 return;
             }
-
-            if (!profileCheck) {
-                Swal.fire('อีเมลไม่ถูกต้อง', 'ไม่พบอีเมลนี้ในระบบ หรืออาจจะยังไม่ได้สมัครสมาชิกครับ', 'error');
-                return;
-            }
-
-            const { data, error } = await sb.auth.resetPasswordForEmail(normalizedEmail, {
-                redirectTo: window.location.origin, 
-            });
-
-            if (error) Swal.fire('ข้อผิดพลาด', esc(error.message), 'error');
-            else Swal.fire('ส่งลิงก์สำเร็จ!','กรุณาตรวจสอบกล่องจดหมาย (หรือ Junk mail) ในอีเมลของคุณ เพื่อคลิกลิงก์ตั้งรหัสผ่านใหม่','success');
-        } catch (err) {
-            Swal.fire('เกิดข้อผิดพลาด', esc(String(err)), 'error');
+            const { error: resetErr } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+            if (resetErr) throw resetErr;
+            Swal.fire('สำเร็จ', 'ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว', 'success');
+        } catch(e) {
+            Swal.fire('ข้อผิดพลาด', esc(e.message), 'error');
         }
     }
 }
 
-async function enter(user){
- const {data:p,error:pe}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
- if(pe||!p){await sb.auth.signOut();SRC='local';return Swal.fire('ไม่พบโปรไฟล์ในระบบ','ระบบยังไม่พร้อมใช้งาน (รอฐานข้อมูลจัดการโปรไฟล์)','error')}
- return gate({id:user.id,email:user.email,name:p.name||user.email,role:p.role,status:p.status});
+async function doLogin() {
+    const e=$('l-email').value.trim(),p=$('l-pass').value,btn=document.querySelector('#login .go');
+    if(!e||!p)return Swal.fire('ข้อมูลไม่ครบ','กรุณากรอกอีเมลและรหัสผ่าน','warning');
+    btn.disabled=true;Swal.fire({title:'กำลังเข้าสู่ระบบ...',allowOutsideClick:false,didOpen:()=>{Swal.showLoading()}});
+    let authErr=null;
+    try{
+        const tmp = window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+        const {data,error} = await tmp.auth.signInWithPassword({email:norm(e),password:p});
+        if(error) throw error;
+        if(data?.session?.user) {
+            const {data:prof} = await tmp.from('profiles').select('*').eq('id',data.session.user.id).maybeSingle();
+            if(prof?.status === 'pending') {
+                btn.disabled=false;
+                return Swal.fire('รอการอนุมัติ','บัญชีของคุณกำลังรอการอนุมัติจากผู้ดูแลระบบ','info');
+            }
+            if(prof?.status === 'disabled') {
+                btn.disabled=false;
+                return Swal.fire('ถูกระงับ','บัญชีของคุณถูกระงับการใช้งาน','error');
+            }
+            const {error:signInErr} = await sb.auth.signInWithPassword({email:norm(e),password:p});
+            if(signInErr) throw signInErr;
+            SRC='auth'; return gate({...data.session.user,...prof});
+        }
+    }catch(x){authErr=x.message;}
+    
+    const lu=(L().users||[]).find(x=>x.email===e&&String(x.pass)===p);btn.disabled=false;
+    if(lu){
+        if(lu.status === 'pending') return Swal.fire('รอการอนุมัติ','บัญชีของคุณกำลังรอการอนุมัติ','info');
+        if(lu.status === 'disabled') return Swal.fire('ถูกระงับ','บัญชีของคุณถูกระงับการใช้งาน','error');
+        SRC='local';return gate({...lu});
+    }
+    Swal.fire('เข้าสู่ระบบไม่ได้','อีเมลหรือรหัสผ่านไม่ถูกต้อง<br><small style="color:#94a3b8">'+esc(authErr||'')+'</small>','error');
 }
-async function gate(m){
- const out=async(t,x,i)=>{if(SRC==='auth')await sb.auth.signOut();Swal.fire(t,x,i)};
- if(m.status==='pending')return out('รอการอนุมัติ','บัญชีกำลังรอผู้ดูแลอนุมัติ','info');
- if(m.status==='disabled')return out('ถูกระงับ','บัญชีถูกระงับการใช้งาน','error');
- me=m;localStorage.setItem('sc_sess',JSON.stringify({src:SRC,me:m}));
- await start();
-}
-async function doLogin(){
- const e=$('l-email').value.trim(),p=$('l-pass').value,btn=document.querySelector('#login .go');btn.disabled=true;
- try{
-  const r=await sb.auth.signInWithPassword({email:norm(e),password:p});
-  if(!r.error){SRC='auth';btn.disabled=false;return enter(r.data.user)}
-  var authErr=r.error.message;
- }catch(x){var authErr=String(x)}
- 
- if((e==='admin' || e==='admin@syscheck.app') && p==='1234') {
-  SRC='local'; btn.disabled=false;
-  return gate({id:'admin_rescue',email:'admin@syscheck.app',name:'แอดมิน (ฉุกเฉิน)',role:'admin',status:'active'});
- }
 
- const lu=(L().users||[]).find(x=>x.email===e&&String(x.pass)===p);btn.disabled=false;
- if(lu){SRC='local';return gate({...lu})}
- Swal.fire('เข้าสู่ระบบไม่ได้','อีเมลหรือรหัสผ่านไม่ถูกต้อง<br><small style="color:#94a3b8">'+esc(authErr||'')+'</small>','error');
+function gate(u) {
+    me=u; 
+    Swal.close();
+    if(SRC==='local') {
+        const d=L(); d.sess={src:'local',me}; LS(d);
+    }
+    start();
 }
-async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await sb.auth.signOut();if(camOn)toggleCamera();me=null;ws=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');$('side').classList.remove('open');$('ov').classList.add('hidden')}
+
+async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await sb.auth.signOut();if(camOn)toggleCamera();me=null;ws=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');}
 
 /* START & MIGRATION */
 async function start(){
@@ -380,9 +432,25 @@ async function start(){
   if(me && me.name) $('uname').textContent=me.name;
   const admin=me?.role==='admin';
   $('sub').textContent=admin?'Admin Management':(me?.name||'ผู้ใช้')+' 👤';
-  const items=admin?[['admin','👥 จัดการสมาชิก'],['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','<i class="fa-solid fa-id-card"></i> พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','<i class="fa-solid fa-id-card"></i> พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
-  $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
   
+  const topNavItems = [
+    { id: 'scan', label: 'Scan', icon: 'fa-qrcode', isSpecial: true },
+    { id: 'check', label: 'Check', icon: 'fa-list-check' },
+    { id: 'students', label: 'นร.', icon: 'fa-user-graduate' },
+    { id: 'setup', label: 'กิจกรรม', icon: 'fa-list' },
+    { id: 'cards', label: 'บัตร', icon: 'fa-id-badge' },
+    { id: 'random', label: 'สุ่ม', icon: 'fa-dice' },
+    { id: 'reports', label: 'สรุป', icon: 'fa-chart-pie' }
+  ];
+  if(admin) topNavItems.unshift({ id: 'admin', label: 'แอดมิน', icon: 'fa-users-cog' });
+  topNavItems.push({ id: 'settings', label: 'ตั้งค่า', icon: 'fa-cog' });
+
+  $('top-menu').innerHTML = topNavItems.map(i => 
+    `<button id="tm-${i.id}" class="tn-btn ${i.isSpecial?'scan-btn':''}" onclick="navTo('${i.id}')">
+      <i class="fa-solid ${i.icon}"></i> <span>${i.label}</span>
+    </button>`
+  ).join('');
+
   // เรียกฟังก์ชันตรวจสอบครูที่รออนุมัติ (เฉพาะแอดมิน)
   if (admin) checkPendingUsers(true);
   
@@ -445,11 +513,13 @@ async function checkPendingUsers(showToast = false) {
   try {
     const { count, error } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending');
     const menuBtn = document.getElementById('m-admin');
+    const topMenuBtn = document.getElementById('tm-admin');
     
-    if (!error && menuBtn) {
+    if (!error) {
       if (count > 0) {
         // เพิ่มตัวเลขสีแดงพร้อม Effect กระพริบที่ปุ่มเมนู
-        menuBtn.innerHTML = `👥 จัดการสมาชิก <span style="background:#e11d48;color:white;padding:2px 7px;border-radius:10px;font-size:12px;margin-left:5px;animation:pulse 1.5s infinite;display:inline-block;">${count} ใหม่</span>`;
+        if(menuBtn) menuBtn.innerHTML = `👥 จัดการสมาชิก <span style="background:#e11d48;color:white;padding:2px 7px;border-radius:10px;font-size:12px;margin-left:5px;animation:pulse 1.5s infinite;display:inline-block;">${count} ใหม่</span>`;
+        if(topMenuBtn) topMenuBtn.innerHTML = `<i class="fa-solid fa-users-cog"></i> <span>แอดมิน <span style="background:#e11d48;color:white;padding:0px 4px;border-radius:6px;font-size:10px;margin-left:4px;animation:pulse 1.5s infinite;display:inline-block;vertical-align:top">${count}</span></span>`;
         // แสดง Toast แจ้งเตือนมุมขวาบนเมื่อล็อกอิน
         if (showToast) {
           Swal.fire({
@@ -461,18 +531,18 @@ async function checkPendingUsers(showToast = false) {
         }
       } else {
         // ไม่มีคนรออนุมัติ ให้แสดงเมนูปกติ
-        menuBtn.innerHTML = `👥 จัดการสมาชิก`;
+        if(menuBtn) menuBtn.innerHTML = `👥 จัดการสมาชิก`;
+        if(topMenuBtn) topMenuBtn.innerHTML = `<i class="fa-solid fa-users-cog"></i> <span>แอดมิน</span>`;
       }
     }
   } catch(e) { console.error(e); }
 }
 
-function toggleSide(){$('side').classList.toggle('open');$('ov').classList.toggle('hidden')}
 function navTo(s){
  try {
   document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));$('s-'+s).classList.remove('hidden');
-  document.querySelectorAll('#menu button').forEach(b=>b.classList.toggle('act',b.id==='m-'+s));
-  $('side').classList.remove('open');$('ov').classList.add('hidden');
+  document.querySelectorAll('#top-menu button').forEach(b=>b.classList.toggle('act',b.id==='tm-'+s));
+  
   if(s!=='scan'&&camOn)toggleCamera();
   if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();
   
@@ -922,11 +992,72 @@ function renderThemes(){
 function pickTheme(k){tempTheme=k;applyTheme(k);renderThemes()}
 function confirmTheme(){localStorage.setItem('sc_theme',tempTheme);Swal.fire({icon:'success',title:'บันทึกชุดสีแล้ว',timer:1200,showConfirmButton:false})}
 
+function toggleUserMenu(e) {
+  if(e) e.stopPropagation();
+  $('user-dropdown').classList.toggle('hidden');
+}
+
+async function editSubjectName() {
+  const oldName = $('setup-filter').value;
+  if (!oldName) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกวิชาที่ต้องการแก้ไขก่อน', 'warning');
+
+  const { value: newName } = await Swal.fire({
+      title: 'แก้ไขชื่อวิชา',
+      html: `
+          <div style="text-align:left; padding: 0 10px;">
+              <label style="font-weight:600; font-size:14px; margin-bottom:4px; display:block; color:#475569">ชื่อวิชาเดิม</label>
+              <input class="swal2-input" value="${esc(oldName)}" disabled style="background:#f1f5f9; margin:0 0 16px 0; width:100%; color:#94a3b8">
+              <label style="font-weight:600; font-size:14px; margin-bottom:4px; display:block; color:#475569">ชื่อวิชาใหม่</label>
+              <input id="edit-sub-new" class="swal2-input" placeholder="กรอกชื่อวิชาใหม่" value="${esc(oldName)}" style="margin:0; width:100%">
+          </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'บันทึก',
+      cancelButtonText: 'ยกเลิก',
+      preConfirm: () => {
+          const n = $('edit-sub-new').value.trim();
+          if (!n) return Swal.showValidationMessage('กรุณากรอกชื่อวิชาใหม่') || false;
+          if (n === oldName) return Swal.showValidationMessage('ชื่อวิชาไม่ได้เปลี่ยนแปลง') || false;
+          if (ws.subjects.includes(n)) return Swal.showValidationMessage('มีชื่อวิชานี้อยู่แล้ว') || false;
+          return n;
+      }
+  });
+
+  if (newName) {
+      const idx = ws.subjects.indexOf(oldName);
+      if (idx !== -1) ws.subjects[idx] = newName;
+      // แก้ไขรายวิชาในชิ้นงานทั้งหมดที่ใช้วิชาเดิมให้เปลี่ยนเป็นวิชาใหม่
+      ws.assignments.forEach(a => { if (a.subject === oldName) a.subject = newName; });
+      save();
+      populate();
+      $('setup-filter').value = newName;
+      renderSetup();
+      Swal.fire({icon: 'success', title: 'แก้ไขสำเร็จ', timer: 1500, showConfirmButton: false});
+  }
+}
+
 /* INIT */
 document.addEventListener('DOMContentLoaded',async()=>{
- tempTheme=localStorage.getItem('sc_theme')||'indigo';applyTheme(tempTheme);
- try{const {data}=await sb.auth.getSession();if(data.session){SRC='auth';return enter(data.session.user)}}catch(e){}
- try{const x=JSON.parse(localStorage.getItem('sc_sess'));if(x&&x.src!=='auth'&&x.me){SRC=x.src;me=x.me;await start()}}catch(e){}
+  document.addEventListener('click', (e) => {
+    const dd = $('user-dropdown');
+    if (dd && !dd.classList.contains('hidden') && !e.target.closest('.tn-user')) {
+      dd.classList.add('hidden');
+    }
+  });
+  tempTheme=localStorage.getItem('sc_theme')||'indigo';applyTheme(tempTheme);
+  try{const {data}=await sb.auth.getSession();if(data.session){SRC='auth';return enter(data.session.user)}}catch(e){}
+  
+  // เช็ค Session จาก Local Storage สำหรับคนที่ไม่ได้ต่อเน็ต หรือแอดมินฉุกเฉิน
+  const sess = localStorage.getItem('sc_sess');
+  if(sess){
+      try{
+          const s = JSON.parse(sess);
+          if(s.src==='local' && s.me) {
+              SRC = 'local';
+              return gate(s.me);
+          }
+      }catch(e){}
+  }
 });
 </script>
 </body>
