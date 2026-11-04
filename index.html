@@ -133,7 +133,7 @@ main{padding:14px 12px 80px}
 <button class="r" style="margin-top:auto;text-align:center!important;color:#fff!important" onclick="logout()">ออกจากระบบ</button></aside>
 <main>
 
-<section id="s-admin" class="card hidden"><div class="row" style="align-items:center"><h2>จัดการสมาชิก</h2></div>
+<section id="s-admin" class="card hidden"><div class="row" style="align-items:center"><h2>จัดการสมาชิก</h2><button style="flex:0 0 auto" onclick="adminAddUser()">+ เพิ่มบัญชีครู</button></div>
 <div class="tw"><table><thead><tr><th>ชื่อ</th><th>ชื่อผู้ใช้</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="admin-body"></tbody></table></div></section>
 
 <section id="s-scan" class="card hidden np">
@@ -463,6 +463,39 @@ async function renderAdmin(){
  <td><button class="${stt==='active'?'r':'ok'}" onclick="toggleUser('${id}','${stt==='active'?'disabled':'active'}')">${stt==='active'?'ปิด':'เปิด'}</button></td></tr>`}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ยังไม่มีคุณครูในระบบ</td></tr>';
 }
 async function toggleUser(id,status){const r=await setStatus(id,status);if(r&&r.error)Swal.fire('ผิดพลาด',esc(r.error.message),'error');renderAdmin()}
+
+/* ADMIN ADD USER */
+async function adminAddUser(){
+ const {value:v}=await Swal.fire({title:'เพิ่มบัญชีครู',html:'<input id="a-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="a-e" class="swal2-input" autocapitalize="none" placeholder="อีเมล / ชื่อผู้ใช้"><input id="a-p" type="password" class="swal2-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><select id="a-s" class="swal2-select"><option value="active">เปิดใช้งานทันที</option><option value="pending">รออนุมัติ</option></select>',
+ showCancelButton:true,confirmButtonText:'เพิ่มบัญชี',cancelButtonText:'ยกเลิก',preConfirm:()=>{
+  const n=$('a-n').value.trim(),e=$('a-e').value.trim(),p=$('a-p').value,s=$('a-s').value;
+  if(!n||!e||!p)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
+  if(p.length<6)return Swal.showValidationMessage('รหัสผ่านอย่างน้อย 6 ตัว')||false;
+  return{n,e,p,s}}});
+ if(!v)return;
+ 
+ Swal.fire({title:'กำลังสร้างบัญชี...',allowOutsideClick:false,didOpen:()=>{Swal.showLoading()}});
+ try {
+  const tmp = window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const {data, error} = await tmp.auth.signUp({email:norm(v.e),password:v.p,options:{data:{name:v.n}}});
+  if(error) return Swal.fire('เพิ่มไม่ได้',esc(error.message),'error');
+  
+  // อัปเดตสถานะเป็นเปิดใช้งานทันที ถ้าแอดมินเลือก
+  const uid = data?.user?.id;
+  if(uid && v.s === 'active' && SRC === 'auth') {
+    setTimeout(async () => {
+      await sb.from('profiles').update({status: 'active'}).eq('id', uid);
+      renderAdmin();
+    }, 1500);
+  } else {
+    setTimeout(renderAdmin, 1500);
+  }
+  
+  Swal.fire({icon:'success',title:'เพิ่มสำเร็จ!',text:'ระบบได้เพิ่มบัญชีครูเข้าสู่ฐานข้อมูล Supabase แล้ว',timer:2500});
+ } catch(x) { 
+  Swal.fire('ข้อผิดพลาด', esc(String(x)), 'error');
+ }
+}
 
 /* DROPDOWNS */
 const opts=(a,t)=>(t?`<option value="">-- ${t} --</option>`:'')+a.map(i=>`<option value="${esc(i)}">${esc(i)}</option>`).join('');
