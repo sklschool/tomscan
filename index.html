@@ -150,8 +150,8 @@ main{padding:14px 12px 80px}
     <button id="sc-s" onclick="setMode('scan','score')">ชิ้นงาน/คะแนน</button>
     <button id="sc-b" onclick="setMode('scan','behavior')">พฤติกรรม/แต้ม</button>
 </div>
-<div id="sc-daily"><select id="scan-act" onchange="updateDash()"></select></div>
-<div id="sc-score" class="hidden"><select id="scan-sub" onchange="fillAssign('scan-asg','scan-sub')"></select><div class="row"><select id="scan-asg"></select><input id="scan-val" type="number" placeholder="คะแนน"></div></div>
+<div id="sc-daily"><select id="scan-act" onchange="try{updateDash()}catch(e){}"></select></div>
+<div id="sc-score" class="hidden"><select id="scan-sub" onchange="try{fillAssign('scan-asg','scan-sub')}catch(e){}"></select><div class="row"><select id="scan-asg"></select><input id="scan-val" type="number" placeholder="คะแนน"></div></div>
 <div id="sc-behavior" class="hidden"><div class="row"><select id="scan-beh"></select><input id="scan-beh-val" type="number" placeholder="แต้ม (ค่าเริ่มต้น +1)"></div></div>
 <button id="btn-cam" style="width:100%;margin:8px 0" onclick="toggleCamera()">📷 เปิดกล้องสแกน</button>
 <div id="qr-reader" class="hidden"></div>
@@ -165,7 +165,7 @@ main{padding:14px 12px 80px}
     <button id="ck-b" onclick="setMode('check','behavior')">พฤติกรรม/แต้ม</button>
 </div>
 <div id="ck-daily"><label>กิจกรรม</label><select id="chk-act"></select></div>
-<div id="ck-score" class="hidden"><label>วิชา</label><select id="chk-sub" onchange="fillAssign('chk-asg','chk-sub')"></select><label>ชิ้นงาน</label><select id="chk-asg"></select></div>
+<div id="ck-score" class="hidden"><label>วิชา</label><select id="chk-sub" onchange="try{fillAssign('chk-asg','chk-sub')}catch(e){}"></select><label>ชิ้นงาน</label><select id="chk-asg"></select></div>
 <div id="ck-behavior" class="hidden"><label>พฤติกรรม</label><select id="chk-beh"></select></div>
 <label>วันที่</label><input type="date" id="chk-date"><label>ห้องเรียน</label><select id="chk-class"></select>
 <button style="width:100%;margin-top:8px" onclick="fetchCheck()">ดึงรายชื่อนักเรียน</button>
@@ -198,7 +198,7 @@ main{padding:14px 12px 80px}
     <button id="rp-b" onclick="setMode('reports','behavior')">พฤติกรรม/แต้ม</button>
 </div>
 <div id="rp-daily"><select id="rep-act"></select></div>
-<div id="rp-score" class="hidden"><select id="rep-sub" onchange="fillAssign('rep-asg','rep-sub')"></select><select id="rep-asg"></select></div>
+<div id="rp-score" class="hidden"><select id="rep-sub" onchange="try{fillAssign('rep-asg','rep-sub')}catch(e){}"></select><select id="rep-asg"></select></div>
 <div id="rp-behavior" class="hidden"><select id="rep-beh"></select></div>
 <input type="date" id="rep-date"><select id="rep-class"></select>
 <button style="width:100%;margin-top:8px" onclick="fetchReport()">🔍 ค้นหาข้อมูล</button></div>
@@ -240,23 +240,25 @@ let me=null,ws=null,mode={scan:'daily',check:'daily',reports:'daily'},cam=null,c
 /* AUDIO (Web Audio API) */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
- if(audioCtx.state === 'suspended') audioCtx.resume();
- const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
- osc.connect(gain); gain.connect(audioCtx.destination);
- const t = audioCtx.currentTime;
- if(type === 'ok'){
-  osc.type = 'sine'; osc.frequency.setValueAtTime(880, t); osc.frequency.setValueAtTime(1046, t + 0.1);
-  gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.3, t + 0.05); gain.gain.linearRampToValueAtTime(0, t + 0.3);
-  osc.start(t); osc.stop(t + 0.3);
- } else if(type === 'dup'){
-  osc.type = 'square'; osc.frequency.setValueAtTime(330, t); osc.frequency.setValueAtTime(330, t + 0.15);
-  gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.2, t + 0.05); gain.gain.linearRampToValueAtTime(0, t + 0.3);
-  osc.start(t); osc.stop(t + 0.3);
- } else {
-  osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, t); osc.frequency.linearRampToValueAtTime(100, t + 0.3);
-  gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.3, t + 0.1); gain.gain.linearRampToValueAtTime(0, t + 0.4);
-  osc.start(t); osc.stop(t + 0.4);
- }
+ try {
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  const t = audioCtx.currentTime;
+  if(type === 'ok'){
+   osc.type = 'sine'; osc.frequency.setValueAtTime(880, t); osc.frequency.setValueAtTime(1046, t + 0.1);
+   gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.3, t + 0.05); gain.gain.linearRampToValueAtTime(0, t + 0.3);
+   osc.start(t); osc.stop(t + 0.3);
+  } else if(type === 'dup'){
+   osc.type = 'square'; osc.frequency.setValueAtTime(330, t); osc.frequency.setValueAtTime(330, t + 0.15);
+   gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.2, t + 0.05); gain.gain.linearRampToValueAtTime(0, t + 0.3);
+   osc.start(t); osc.stop(t + 0.3);
+  } else {
+   osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, t); osc.frequency.linearRampToValueAtTime(100, t + 0.3);
+   gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.3, t + 0.1); gain.gain.linearRampToValueAtTime(0, t + 0.4);
+   osc.start(t); osc.stop(t + 0.4);
+  }
+ } catch(e){}
 }
 
 /* AUTH */
@@ -269,7 +271,8 @@ async function gate(m){
  const out=async(t,x,i)=>{if(SRC==='auth')await sb.auth.signOut();Swal.fire(t,x,i)};
  if(m.status==='pending')return out('รอการอนุมัติ','บัญชีกำลังรอผู้ดูแลอนุมัติ','info');
  if(m.status==='disabled')return out('ถูกระงับ','บัญชีถูกระงับการใช้งาน','error');
- me=m;localStorage.setItem('sc_sess',JSON.stringify({src:SRC,me:m}));await start();
+ me=m;localStorage.setItem('sc_sess',JSON.stringify({src:SRC,me:m}));
+ await start();
 }
 async function doLogin(){
  const e=$('l-email').value.trim(),p=$('l-pass').value,btn=document.querySelector('#login .go');btn.disabled=true;
@@ -291,57 +294,69 @@ async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await
 
 /* START & SETUP */
 async function start(){
- $('login').classList.add('hidden');$('app').classList.remove('hidden');$('uname').textContent=me.name;
- const admin=me.role==='admin';
- $('sub').textContent=admin?'Admin Management':me.name+' 👤';
- const items=admin?[['admin','👥 จัดการสมาชิก'],['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
- $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
- 
- // ดึงข้อมูลอย่างปลอดภัย ป้องกันพัง
  try {
-  if(SRC==='auth'){
-   const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
-   ws = (data && data.data) ? data.data : newWS();
-   if(!data) save();
-  } else {
-   ws = L().ws[me.id] || newWS();
-   save();
-  }
- } catch(e) {
-  ws = newWS(); // ถ้ามีปัญหาให้สร้างโครงสร้างเปล่าขึ้นมาเพื่อให้ไปต่อได้
+  // บังคับซ่อนหน้า Login และแสดงหน้า App ก่อนเลย
+  $('login').classList.add('hidden');$('app').classList.remove('hidden');
+  
+  if(me && me.name) $('uname').textContent=me.name;
+  const admin=me?.role==='admin';
+  $('sub').textContent=admin?'Admin Management':(me?.name||'ผู้ใช้')+' 👤';
+  const items=admin?[['admin','👥 จัดการสมาชิก'],['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
+  $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
+  
+  // ดึงข้อมูล
+  try {
+   if(SRC==='auth'){
+    const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
+    ws = (data && data.data) ? data.data : newWS();
+    if(!data) save();
+   } else {
+    ws = L().ws[me.id] || newWS();
+    save();
+   }
+  } catch(e) { ws = newWS(); }
+  
+  // ซ่อมแซมข้อมูลเก่า
+  if(!ws) ws = newWS();
+  ws.classes = ws.classes || [];
+  ws.subjects = ws.subjects || [];
+  ws.activities = ws.activities || [];
+  ws.assignments = ws.assignments || [];
+  ws.behaviors = ws.behaviors || ['ตอบคำถามถูก','จิตอาสา','ช่วยเหลืองานครู','ทำเวร'];
+  ws.students = ws.students || [];
+  ws.logs = ws.logs || [];
+  ws.settings = ws.settings || {scanTitle:'สแกน QR Code 2IN1',scanLogo:''};
+  
+  try{$('chk-date').value=$('rep-date').value=today();}catch(e){}
+  
+  // บังคับเด้งไปหน้า "สแกน" 100% ทันทีที่มาถึงจุดนี้
+  navTo('scan');
+  
+  // โหลดข้อมูลเข้า UI (ใส่ try-catch กัน UI พัง)
+  try { populate(); } catch(e){}
+  try { loadScan(); } catch(e){}
+  try { renderThemes(); } catch(e){}
+  if(admin) try { renderAdmin(); } catch(e){}
+
+ } catch (mainErr) {
+  // หากเกิดข้อผิดพลาดรุนแรงระดับโครงสร้าง จะไม่ค้างหน้าขาว แต่จะแจ้งเตือน
+  console.error("Start Error:", mainErr);
+  $('login').classList.remove('hidden');$('app').classList.add('hidden');
+  Swal.fire('ข้อผิดพลาดระบบ', 'กรุณากด Ctrl+F5 หรือล้างแคชเบราว์เซอร์ของคุณ เนื่องจากมีการอัปเดตระบบ', 'error');
  }
- 
- // ซ่อมแซมข้อมูลเก่าที่อาจจะขาดหายไป (กันไม่ให้ไปค้างหน้าขาว)
- ws.classes = ws.classes || [];
- ws.subjects = ws.subjects || [];
- ws.activities = ws.activities || [];
- ws.assignments = ws.assignments || [];
- ws.behaviors = ws.behaviors || ['ตอบคำถามถูก','จิตอาสา','ช่วยเหลืองานครู','ทำเวร'];
- ws.students = ws.students || [];
- ws.logs = ws.logs || [];
- ws.settings = ws.settings || {scanTitle:'สแกน QR Code 2IN1',scanLogo:''};
- 
- $('chk-date').value=$('rep-date').value=today();
- 
- // บังคับเด้งไปหน้า "สแกน" เป็นอันดับแรก 100%
- navTo('scan');
- 
- // ถึงจะค่อยโหลด UI ตัวเลือกต่างๆ ตามหลัง
- populate();
- loadScan();
- renderThemes();
- if(admin) renderAdmin();
 }
 
 function toggleSide(){$('side').classList.toggle('open');$('ov').classList.toggle('hidden')}
 function navTo(s){
- document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));$('s-'+s).classList.remove('hidden');
- document.querySelectorAll('#menu button').forEach(b=>b.classList.toggle('act',b.id==='m-'+s));
- $('side').classList.remove('open');$('ov').classList.add('hidden');
- if(s!=='scan'&&camOn)toggleCamera();
- if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();
- document.body.classList.toggle('pc',s==='cards');if(s==='cards')renderCards();
- if(s==='scan')updateDash();
+ try {
+  document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));$('s-'+s).classList.remove('hidden');
+  document.querySelectorAll('#menu button').forEach(b=>b.classList.toggle('act',b.id==='m-'+s));
+  $('side').classList.remove('open');$('ov').classList.add('hidden');
+  if(s!=='scan'&&camOn)toggleCamera();
+  if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();
+  document.body.classList.toggle('pc',s==='cards');if(s==='cards')renderCards();
+  if(s==='scan')updateDash();
+ } catch(e) { console.error("Navigation error to " + s, e); }
 }
 function setMode(k,m){
  mode[k]=m;const p={scan:['sc','sc-daily','sc-score','sc-behavior'],check:['ck','ck-daily','ck-score','ck-behavior'],reports:['rp','rp-daily','rp-score','rp-behavior']}[k];
@@ -351,17 +366,19 @@ function setMode(k,m){
  if(k==='scan')updateDash();
 }
 function updateDash(){
- if(!ws) return;
- $('dash-class').textContent = ws.classes ? ws.classes.length : 0;
- $('dash-total').textContent = ws.students ? ws.students.length : 0;
- const d=today(), isDaily=mode.scan==='daily', isBeh=mode.scan==='behavior';
- const item = isDaily ? $('scan-act').value : (isBeh ? $('scan-beh').value : $('scan-asg').value);
- if(!item){ $('dash-scan').textContent = 0; return; }
- const scanned = new Set(ws.logs.filter(l => l.date === d && l.type === (isDaily?'daily':(isBeh?'behavior':'score')) && l.item === item && (isDaily?l.value!=='ขาด':true)).map(l => l.code)).size;
- $('dash-scan').textContent = scanned;
+ try {
+  if(!ws) return;
+  $('dash-class').textContent = ws.classes ? ws.classes.length : 0;
+  $('dash-total').textContent = ws.students ? ws.students.length : 0;
+  const d=today(), isDaily=mode.scan==='daily', isBeh=mode.scan==='behavior';
+  const item = isDaily ? $('scan-act').value : (isBeh ? $('scan-beh').value : $('scan-asg').value);
+  if(!item){ $('dash-scan').textContent = 0; return; }
+  const scanned = new Set(ws.logs.filter(l => l.date === d && l.type === (isDaily?'daily':(isBeh?'behavior':'score')) && l.item === item && (isDaily?l.value!=='ขาด':true)).map(l => l.code)).size;
+  $('dash-scan').textContent = scanned;
+ } catch(e){}
 }
 
-/* REGISTER (ปรับปรุงใหม่เพื่อบังคับลง Database) */
+/* REGISTER */
 async function registerUser(){
  const {value:v}=await Swal.fire({title:'สมัครสมาชิกใหม่',html:'<input id="r-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="r-e" class="swal2-input" autocapitalize="none" placeholder="ชื่อผู้ใช้ (อีเมล)"><input id="r-p" type="password" class="swal2-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><input id="r-p2" type="password" class="swal2-input" placeholder="ยืนยันรหัสผ่าน"><p style="font-size:12px;color:#64748b;margin:6px 0 0">หลังสมัคร ต้องรอผู้ดูแลระบบอนุมัติก่อนจึงเข้าใช้งานได้</p>',
  showCancelButton:true,confirmButtonText:'สมัครสมาชิก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
@@ -406,7 +423,7 @@ async function registerUser(){
  } else {
   Swal.fire({
     icon:'warning', title:'ติดระบบความปลอดภัยฐานข้อมูล!',
-    html:`ระบบเซฟข้อมูลในเครื่องให้แล้ว แต่<b>ส่งขึ้น Supabase ไม่ได้</b> เพราะติด RLS (Row Level Security)<br><br><small style="color:#ef4444">Error: ${esc(dbErr)}</small><br><br><b>วิธีแก้เพื่อให้ข้อมูลเข้า DB 100%:</b><br><small>ไปที่ SQL Editor ในเว็บ Supabase ของคุณ แล้วรันคำสั่งนี้เพื่ออนุญาตการสมัคร:</small><br><textarea readonly style="width:100%;height:80px;font-size:11px;margin-top:5px;border-radius:4px;border:1px solid #ccc;padding:6px;background:#f8fafc;outline:none;" onclick="this.select()">CREATE POLICY "Allow public insert" ON profiles FOR INSERT WITH CHECK (true);
+    html:`ระบบเซฟข้อมูลในเครื่องให้แล้ว แต่<b>ส่งขึ้น Supabase ไม่ได้</b><br><br><small style="color:#ef4444">Error: ${esc(dbErr)}</small><br><br><b>วิธีแก้เพื่อให้ข้อมูลเข้า DB 100%:</b><br><small>รันคำสั่งนี้ใน SQL Editor ของ Supabase:</small><br><textarea readonly style="width:100%;height:80px;font-size:11px;margin-top:5px;border-radius:4px;border:1px solid #ccc;padding:6px;background:#f8fafc;outline:none;" onclick="this.select()">CREATE POLICY "Allow public insert" ON profiles FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public insert" ON users FOR INSERT WITH CHECK (true);</textarea>`,
   });
  }
@@ -549,7 +566,7 @@ function delSetup(k,i){(k==='a'?ws.activities:(k==='b'?ws.behaviors:ws.assignmen
 function toggleCamera(){
  const b=$('btn-cam'),c=$('qr-reader');
  if(!camOn){
-  if(audioCtx.state === 'suspended') audioCtx.resume(); // เตรียมเสียง
+  try{if(audioCtx.state === 'suspended') audioCtx.resume();}catch(e){} // เตรียมเสียง
   c.classList.remove('hidden');b.textContent='ปิดกล้องสแกน';
   if(!cam)cam=new Html5Qrcode('qr-reader');
   cam.start({facingMode:'environment'},{fps:10,qrbox:{width:230,height:230}},t=>{cam.pause();scanData(t);setTimeout(()=>{if(camOn)cam.resume()},1500)},()=>{})
@@ -557,7 +574,7 @@ function toggleCamera(){
   camOn=true;
  }else{if(cam)cam.stop().catch(()=>{});c.classList.add('hidden');b.textContent='📷 เปิดกล้องสแกน';camOn=false}
 }
-function scanManual(){const i=$('scan-man');if(i.value.trim()){ if(audioCtx.state === 'suspended') audioCtx.resume(); scanData(i.value.trim());i.value=''}}
+function scanManual(){const i=$('scan-man');if(i.value.trim()){ try{if(audioCtx.state === 'suspended') audioCtx.resume();}catch(e){} scanData(i.value.trim());i.value=''}}
 function scanData(code){
  const s=ws.students.find(x=>x.code===code),el=$('scan-log');
  if(!s){playSound('err');el.innerHTML='<b style="color:#e11d48">❌ ไม่พบรหัสนักเรียน</b>';Swal.fire({icon:'error',title:'ไม่พบรหัสนักเรียน',text:code,timer:1500,showConfirmButton:false});return}
