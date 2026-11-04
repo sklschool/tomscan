@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style id="print-style"></style>
 <style>
 :root{--main:#4F46E5;--light:#EEF2FF;--dark:#3730A3;--accent:#8B5CF6}
 *{box-sizing:border-box;font-family:Kanit,sans-serif}
@@ -65,7 +66,6 @@ main{padding:14px 12px 80px}
 #scan-log{text-align:center;padding:16px;background:#f8fafc;border-radius:14px;min-height:64px}
 #cards{display:flex;flex-direction:column;align-items:center;gap:14px}
 
-/* ID Card Sheet settings for A4 Portrait */
 .sheet{width:210mm;height:296mm;padding:8mm 0;background:#fff;box-sizing:border-box;box-shadow:0 2px 10px #0003;display:grid;grid-template-columns:repeat(2,85.6mm);grid-template-rows:repeat(5,54mm);justify-content:center;align-content:center;column-gap:8mm;row-gap:2mm;margin:0 auto 20px;}
 .scard{width:85.6mm!important;height:54mm!important;border:.25mm solid #cbd5e1;border-radius:3mm;overflow:hidden;background:#fff;display:flex;flex-direction:column;break-inside:avoid;page-break-inside:avoid;box-sizing:border-box}
 .scard .t{display:flex;align-items:center;gap:2mm;color:#fff;padding:1.6mm 3mm;font-weight:700;font-size:3.6mm;line-height:1.1}
@@ -99,17 +99,15 @@ main{padding:14px 12px 80px}
 
 @media print{
  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
- @page{size:A4 portrait;margin:0;}
- body,html{background:#fff;margin:0;padding:0;}
- main{padding:0!important;}
- .pc main{padding:0!important;}
- .pc #s-cards{padding:0!important;margin:0!important;box-shadow:none!important;border:none!important;max-width:none!important;}
- #cards{display:block;gap:0;}
- .sheet{margin:0 auto!important;padding:8mm 0!important;box-shadow:none!important;break-after:page;page-break-after:always;zoom:1!important;transform:none!important;height:296mm!important;}
- .sheet:last-child{break-after:auto;page-break-after:auto;}
- header,#side,.np,#ov{display:none!important;}
- .card{box-shadow:none;max-width:none;}
- .scard{border:0.5mm dashed #cbd5e1!important;}
+ body.pc{background:#fff;}
+ body.pc main{padding:0!important;}
+ body.pc #s-cards{padding:0!important;margin:0!important;box-shadow:none!important;border:none!important;max-width:none!important;}
+ body.pc header, body.pc #side, body.pc .np, body.pc #ov{display:none!important;}
+ .pc .card{box-shadow:none;max-width:none;}
+ .pc #cards{display:block;gap:0;}
+ .pc .sheet{margin:0 auto!important;padding:8mm 0!important;box-shadow:none!important;break-after:page;page-break-after:always;zoom:1!important;transform:none!important;height:296mm!important;}
+ .pc .sheet:last-child{break-after:auto;page-break-after:auto;}
+ .pc .scard{border:0.5mm dashed #cbd5e1!important;}
 }
 </style>
 </head>
@@ -135,7 +133,7 @@ main{padding:14px 12px 80px}
 <button class="r" style="margin-top:auto;text-align:center!important;color:#fff!important" onclick="logout()">ออกจากระบบ</button></aside>
 <main>
 
-<section id="s-admin" class="card hidden"><div class="row" style="align-items:center"><h2>จัดการสมาชิก</h2><button style="flex:0 0 auto" onclick="addUser()">+ เพิ่มสมาชิก</button></div>
+<section id="s-admin" class="card hidden"><div class="row" style="align-items:center"><h2>จัดการสมาชิก</h2></div>
 <div class="tw"><table><thead><tr><th>ชื่อ</th><th>ชื่อผู้ใช้</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="admin-body"></tbody></table></div></section>
 
 <section id="s-scan" class="card hidden np">
@@ -151,8 +149,8 @@ main{padding:14px 12px 80px}
     <button id="sc-b" onclick="setMode('scan','behavior')">พฤติกรรม/แต้ม</button>
 </div>
 <div id="sc-daily"><select id="scan-act" onchange="try{updateDash()}catch(e){}"></select></div>
-<div id="sc-score" class="hidden"><select id="scan-sub" onchange="try{fillAssign('scan-asg','scan-sub')}catch(e){}"></select><div class="row"><select id="scan-asg"></select><input id="scan-val" type="number" placeholder="คะแนน"></div></div>
-<div id="sc-behavior" class="hidden"><div class="row"><select id="scan-beh"></select><input id="scan-beh-val" type="number" placeholder="แต้ม (ค่าเริ่มต้น +1)"></div></div>
+<div id="sc-score" class="hidden"><select id="scan-sub" onchange="try{fillAssign('scan-asg','scan-sub')}catch(e){}"></select><div class="row"><select id="scan-asg" onchange="try{updateDash()}catch(e){}"></select><input id="scan-val" type="number" placeholder="คะแนน"></div></div>
+<div id="sc-behavior" class="hidden"><div class="row"><select id="scan-beh" onchange="try{updateDash()}catch(e){}"></select><input id="scan-beh-val" type="number" placeholder="แต้ม (ค่าเริ่มต้น +1)"></div></div>
 <button id="btn-cam" style="width:100%;margin:8px 0" onclick="toggleCamera()">📷 เปิดกล้องสแกน</button>
 <div id="qr-reader" class="hidden"></div>
 <div class="row"><input id="scan-man" placeholder="พิมพ์รหัสนักเรียน..." onkeydown="if(event.key==='Enter')scanManual()"><button style="flex:0 0 60px" onclick="scanManual()">→</button></div>
@@ -179,7 +177,10 @@ main{padding:14px 12px 80px}
  <button class="ok" style="flex:1" onclick="$('csv-file').click()">📥 นำเข้า CSV</button>
  <input type="file" id="csv-file" accept=".csv" class="hidden" onchange="importCSV(event)">
 </div>
-<p style="font-size:12px;color:#64748b;margin:0 0 10px;text-align:center">💡 รูปแบบไฟล์ (UTF-8): รหัส, ชื่อ-สกุล, เลขที่, ห้อง &nbsp; <a href="#" onclick="downloadCSVTemplate()" style="color:var(--main)">โหลดต้นแบบ</a></p>
+<div class="row" style="margin-bottom:12px; align-items:center;">
+ <p style="flex:2;font-size:12px;color:#64748b;margin:0;">💡 รูปแบบไฟล์ (UTF-8): รหัส, ชื่อ-สกุล, เลขที่, ห้อง</p>
+ <button class="g" style="flex:1;padding:8px;font-size:13px;" onclick="downloadCSVTemplate()">📄 โหลดไฟล์ต้นแบบ</button>
+</div>
 <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อ-สกุล</th><th>ห้อง</th><th>จัดการ</th></tr></thead><tbody id="stu-body"></tbody></table></div></section>
 
 <section id="s-cards" class="card hidden"><div class="np"><div class="row" style="align-items:center"><h2>พิมพ์บัตรประจำตัว</h2><button style="flex:0 0 auto" onclick="window.print()">🖨 พิมพ์/PDF</button></div>
@@ -228,21 +229,38 @@ const $=id=>document.getElementById(id);
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const nowT=()=>new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const newWS=()=>({classes:['ป.1','ป.2'],subjects:['วิทยาการคำนวณ'],activities:['เข้าแถวเช้า'],assignments:[{name:'ชิ้นงานที่ 1',subject:'วิทยาการคำนวณ'}],behaviors:['ตอบคำถามถูก','จิตอาสา','ช่วยเหลืองานครู','ทำเวร'],
- students:[{code:'ST101',num:1,name:'เด็กชายสมชาย ใจดี',class:'ป.1'},{code:'ST102',num:2,name:'เด็กหญิงสมหญิง รักเรียน',class:'ป.1'}],logs:[],settings:{scanTitle:'สแกน QR Code 2IN1',scanLogo:''}});
+const genId=(p)=>p+'_'+Date.now()+'_'+Math.random().toString(36).substring(2,7);
+
+const newWS=()=>({
+ classes:['ป.1','ป.2'], subjects:['วิทยาการคำนวณ'],
+ activities:[{id:genId('a'), name:'เข้าแถวเช้า'}],
+ assignments:[{id:genId('s'), name:'ชิ้นงานที่ 1', subject:'วิทยาการคำนวณ'}],
+ behaviors:[{id:genId('b'), name:'ตอบคำถามถูก'},{id:genId('b'), name:'จิตอาสา'},{id:genId('b'), name:'ช่วยเหลืองานครู'},{id:genId('b'), name:'ทำเวร'}],
+ students:[{code:'ST101',num:1,name:'เด็กชายสมชาย ใจดี',class:'ป.1'},{code:'ST102',num:2,name:'เด็กหญิงสมหญิง รักเรียน',class:'ป.1'}],
+ logs:[], settings:{scanTitle:'สแกน QR Code 2IN1',scanLogo:''}
+});
+
 const SB_URL='https://iyqmurdgbsrhaggtwrub.supabase.co',SB_KEY='sb_publishable_vfa92rWZX43Yw6YaOg2Fig_7KQ66lMz';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 let saveT,SRC='local',ulist=[];
 const DOM='@syscheck.app',norm=u=>u.includes('@')?u:u+DOM,shown=e=>String(e||'-').endsWith(DOM)?e.slice(0,-DOM.length):(e||'-');
-const TBL='users',LK='sc_local';
-function L(){let d;try{d=JSON.parse(localStorage.getItem(LK))}catch(e){}
- if(!d||!d.users)d={users:[{id:'admin_1',email:'admin@school.com',pass:'1234',name:'ผู้ดูแลระบบ',role:'admin',status:'active'},{id:'u1',email:'teacher@school.com',pass:'1234',name:'ครูตัวอย่าง',role:'teacher',status:'active'}],ws:{}};return d}
+const LK='sc_local';
+
+function L(){
+ let d; try{d=JSON.parse(localStorage.getItem(LK))}catch(e){}
+ if(!d||!d.ws)d={users:[],ws:{}}; return d;
+}
 const LS=d=>localStorage.setItem(LK,JSON.stringify(d));
-const save=()=>{if(!me||me.role==='admin'||!ws)return;
+
+const save=()=>{
+ if(!me||!ws)return; // แก้ไขให้ Admin สามารถบันทึกข้อมูลงานตัวเองได้ด้วย
  if(SRC!=='auth'){const d=L();d.ws[me.id]=ws;LS(d);return}
  clearTimeout(saveT);saveT=setTimeout(async()=>{
- const r=await sb.from('workspaces').upsert({user_id:me.id,data:ws,updated_at:new Date().toISOString()});
- if(r.error)Swal.fire({toast:true,position:'top',icon:'error',title:'บันทึกไม่สำเร็จ',timer:2500,showConfirmButton:false})},400)};
+  const r=await sb.from('workspaces').upsert({user_id:me.id,data:ws,updated_at:new Date().toISOString()});
+  if(r.error)Swal.fire({toast:true,position:'top',icon:'error',title:'บันทึกไม่สำเร็จ',timer:2500,showConfirmButton:false})
+ },400);
+};
+
 let me=null,ws=null,mode={scan:'daily',check:'daily',reports:'daily'},cam=null,camOn=false,tempTheme='indigo',tempLogo='',repRows=[];
 
 /* AUDIO (Web Audio API) */
@@ -272,7 +290,7 @@ function playSound(type) {
 /* AUTH */
 async function enter(user){
  const {data:p,error:pe}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
- if(pe||!p){await sb.auth.signOut();SRC='local';return Swal.fire('ไม่พบโปรไฟล์ในระบบ',(pe?esc(pe.message):'บัญชีนี้ยังไม่มีข้อมูลในตาราง profiles')+'<br><small>รัน setup.sql แล้วลองใหม่</small>','error')}
+ if(pe||!p){await sb.auth.signOut();SRC='local';return Swal.fire('ไม่พบโปรไฟล์ในระบบ','ระบบยังไม่พร้อมใช้งาน (รอฐานข้อมูลจัดการโปรไฟล์)','error')}
  return gate({id:user.id,email:user.email,name:p.name||user.email,role:p.role,status:p.status});
 }
 async function gate(m){
@@ -289,30 +307,22 @@ async function doLogin(){
   if(!r.error){SRC='auth';btn.disabled=false;return enter(r.data.user)}
   var authErr=r.error.message;
  }catch(x){var authErr=String(x)}
- try{
-  const t=await sb.from(TBL).select('*').eq('email',e).limit(1),u=t.data&&t.data[0];
-  if(u&&[u.pass,u.password,u.passwd].some(v=>v!=null&&String(v)===p)){SRC='table';btn.disabled=false;
-   return gate({id:u.id,email:u.email,name:u.name||u.email,role:u.role||'teacher',status:u.status||'active'})}
- }catch(x){}
  const lu=L().users.find(x=>x.email===e&&String(x.pass)===p);btn.disabled=false;
  if(lu){SRC='local';return gate({...lu})}
  Swal.fire('เข้าสู่ระบบไม่ได้','อีเมลหรือรหัสผ่านไม่ถูกต้อง<br><small style="color:#94a3b8">'+esc(authErr||'')+'</small>','error');
 }
 async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await sb.auth.signOut();if(camOn)toggleCamera();me=null;ws=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');$('side').classList.remove('open');$('ov').classList.add('hidden')}
 
-/* START & SETUP */
+/* START & MIGRATION */
 async function start(){
  try {
-  // บังคับซ่อนหน้า Login และแสดงหน้า App ก่อนเลย
   $('login').classList.add('hidden');$('app').classList.remove('hidden');
-  
   if(me && me.name) $('uname').textContent=me.name;
   const admin=me?.role==='admin';
   $('sub').textContent=admin?'Admin Management':(me?.name||'ผู้ใช้')+' 👤';
   const items=admin?[['admin','👥 จัดการสมาชิก'],['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
   $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
   
-  // ดึงข้อมูล
   try {
    if(SRC==='auth'){
     const {data}=await sb.from('workspaces').select('data').eq('user_id',me.id).maybeSingle();
@@ -324,33 +334,46 @@ async function start(){
    }
   } catch(e) { ws = newWS(); }
   
-  // ซ่อมแซมข้อมูลเก่า
   if(!ws) ws = newWS();
   ws.classes = ws.classes || [];
   ws.subjects = ws.subjects || [];
   ws.activities = ws.activities || [];
   ws.assignments = ws.assignments || [];
-  ws.behaviors = ws.behaviors || ['ตอบคำถามถูก','จิตอาสา','ช่วยเหลืองานครู','ทำเวร'];
+  ws.behaviors = ws.behaviors || [];
   ws.students = ws.students || [];
   ws.logs = ws.logs || [];
   ws.settings = ws.settings || {scanTitle:'สแกน QR Code 2IN1',scanLogo:''};
+
+  // MIGRATION: Convert old string arrays to object arrays {id, name} to preserve data integrity on rename
+  let migrated = false;
+  ws.activities = ws.activities.map(a => { if(typeof a==='string'){ migrated=true; return {id:genId('a'), name:a}; } return a; });
+  ws.behaviors = ws.behaviors.map(b => { if(typeof b==='string'){ migrated=true; return {id:genId('b'), name:b}; } return b; });
+  ws.assignments = ws.assignments.map(s => { if(!s.id){ migrated=true; return {...s, id:genId('s')}; } return s; });
+  
+  ws.logs = ws.logs.map(l => {
+   if (!String(l.item).includes('_')) {
+    migrated=true;
+    if (l.type === 'daily') { const m = ws.activities.find(x => x.name === l.item); if (m) l.item = m.id; }
+    else if (l.type === 'behavior') { const m = ws.behaviors.find(x => x.name === l.item); if (m) l.item = m.id; }
+    else if (l.type === 'score') { const m = ws.assignments.find(x => x.name === l.item); if (m) l.item = m.id; }
+   }
+   return l;
+  });
+  if(migrated) save();
   
   try{$('chk-date').value=$('rep-date').value=today();}catch(e){}
   
-  // บังคับเด้งไปหน้า "สแกน" 100% ทันทีที่มาถึงจุดนี้
   navTo('scan');
   
-  // โหลดข้อมูลเข้า UI (ใส่ try-catch กัน UI พัง)
   try { populate(); } catch(e){}
   try { loadScan(); } catch(e){}
   try { renderThemes(); } catch(e){}
   if(admin) try { renderAdmin(); } catch(e){}
 
  } catch (mainErr) {
-  // หากเกิดข้อผิดพลาดรุนแรงระดับโครงสร้าง จะไม่ค้างหน้าขาว แต่จะแจ้งเตือน
   console.error("Start Error:", mainErr);
   $('login').classList.remove('hidden');$('app').classList.add('hidden');
-  Swal.fire('ข้อผิดพลาดระบบ', 'กรุณากด Ctrl+F5 หรือล้างแคชเบราว์เซอร์ของคุณ เนื่องจากมีการอัปเดตระบบ', 'error');
+  Swal.fire('ข้อผิดพลาดระบบ', 'กรุณากด Ctrl+F5 หรือล้างแคชเบราว์เซอร์ของคุณ', 'error');
  }
 }
 
@@ -362,9 +385,13 @@ function navTo(s){
   $('side').classList.remove('open');$('ov').classList.add('hidden');
   if(s!=='scan'&&camOn)toggleCamera();
   if(s==='students')renderStudents();if(s==='setup')renderSetup();if(s==='random')drawWheel();
-  document.body.classList.toggle('pc',s==='cards');if(s==='cards')renderCards();
+  
+  document.body.classList.toggle('pc',s==='cards');
+  if(s==='cards'){ renderCards(); $('print-style').innerHTML = '@media print{ @page{margin:0} body{margin:0;padding:0} }'; } 
+  else { $('print-style').innerHTML = ''; }
+  
   if(s==='scan')updateDash();
- } catch(e) { console.error("Navigation error to " + s, e); }
+ } catch(e) {}
 }
 function setMode(k,m){
  mode[k]=m;const p={scan:['sc','sc-daily','sc-score','sc-behavior'],check:['ck','ck-daily','ck-score','ck-behavior'],reports:['rp','rp-daily','rp-score','rp-behavior']}[k];
@@ -386,7 +413,7 @@ function updateDash(){
  } catch(e){}
 }
 
-/* REGISTER */
+/* REGISTER (Secured - Supabase Auth Only) */
 async function registerUser(){
  const {value:v}=await Swal.fire({title:'สมัครสมาชิกใหม่',html:'<input id="r-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="r-e" class="swal2-input" autocapitalize="none" placeholder="ชื่อผู้ใช้ (อีเมล)"><input id="r-p" type="password" class="swal2-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><input id="r-p2" type="password" class="swal2-input" placeholder="ยืนยันรหัสผ่าน"><p style="font-size:12px;color:#64748b;margin:6px 0 0">หลังสมัคร ต้องรอผู้ดูแลระบบอนุมัติก่อนจึงเข้าใช้งานได้</p>',
  showCancelButton:true,confirmButtonText:'สมัครสมาชิก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
@@ -398,42 +425,13 @@ async function registerUser(){
  if(!v)return;
  
  Swal.fire({title:'กำลังบันทึกข้อมูล...',allowOutsideClick:false,didOpen:()=>{Swal.showLoading()}});
- 
- let uid = 'u'+Date.now();
- let isSuccessDB = false;
- let dbErr = '';
- 
  try {
   const tmp = window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-  const {data,error} = await tmp.auth.signUp({email:norm(v.e),password:v.p,options:{data:{name:v.n}}});
-  
-  if(error && /registered|exists|password/i.test(error.message)) return Swal.fire('สมัครไม่ได้',esc(error.message),'error');
-  if(data?.user?.id) uid = data.user.id;
-  
-  const activeClient = data?.session ? tmp : sb;
-  const pRes = await activeClient.from('profiles').upsert({id:uid,email:norm(v.e),name:v.n,role:'teacher',status:'pending'});
-  const uRes = await activeClient.from(TBL).upsert({id:uid,email:v.e,pass:v.p,name:v.n,role:'teacher',status:'pending'});
-  
-  if ((pRes.error === null && pRes.status !== 404) || (uRes.error === null && uRes.status !== 404)) {
-    isSuccessDB = true;
-  } else {
-    dbErr = (pRes.error ? pRes.error.message : '') + (pRes.error && uRes.error ? ' / ' : '') + (uRes.error ? uRes.error.message : '');
-  }
+  const {error} = await tmp.auth.signUp({email:norm(v.e),password:v.p,options:{data:{name:v.n}}});
+  if(error) return Swal.fire('สมัครไม่ได้',esc(error.message),'error');
+  Swal.fire({icon:'success',title:'สมัครสำเร็จ!',text:'ข้อมูลถูกส่งเข้าสู่ระบบแล้ว กรุณารอผู้ดูแลระบบอนุมัติบัญชี'});
  } catch(x) { 
-  dbErr = String(x); 
- }
- 
- const d=L();
- if(!d.users.some(u=>u.email===v.e)){d.users.push({id:uid,email:v.e,pass:v.p,name:v.n,role:'teacher',status:'pending'}); LS(d);}
- 
- if (isSuccessDB) {
-  Swal.fire({icon:'success',title:'สมัครสำเร็จ!',text:'ข้อมูลถูกส่งเข้าฐานข้อมูลระบบเรียบร้อยแล้ว กรุณารอผู้ดูแลระบบอนุมัติ'});
- } else {
-  Swal.fire({
-    icon:'warning', title:'ติดระบบความปลอดภัยฐานข้อมูล!',
-    html:`ระบบเซฟข้อมูลในเครื่องให้แล้ว แต่<b>ส่งขึ้น Supabase ไม่ได้</b><br><br><small style="color:#ef4444">Error: ${esc(dbErr)}</small><br><br><b>วิธีแก้เพื่อให้ข้อมูลเข้า DB 100%:</b><br><small>รันคำสั่งนี้ใน SQL Editor ของ Supabase:</small><br><textarea readonly style="width:100%;height:80px;font-size:11px;margin-top:5px;border-radius:4px;border:1px solid #ccc;padding:6px;background:#f8fafc;outline:none;" onclick="this.select()">CREATE POLICY "Allow public insert" ON profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow public insert" ON users FOR INSERT WITH CHECK (true);</textarea>`,
-  });
+  Swal.fire('ข้อผิดพลาด', esc(String(x)), 'error');
  }
 }
 
@@ -441,90 +439,45 @@ CREATE POLICY "Allow public insert" ON users FOR INSERT WITH CHECK (true);</text
 async function listUsers(){
  let list = [];
  if(SRC==='auth'){const r=await sb.from('profiles').select('*').neq('role','admin').order('name'); list = r.data||[];}
- else if(SRC==='table'){const r=await sb.from(TBL).select('*'); list = (r.data||[]).filter(u=>u.role!=='admin');}
  const localUsers = L().users.filter(u=>u.role!=='admin');
  localUsers.forEach(lu => { if(!list.some(u => u.email === lu.email)) list.push(lu); });
  return{data:list, error:null};
 }
 async function setStatus(id,status){
  if(SRC==='auth')await sb.from('profiles').update({status}).eq('id',id);
- if(SRC==='table')await sb.from(TBL).update({status}).eq('id',id);
  const d=L(),u=d.users.find(x=>String(x.id)===String(id));if(u){u.status=status;LS(d);}return{};
-}
-async function removeUser(id){
- if(SRC==='auth')await sb.from('profiles').delete().eq('id',id);
- if(SRC==='table')await sb.from(TBL).delete().eq('id',id);
- const d=L();d.users=d.users.filter(x=>String(x.id)!==String(id));delete d.ws[id];LS(d);return{};
-}
-async function createUser(v){
- if(SRC==='auth'){v.e=norm(v.e);
-  const tmp=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-  const {data,error}=await tmp.auth.signUp({email:v.e,password:v.p,options:{data:{name:v.n}}});
-  if(error)return{error};const id=data.user&&data.user.id;
-  if(id){await sb.from('profiles').update({status:v.s,name:v.n}).eq('id',id);await sb.from('profiles').update({email:v.e}).eq('id',id)}
-  return{};
- }
- if(SRC==='table')return sb.from(TBL).insert({email:v.e,pass:v.p,name:v.n,role:'teacher',status:v.s});
- const d=L();if(d.users.some(u=>u.email===v.e))return{error:{message:'อีเมลนี้มีอยู่แล้ว'}};
- d.users.push({id:'u'+Date.now(),email:v.e,pass:v.p,name:v.n,role:'teacher',status:v.s});LS(d);return{};
 }
 async function renderAdmin(){
  const st={active:['b-ok','ใช้งานปกติ'],pending:['b-wait','รออนุมัติ'],disabled:['b-no','ระงับ']};
  const {data,error}=await listUsers();ulist=data||[];
  if(error)return $('admin-body').innerHTML='<tr><td colspan="4" style="color:#e11d48">โหลดข้อมูลไม่สำเร็จ: '+esc(error.message)+'</td></tr>';
  $('admin-body').innerHTML=(data||[]).map(u=>{const stt=u.status||'active',k=st[stt]||st.pending,id=esc(u.id);return `<tr><td>${esc(u.name)}</td><td>${esc(shown(u.email))}</td><td><span class="badge ${k[0]}">${k[1]}</span></td>
- <td><button class="${stt==='active'?'r':'ok'}" onclick="toggleUser('${id}','${stt==='active'?'disabled':'active'}')">${stt==='active'?'ปิด':'เปิด'}</button> <button class="g" onclick="editUser('${id}')">✏️ แก้ไข</button> <button class="g" onclick="delUser('${id}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ยังไม่มีคุณครูในระบบ</td></tr>';
-}
-async function addUser(){
- const {value:v}=await Swal.fire({title:'เพิ่มสมาชิกครู',html:'<input id="a-n" class="swal2-input" placeholder="ชื่อ-นามสกุล"><input id="a-e" class="swal2-input" autocapitalize="none" placeholder="ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)"><input id="a-p" type="password" class="swal2-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)"><select id="a-s" class="swal2-select"><option value="active">เปิดใช้งานทันที</option><option value="pending">รออนุมัติ</option></select>',
- showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
-  const n=$('a-n').value.trim(),e=$('a-e').value.trim(),p=$('a-p').value;
-  if(!n||!e||!p)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
-  return{n,e,p,s:$('a-s').value}}});
- if(!v)return;const r=await createUser(v);
- if(r&&r.error)return Swal.fire('ผิดพลาด',esc(r.error.message),'error');
- renderAdmin();Swal.fire({icon:'success',title:'เพิ่มสมาชิกแล้ว',timer:1400,showConfirmButton:false});
-}
-async function updateUser(u,v){
- if(SRC==='auth'){
-  let r=await sb.from('profiles').update({name:v.n}).eq('id',u.id);if(r.error)return r;
-  const ce=norm(v.e)!==u.email;
-  if(ce||v.p){r=await sb.rpc('admin_update_user',{uid:u.id,new_email:ce?norm(v.e):null,new_pass:v.p||null});
-   if(r.error)return{error:{message:r.error.message+' (ให้รันไฟล์ setup.sql ใหม่ เพื่อเปิดฟังก์ชันแก้ไขผู้ใช้)'}}}
-  return{};
- }
- if(SRC==='table'){const patch={name:v.n,email:v.e},k=['pass','password','passwd'].find(k=>k in u)||'pass';if(v.p)patch[k]=v.p;return sb.from(TBL).update(patch).eq('id',u.id)}
- const d=L(),x=d.users.find(a=>String(a.id)===String(u.id));
- if(d.users.some(a=>a!==x&&a.email===v.e))return{error:{message:'ชื่อผู้ใช้นี้มีอยู่แล้ว'}};
- x.name=v.n;x.email=v.e;if(v.p)x.pass=v.p;LS(d);return{};
-}
-async function editUser(id){
- const u=ulist.find(x=>String(x.id)===String(id));if(!u)return;
- const {value:v}=await Swal.fire({title:'แก้ไขสมาชิก',html:`<input id="e-n" class="swal2-input" placeholder="ชื่อ-นามสกุล" value="${esc(u.name)}"><input id="e-e" class="swal2-input" autocapitalize="none" placeholder="ชื่อผู้ใช้" value="${esc(shown(u.email))}"><input id="e-p" type="password" class="swal2-input" placeholder="รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน)">`,
- showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
-  const n=$('e-n').value.trim(),e=$('e-e').value.trim(),p=$('e-p').value;
-  if(!n||!e)return Swal.showValidationMessage('กรอกชื่อและชื่อผู้ใช้')||false;
-  if(p&&p.length<4)return Swal.showValidationMessage('รหัสผ่านอย่างน้อย 4 ตัว (Supabase Auth ต้อง 6 ตัวขึ้นไป)')||false;
-  return{n,e,p}}});
- if(!v)return;const r=await updateUser(u,v);
- if(r&&r.error)return Swal.fire('ผิดพลาด',esc(r.error.message),'error');
- renderAdmin();Swal.fire({icon:'success',title:'แก้ไขเรียบร้อย',timer:1400,showConfirmButton:false});
+ <td><button class="${stt==='active'?'r':'ok'}" onclick="toggleUser('${id}','${stt==='active'?'disabled':'active'}')">${stt==='active'?'ปิด':'เปิด'}</button></td></tr>`}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ยังไม่มีคุณครูในระบบ</td></tr>';
 }
 async function toggleUser(id,status){const r=await setStatus(id,status);if(r&&r.error)Swal.fire('ผิดพลาด',esc(r.error.message),'error');renderAdmin()}
-function delUser(id){Swal.fire({title:'ลบผู้ใช้นี้?',icon:'warning',showCancelButton:true,confirmButtonColor:'#f43f5e',confirmButtonText:'ลบ',cancelButtonText:'ยกเลิก'}).then(async r=>{if(r.isConfirmed){await removeUser(id);renderAdmin()}})}
 
 /* DROPDOWNS */
 const opts=(a,t)=>(t?`<option value="">-- ${t} --</option>`:'')+a.map(i=>`<option value="${esc(i)}">${esc(i)}</option>`).join('');
+const optsObj=(a,t)=>(t?`<option value="">-- ${t} --</option>`:'')+a.map(i=>`<option value="${esc(i.id)}">${esc(i.name)}</option>`).join('');
+
 function populate(){
  ['chk-class','stu-class','rep-class'].forEach(i=>$(i).innerHTML=opts(ws.classes,'ทุกห้อง'));
  ['cd-class','rnd-class'].forEach(i=>$(i).innerHTML=opts(ws.classes,'เลือกห้อง'));
  ['scan-sub','chk-sub','rep-sub'].forEach(i=>$(i).innerHTML=opts(ws.subjects,'เลือกวิชา'));
  $('setup-filter').innerHTML=opts(ws.subjects,'วิชาทั้งหมด');
- ['scan-act','chk-act','rep-act'].forEach(i=>$(i).innerHTML=opts(ws.activities,'เลือกกิจกรรม'));
- ['scan-beh','chk-beh','rep-beh'].forEach(i=>$(i).innerHTML=opts(ws.behaviors||[],'เลือกพฤติกรรม'));
+ 
+ ['scan-act','chk-act','rep-act'].forEach(i=>$(i).innerHTML=optsObj(ws.activities,'เลือกกิจกรรม'));
+ ['scan-beh','chk-beh','rep-beh'].forEach(i=>$(i).innerHTML=optsObj(ws.behaviors||[],'เลือกพฤติกรรม'));
  fillAssign('scan-asg','scan-sub');fillAssign('chk-asg','chk-sub');fillAssign('rep-asg','rep-sub');renderSetup();
 }
-function fillAssign(t,s){const sub=$(s).value;$(t).innerHTML=opts(ws.assignments.filter(a=>!sub||a.subject===sub).map(a=>a.name),'เลือกชิ้นงาน'); if(t==='scan-asg')updateDash();}
+function fillAssign(t,s){const sub=$(s).value;$(t).innerHTML=optsObj(ws.assignments.filter(a=>!sub||a.subject===sub),'เลือกชิ้นงาน'); if(t==='scan-asg')updateDash();}
+
+const getItemName = (type, id) => {
+ if(type==='daily') return ws.activities.find(a=>a.id===id)?.name || id;
+ if(type==='behavior') return ws.behaviors.find(a=>a.id===id)?.name || id;
+ if(type==='score') return ws.assignments.find(a=>a.id===id)?.name || id;
+ return id;
+};
 
 /* SETUP */
 function sT(t){const d=t==='daily';$('s-sub').style.display=t==='academic'?'block':'none';$('s-n').placeholder=t==='daily'?'ชื่อกิจกรรม':(t==='behavior'?'ชื่อพฤติกรรม':'ชื่อชิ้นงาน/ใบงาน');}
@@ -536,16 +489,17 @@ async function addSetup(){
   if(!n)return Swal.showValidationMessage('ระบุชื่อรายการ')||false;
   return{t,sub,n}}});
  if(!v)return;
- if(v.t==='daily')ws.activities.push(v.n);
- else if(v.t==='behavior')ws.behaviors.push(v.n);
- else{if(!ws.subjects.includes(v.sub))ws.subjects.push(v.sub);ws.assignments.push({name:v.n,subject:v.sub})}
+ 
+ if(v.t==='daily') ws.activities.push({id:genId('a'), name:v.n});
+ else if(v.t==='behavior') ws.behaviors.push({id:genId('b'), name:v.n});
+ else{if(!ws.subjects.includes(v.sub))ws.subjects.push(v.sub);ws.assignments.push({id:genId('s'), name:v.n, subject:v.sub})}
  save();populate();
 }
 function renderSetup(){
  const f=$('setup-filter').value;let it=[];
  if(!f){
-  ws.activities.forEach((a,i)=>it.push({n:a,s:'-',t:'รายวัน',k:'a',i}));
-  (ws.behaviors||[]).forEach((a,i)=>it.push({n:a,s:'-',t:'พฤติกรรม',k:'b',i}));
+  ws.activities.forEach((a,i)=>it.push({n:a.name,s:'-',t:'รายวัน',k:'a',i}));
+  (ws.behaviors||[]).forEach((a,i)=>it.push({n:a.name,s:'-',t:'พฤติกรรม',k:'b',i}));
  }
  ws.assignments.forEach((a,i)=>{if(!f||a.subject===f)it.push({n:a.name,s:a.subject,t:'ชิ้นงาน',k:'s',i})});
  $('setup-body').innerHTML=it.map(x=>`<tr><td>${esc(x.n)}</td><td>${esc(x.s)}</td><td><span class="badge">${x.t}</span></td><td style="white-space:nowrap"><button class="g" onclick="editSetup('${x.k}',${x.i})" title="แก้ไข">✏️</button> <button class="g" onclick="delSetup('${x.k}',${x.i})" title="ลบ">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
@@ -553,8 +507,8 @@ function renderSetup(){
 async function editSetup(k,i){
  const isAct = k==='a', isBeh = k==='b'; const item = isAct ? ws.activities[i] : (isBeh ? ws.behaviors[i] : ws.assignments[i]);
  if (isAct || isBeh) {
-  const {value:v} = await Swal.fire({title:isAct?'แก้ไขกิจกรรม':'แก้ไขพฤติกรรม',input:'text',inputValue:item,showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',inputValidator:(val)=>!val.trim()&&'กรุณาระบุชื่อ'});
-  if(v) { if(isAct)ws.activities[i]=v.trim(); else ws.behaviors[i]=v.trim(); save(); populate(); }
+  const {value:v} = await Swal.fire({title:isAct?'แก้ไขกิจกรรม':'แก้ไขพฤติกรรม',input:'text',inputValue:item.name,showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',inputValidator:(val)=>!val.trim()&&'กรุณาระบุชื่อ'});
+  if(v) { if(isAct)ws.activities[i].name=v.trim(); else ws.behaviors[i].name=v.trim(); save(); populate(); }
  } else {
   const {value:v} = await Swal.fire({title:'แก้ไขชิ้นงาน',html:`
    <input id="e-sub" list="e-list" class="swal2-input" placeholder="วิชา" value="${esc(item.subject)}">
@@ -565,7 +519,7 @@ async function editSetup(k,i){
    if(!sub||!n)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
    return {sub,n};
   }});
-  if(v) { if(!ws.subjects.includes(v.sub)) ws.subjects.push(v.sub); ws.assignments[i] = {name:v.n, subject:v.sub}; save(); populate(); }
+  if(v) { if(!ws.subjects.includes(v.sub)) ws.subjects.push(v.sub); ws.assignments[i].name = v.n; ws.assignments[i].subject = v.sub; save(); populate(); }
  }
 }
 function delSetup(k,i){(k==='a'?ws.activities:(k==='b'?ws.behaviors:ws.assignments)).splice(i,1);save();populate()}
@@ -574,7 +528,7 @@ function delSetup(k,i){(k==='a'?ws.activities:(k==='b'?ws.behaviors:ws.assignmen
 function toggleCamera(){
  const b=$('btn-cam'),c=$('qr-reader');
  if(!camOn){
-  try{if(audioCtx.state === 'suspended') audioCtx.resume();}catch(e){} // เตรียมเสียง
+  try{if(audioCtx.state === 'suspended') audioCtx.resume();}catch(e){}
   c.classList.remove('hidden');b.textContent='ปิดกล้องสแกน';
   if(!cam)cam=new Html5Qrcode('qr-reader');
   cam.start({facingMode:'environment'},{fps:10,qrbox:{width:230,height:230}},t=>{cam.pause();scanData(t);setTimeout(()=>{if(camOn)cam.resume()},1500)},()=>{})
@@ -594,6 +548,8 @@ function scanData(code){
  const type=d?'daily':(b?'behavior':'score'),date=today();
  const old=ws.logs.find(l=>l.type===type&&l.item===item&&l.date===date&&l.code===code&&(!d||l.value==='มา'));
  
+ const itemName = getItemName(type, item);
+ 
  if(old){
   playSound('dup');
   el.innerHTML=`<b style="color:#b45309">⚠ ${esc(s.name)} สแกนไปแล้ว</b>`;
@@ -607,10 +563,10 @@ function scanData(code){
  
  playSound('ok');
  const t=nowT();addLog(type,item,date,code,val,t);save();updateDash();
- el.innerHTML=`<b style="color:#059669">✅ ${esc(s.name)}</b><br><small>${esc(item)}${d?'':' · '+esc(val)+(b?' แต้ม':' คะแนน')} · ${t} น.</small>`;
+ el.innerHTML=`<b style="color:#059669">✅ ${esc(s.name)}</b><br><small>${esc(itemName)}${d?'':' · '+esc(val)+(b?' แต้ม':' คะแนน')} · ${t} น.</small>`;
  Swal.fire({
   icon:'success',title:'บันทึกสำเร็จ',
-  html:`<b>${esc(s.name)}</b><br>${d?'ได้เข้าร่วมกิจกรรมเวลา '+t+' น.':'บันทึก <b>'+esc(item)+'</b> ได้ <b>'+esc(val)+'</b> '+(b?'แต้ม':'คะแนน')+'<br>เวลา '+t+' น.'}`,
+  html:`<b>${esc(s.name)}</b><br>${d?'ได้เข้าร่วมกิจกรรมเวลา '+t+' น.':'บันทึก <b>'+esc(itemName)+'</b> ได้ <b>'+esc(val)+'</b> '+(b?'แต้ม':'คะแนน')+'<br>เวลา '+t+' น.'}`,
   timer:1800,showConfirmButton:false
  });
 }
@@ -665,22 +621,27 @@ function downloadCSVTemplate() {
 }
 function importCSV(e) {
  const f = e.target.files[0]; if(!f) return;
+ Swal.fire({title:'กำลังนำเข้าข้อมูล...', allowOutsideClick:false, didOpen:()=>{Swal.showLoading()}});
  const r = new FileReader();
  r.onload = ev => {
-  const lines = ev.target.result.split('\n').map(l=>l.trim()).filter(l=>l);
-  let added = 0; const start = lines[0].includes('รหัส') ? 1 : 0;
-  for(let i=start; i<lines.length; i++){
-   const cols = lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
-   if(cols.length >= 4) {
-    const code = cols[0], name = cols[1], num = parseInt(cols[2])||0, cl = cols[3];
-    if(code && name && cl && !ws.students.some(s=>s.code===code)){
-     ws.students.push({code, name, num, class:cl});
-     if(!ws.classes.includes(cl)) ws.classes.push(cl); added++;
+  try {
+   const lines = ev.target.result.split('\n').map(l=>l.trim()).filter(l=>l);
+   let added = 0; const start = lines[0].includes('รหัส') ? 1 : 0;
+   for(let i=start; i<lines.length; i++){
+    const cols = lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+    if(cols.length >= 4) {
+     const code = cols[0], name = cols[1], num = parseInt(cols[2])||0, cl = cols[3];
+     if(code && name && cl && !ws.students.some(s=>s.code===code)){
+      ws.students.push({code, name, num, class:cl});
+      if(!ws.classes.includes(cl)) ws.classes.push(cl); added++;
+     }
     }
    }
+   save(); populate(); renderStudents(); updateDash();
+   Swal.fire({icon:'success', title:'ดำเนินการเรียบร้อย', text:`อัปโหลดข้อมูลสำเร็จ เพิ่มนักเรียนใหม่จำนวน ${added} คน`});
+  } catch(err) {
+   Swal.fire({icon:'error', title:'ข้อผิดพลาด', text:'รูปแบบไฟล์ CSV ไม่ถูกต้อง'});
   }
-  save(); populate(); renderStudents(); updateDash();
-  Swal.fire({icon:'success', title:'นำเข้าสำเร็จ', text:`เพิ่มนักเรียนใหม่จำนวน ${added} คน`});
   e.target.value = '';
  };
  r.readAsText(f);
