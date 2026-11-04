@@ -57,31 +57,30 @@ td,th{padding:9px 10px;text-align:left;border-bottom:1px solid #e2e8f0;font-size
 .tn-title { display: flex; flex-direction: column; }
 .tn-menu { display: flex; gap: 8px; align-items: center; flex: 1; justify-content: center; overflow-x: auto; padding: 0 10px; }
 .tn-menu::-webkit-scrollbar { display: none; }
-.tn-btn { background: transparent; color: #64748b; font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 12px; transition: .2s; border: none; cursor: pointer; white-space: nowrap;}
-.tn-btn i { font-size: 20px; }
+.tn-btn { background: transparent; color: #64748b; font-size: 14px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 12px; transition: .2s; border: none; cursor: pointer; white-space: nowrap;}
+.tn-btn i { font-size: 24px; }
 .tn-btn:hover { background: #f8fafc; color: var(--main); }
 .tn-btn.act { color: var(--main); }
 .tn-btn.act i { color: var(--main); transform: scale(1.1); }
-.tn-btn.scan-btn { background: var(--main); color: #fff; padding: 8px 18px; border-radius: 14px; flex-direction: row; gap: 8px;}
-.tn-btn.scan-btn i { font-size: 22px; color: #fff;}
-.tn-btn.scan-btn span { font-size: 16px; }
+.tn-btn.scan-btn { background: var(--main); color: #fff; padding: 10px 22px; border-radius: 14px; flex-direction: row; gap: 10px;}
+.tn-btn.scan-btn i { font-size: 26px; color: #fff;}
+.tn-btn.scan-btn span { font-size: 17px; font-weight: 700; }
 .tn-btn.scan-btn:hover { background: var(--dark); color: #fff; transform: translateY(-2px);}
 .tn-btn.scan-btn.act { box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
 .tn-actions { display: flex; align-items: center; gap: 12px; }
-.tn-premium { background: #f59e0b; color: #000; font-weight: 700; padding: 8px 16px; border-radius: 99px; font-size:14px; box-shadow: 0 4px 10px rgba(245,158,11,0.2); border: none; cursor: pointer;}
-.tn-premium:hover { background: #d97706; transform: translateY(-1px);}
-.tn-user { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 99px; color: var(--main); font-weight: 600; font-size: 14px; cursor: pointer; position: relative; background: #fff; transition: .2s;}
+.tn-user { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 1px solid #e2e8f0; border-radius: 99px; color: var(--main); font-weight: 600; font-size: 15px; cursor: pointer; position: relative; background: #fff; transition: .2s;}
 .tn-user:hover { background: #f8fafc; border-color: #cbd5e1; }
-#user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); min-width: 160px; overflow: hidden; z-index: 50; border: 1px solid #f1f5f9;}
-#user-dropdown > div { padding: 12px 16px; color: #ef4444; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;}
-#user-dropdown > div:hover { background: #fef2f2; }
+#user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); min-width: 170px; overflow: hidden; z-index: 50; border: 1px solid #f1f5f9;}
+#user-dropdown > div { padding: 12px 16px; color: #475569; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;}
+#user-dropdown > div:hover { background: #f1f5f9; }
+#user-dropdown > .menu-danger { color: #ef4444; border-top: 1px solid #f1f5f9; }
+#user-dropdown > .menu-danger:hover { background: #fef2f2; }
 /* ลบ .tn-mobile-btn และปรับ CSS ให้เมนูบนเลื่อนได้ในมือถือ */
 
 @media (max-width: 1100px) {
     /* ให้เมนูตกลงมาอยู่บรรทัดที่ 2 บนมือถือ และปัดซ้าย-ขวาได้ */
     .top-nav-header { flex-wrap: wrap; padding: 10px; gap: 10px; }
     .tn-menu { order: 3; width: 100%; flex: none; justify-content: flex-start; padding-bottom: 4px; }
-    .tn-premium { display: none; }
     .tn-user span { display: none; }
     .tn-user { padding: 10px 14px; border-radius: 14px; }
 }
@@ -176,11 +175,11 @@ main{padding:14px 12px 80px}
     <div class="tn-menu" id="top-menu"></div>
 
     <div class="tn-actions">
-        <button class="tn-premium"><i class="fa-solid fa-crown"></i> Premium</button>
         <div class="tn-user" onclick="toggleUserMenu(event)">
-            <i class="fa-solid fa-user-circle" style="font-size: 20px;"></i> <span id="uname">ผู้ใช้</span> <i class="fa-solid fa-caret-down"></i>
+            <i class="fa-solid fa-user-circle" style="font-size: 22px;"></i> <span id="uname">ผู้ใช้</span> <i class="fa-solid fa-caret-down"></i>
             <div id="user-dropdown" class="hidden">
-                <div onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> ออกจากระบบ</div>
+                <div onclick="navTo('settings'); toggleUserMenu(event)"><i class="fa-solid fa-cog"></i> ตั้งค่าระบบ</div>
+                <div class="menu-danger" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> ออกจากระบบ</div>
             </div>
         </div>
         <!-- ลบปุ่ม Hamburger menu ออก -->
@@ -443,7 +442,6 @@ async function start(){
     { id: 'reports', label: 'สรุป', icon: 'fa-chart-pie' }
   ];
   if(admin) topNavItems.unshift({ id: 'admin', label: 'แอดมิน', icon: 'fa-users-cog' });
-  topNavItems.push({ id: 'settings', label: 'ตั้งค่า', icon: 'fa-cog' });
 
   $('top-menu').innerHTML = topNavItems.map(i => 
     `<button id="tm-${i.id}" class="tn-btn ${i.isSpecial?'scan-btn':''}" onclick="navTo('${i.id}')">
