@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>System Check - เช็คชื่อ/เช็คงาน 2IN1</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- เพิ่มลิงก์ FontAwesome CDN แก้ปัญหาไอคอนไม่แสดงผล -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -37,6 +39,7 @@ td,th{padding:9px 10px;text-align:left;border-bottom:1px solid #e2e8f0;font-size
 #login .ring .in{width:104px;height:104px;border-radius:50%;background:#fff;padding:8px;box-shadow:0 10px 28px #4f46e544,0 0 0 4px #eef2ff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #login .ring img{width:100%;height:100%;object-fit:contain}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(225,29,72,0.7)}70%{transform:scale(1.05);box-shadow:0 0 0 6px rgba(225,29,72,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(225,29,72,0)}}
 #login h1{margin:0;font-size:34px;font-weight:700;letter-spacing:-.5px}
 #login h1 span{background:linear-gradient(90deg,#4F46E5,#8B5CF6);-webkit-background-clip:text;background-clip:text;color:transparent}
 #login .tag{display:inline-block;margin:8px 0 18px;padding:5px 14px;border-radius:99px;background:#eef2ff;color:#3730A3;font-size:13px;font-weight:600;border:1px solid #4f46e533}
@@ -120,6 +123,14 @@ main{padding:14px 12px 80px}
 <div class="f"><label>ชื่อผู้ใช้ / อีเมล</label><div class="iw"><i>✉️</i><input id="l-email" type="text" autocapitalize="none" autocomplete="username" placeholder="ชื่อผู้ใช้ หรืออีเมล"></div></div>
 <div class="f"><label>รหัสผ่าน</label><div class="iw"><i>🔒</i><input id="l-pass" type="password" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()"></div></div>
 <button class="go" onclick="doLogin()">เข้าสู่ระบบ →</button>
+
+<!-- เพิ่มลิงก์สำหรับลืมรหัสผ่าน -->
+<div style="margin-top: 14px; margin-bottom: 8px; text-align: center;">
+    <a href="#" onclick="forgotPassword(); return false;" style="font-size: 14px; color: var(--main); text-decoration: none; font-weight: 500;">
+        <i class="fa-solid fa-key"></i> ลืมรหัสผ่านใช่ไหม?
+    </a>
+</div>
+
 <button class="reg" onclick="registerUser()">✨ สมัครสมาชิกใหม่ (รออนุมัติ)</button>
 </div></div>
 <footer>• <b>Innovation</b> • <b>Technology</b> • <b>Education</b> •</footer></div>
@@ -248,13 +259,12 @@ const LK='sc_local';
 
 function L(){
  let d; try{d=JSON.parse(localStorage.getItem(LK))}catch(e){}
- // เพิ่มบัญชีแอดมินฉุกเฉินกลับเข้ามา เพื่อป้องกันการเข้าสู่ระบบไม่ได้กรณี Supabase มีปัญหา
  if(!d||!d.ws)d={users:[{id:'admin_rescue',email:'admin@syscheck.app',pass:'1234',name:'แอดมินฉุกเฉิน',role:'admin',status:'active'}],ws:{}}; return d;
 }
 const LS=d=>localStorage.setItem(LK,JSON.stringify(d));
 
 const save=()=>{
- if(!me||!ws)return; // แก้ไขให้ Admin สามารถบันทึกข้อมูลงานตัวเองได้ด้วย
+ if(!me||!ws)return;
  if(SRC!=='auth'){const d=L();d.ws[me.id]=ws;LS(d);return}
  clearTimeout(saveT);saveT=setTimeout(async()=>{
   const r=await sb.from('workspaces').upsert({user_id:me.id,data:ws,updated_at:new Date().toISOString()});
@@ -288,7 +298,50 @@ function playSound(type) {
  } catch(e){}
 }
 
-/* AUTH */
+/* AUTH & FORGOT PASSWORD */
+async function forgotPassword() {
+    const { value: email } = await Swal.fire({
+        title: 'ตั้งรหัสผ่านใหม่',
+        input: 'email',
+        inputLabel: 'ใส่อีเมลของคุณเพื่อรับลิงก์สำหรับตั้งรหัสใหม่',
+        inputPlaceholder: 'email@school.com',
+        showCancelButton: true,
+        confirmButtonText: 'ส่งลิงก์รีเซ็ต',
+        cancelButtonText: 'ยกเลิก',
+        inputValidator: (value) => {
+            if (!value) return 'กรุณาใส่อีเมลของคุณ!';
+        }
+    });
+
+    if (email) {
+        Swal.fire({title:'กำลังตรวจสอบอีเมล...', allowOutsideClick:false, didOpen:()=>{Swal.showLoading()}});
+        
+        try {
+            const normalizedEmail = norm(email.trim());
+            const { data: profileCheck, error: checkError } = await sb.from('profiles').select('email').eq('email', normalizedEmail).maybeSingle();
+
+            if (checkError) {
+                Swal.fire('เกิดข้อผิดพลาด', esc(checkError.message), 'error');
+                return;
+            }
+
+            if (!profileCheck) {
+                Swal.fire('อีเมลไม่ถูกต้อง', 'ไม่พบอีเมลนี้ในระบบ หรืออาจจะยังไม่ได้สมัครสมาชิกครับ', 'error');
+                return;
+            }
+
+            const { data, error } = await sb.auth.resetPasswordForEmail(normalizedEmail, {
+                redirectTo: window.location.origin, 
+            });
+
+            if (error) Swal.fire('ข้อผิดพลาด', esc(error.message), 'error');
+            else Swal.fire('ส่งลิงก์สำเร็จ!','กรุณาตรวจสอบกล่องจดหมาย (หรือ Junk mail) ในอีเมลของคุณ เพื่อคลิกลิงก์ตั้งรหัสผ่านใหม่','success');
+        } catch (err) {
+            Swal.fire('เกิดข้อผิดพลาด', esc(String(err)), 'error');
+        }
+    }
+}
+
 async function enter(user){
  const {data:p,error:pe}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
  if(pe||!p){await sb.auth.signOut();SRC='local';return Swal.fire('ไม่พบโปรไฟล์ในระบบ','ระบบยังไม่พร้อมใช้งาน (รอฐานข้อมูลจัดการโปรไฟล์)','error')}
@@ -309,7 +362,6 @@ async function doLogin(){
   var authErr=r.error.message;
  }catch(x){var authErr=String(x)}
  
- // 🚨 ประตูหลัง: แอดมินฉุกเฉิน (ทะลุทุกเงื่อนไข)
  if((e==='admin' || e==='admin@syscheck.app') && p==='1234') {
   SRC='local'; btn.disabled=false;
   return gate({id:'admin_rescue',email:'admin@syscheck.app',name:'แอดมิน (ฉุกเฉิน)',role:'admin',status:'active'});
@@ -328,8 +380,11 @@ async function start(){
   if(me && me.name) $('uname').textContent=me.name;
   const admin=me?.role==='admin';
   $('sub').textContent=admin?'Admin Management':(me?.name||'ผู้ใช้')+' 👤';
-  const items=admin?[['admin','👥 จัดการสมาชิก'],['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','🪪 พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
+  const items=admin?[['admin','👥 จัดการสมาชิก'],['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','<i class="fa-solid fa-id-card"></i> พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']]:[['scan','📷 สแกน QR Code'],['check','✅ ตรวจงาน / เช็คชื่อ'],['students','🧑‍🎓 ฐานข้อมูลนักเรียน'],['cards','<i class="fa-solid fa-id-card"></i> พิมพ์บัตรประจำตัว'],['setup','📚 วิชา / ชิ้นงาน'],['random','🎲 สุ่มนักเรียน'],['reports','📊 รายงาน'],['settings','⚙ ตั้งค่าระบบ']];
   $('menu').innerHTML=items.map(i=>`<button id="m-${i[0]}" onclick="navTo('${i[0]}')">${i[1]}</button>`).join('');
+  
+  // เรียกฟังก์ชันตรวจสอบครูที่รออนุมัติ (เฉพาะแอดมิน)
+  if (admin) checkPendingUsers(true);
   
   try {
    if(SRC==='auth'){
@@ -352,7 +407,6 @@ async function start(){
   ws.logs = ws.logs || [];
   ws.settings = ws.settings || {scanTitle:'สแกน QR Code 2IN1',scanLogo:''};
 
-  // MIGRATION: Convert old string arrays to object arrays {id, name} to preserve data integrity on rename
   let migrated = false;
   ws.activities = ws.activities.map(a => { if(typeof a==='string'){ migrated=true; return {id:genId('a'), name:a}; } return a; });
   ws.behaviors = ws.behaviors.map(b => { if(typeof b==='string'){ migrated=true; return {id:genId('b'), name:b}; } return b; });
@@ -383,6 +437,34 @@ async function start(){
   $('login').classList.remove('hidden');$('app').classList.add('hidden');
   Swal.fire('ข้อผิดพลาดระบบ', 'กรุณากด Ctrl+F5 หรือล้างแคชเบราว์เซอร์ของคุณ', 'error');
  }
+}
+
+/* ฟังก์ชันตรวจสอบครูที่รออนุมัติ (แจ้งเตือน) */
+async function checkPendingUsers(showToast = false) {
+  if (!me || me.role !== 'admin' || SRC !== 'auth') return;
+  try {
+    const { count, error } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+    const menuBtn = document.getElementById('m-admin');
+    
+    if (!error && menuBtn) {
+      if (count > 0) {
+        // เพิ่มตัวเลขสีแดงพร้อม Effect กระพริบที่ปุ่มเมนู
+        menuBtn.innerHTML = `👥 จัดการสมาชิก <span style="background:#e11d48;color:white;padding:2px 7px;border-radius:10px;font-size:12px;margin-left:5px;animation:pulse 1.5s infinite;display:inline-block;">${count} ใหม่</span>`;
+        // แสดง Toast แจ้งเตือนมุมขวาบนเมื่อล็อกอิน
+        if (showToast) {
+          Swal.fire({
+            toast: true, position: 'top-end', icon: 'info',
+            title: `มีคุณครูรอการอนุมัติ ${count} บัญชี`,
+            showConfirmButton: false, timer: 5000,
+            background: '#fff', color: '#1e293b'
+          });
+        }
+      } else {
+        // ไม่มีคนรออนุมัติ ให้แสดงเมนูปกติ
+        menuBtn.innerHTML = `👥 จัดการสมาชิก`;
+      }
+    }
+  } catch(e) { console.error(e); }
 }
 
 function toggleSide(){$('side').classList.toggle('open');$('ov').classList.toggle('hidden')}
@@ -461,6 +543,9 @@ async function renderAdmin(){
  if(error)return $('admin-body').innerHTML='<tr><td colspan="4" style="color:#e11d48">โหลดข้อมูลไม่สำเร็จ: '+esc(error.message)+'</td></tr>';
  $('admin-body').innerHTML=(data||[]).map(u=>{const stt=u.status||'active',k=st[stt]||st.pending,id=esc(u.id);return `<tr><td>${esc(u.name)}</td><td>${esc(shown(u.email))}</td><td><span class="badge ${k[0]}">${k[1]}</span></td>
  <td><button class="${stt==='active'?'r':'ok'}" onclick="toggleUser('${id}','${stt==='active'?'disabled':'active'}')">${stt==='active'?'ปิด':'เปิด'}</button></td></tr>`}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ยังไม่มีคุณครูในระบบ</td></tr>';
+ 
+ // อัปเดตตัวเลขแจ้งเตือนใหม่ หลังจากที่มีการเปลี่ยนสถานะ
+ checkPendingUsers(false);
 }
 async function toggleUser(id,status){const r=await setStatus(id,status);if(r&&r.error)Swal.fire('ผิดพลาด',esc(r.error.message),'error');renderAdmin()}
 
@@ -480,7 +565,6 @@ async function adminAddUser(){
   const {data, error} = await tmp.auth.signUp({email:norm(v.e),password:v.p,options:{data:{name:v.n}}});
   if(error) return Swal.fire('เพิ่มไม่ได้',esc(error.message),'error');
   
-  // อัปเดตสถานะเป็นเปิดใช้งานทันที ถ้าแอดมินเลือก
   const uid = data?.user?.id;
   if(uid && v.s === 'active' && SRC === 'auth') {
     setTimeout(async () => {
@@ -491,7 +575,9 @@ async function adminAddUser(){
     setTimeout(renderAdmin, 1500);
   }
   
-  Swal.fire({icon:'success',title:'เพิ่มสำเร็จ!',text:'ระบบได้เพิ่มบัญชีครูเข้าสู่ฐานข้อมูล Supabase แล้ว',timer:2500});
+  Swal.fire({icon:'success',title:'เพิ่มสำเร็จ!',text:'ระบบได้เพิ่มบัญชีครูเข้าสู่ฐานข้อมูล Supabase แล้ว',timer:2500}).then(() => {
+    window.location.reload(); 
+  });
  } catch(x) { 
   Swal.fire('ข้อผิดพลาด', esc(String(x)), 'error');
  }
