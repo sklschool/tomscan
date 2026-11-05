@@ -124,9 +124,10 @@ main{padding:14px 12px 20px}
 .swal2-popup{width:min(92vw,420px)!important;padding:20px 16px!important}
 #login .reg{width:100%;margin-top:10px;padding:13px;font-size:16px;border-radius:16px;background:#fff;color:var(--main);border:2px solid #4F46E555;box-shadow:none}
 
-.dash-box{background:var(--light);border-radius:14px;padding:12px;text-align:center;flex:1}
-.dash-box .n{font-size:28px;font-weight:700;color:var(--main);line-height:1.2}
-.dash-box .l{font-size:13px;color:var(--dark);font-weight:600}
+.dash-box{background:var(--light);border-radius:16px;padding:16px 12px;text-align:center;flex:1;transition:all 0.3s ease;position:relative;}
+.dash-box:hover{transform:translateY(-4px);}
+.dash-box .n{font-size:32px;font-weight:800;color:var(--main);line-height:1.2;margin-bottom:4px;text-shadow:1px 1px 0px rgba(255,255,255,0.6);}
+.dash-box .l{font-size:14px;color:var(--dark);font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;}
 
 @media print{
  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
@@ -198,10 +199,20 @@ main{padding:14px 12px 20px}
 
 <section id="s-scan" class="card hidden np">
 <div style="text-align:center;margin-bottom:14px"><div id="scan-logo" style="font-size:44px"></div><h2 id="scan-title" style="margin:0">สแกน QR Code 2IN1</h2></div>
-<div class="row" style="margin-bottom:14px">
-    <div class="dash-box" style="background:#e0f2fe"><div class="n" id="dash-class" style="color:#0284c7">0</div><div class="l" style="color:#075985">จำนวนห้อง</div></div>
-    <div class="dash-box"><div class="n" id="dash-total">0</div><div class="l">นักเรียนทั้งหมด</div></div>
-    <div class="dash-box" style="background:#d1fae5"><div class="n" id="dash-scan" style="color:#047857">0</div><div class="l" style="color:#065f46">สแกนวันนี้</div></div>
+<!-- ส่วนที่อัปเดตสีกล่อง Dashboard ใหม่ -->
+<div class="row" style="margin-bottom:18px; gap:12px;">
+    <div class="dash-box" style="background:linear-gradient(135deg,#3b82f6,#2563eb);border:1px solid #60a5fa;box-shadow:0 8px 16px -4px rgba(37,99,235,0.3)">
+        <div class="n" id="dash-class" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.2)">0</div>
+        <div class="l" style="color:#f8fafc"><i class="fa-solid fa-layer-group"></i> จำนวนห้อง</div>
+    </div>
+    <div class="dash-box" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);border:1px solid #a78bfa;box-shadow:0 8px 16px -4px rgba(124,58,237,0.3)">
+        <div class="n" id="dash-total" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.2)">0</div>
+        <div class="l" style="color:#f8fafc"><i class="fa-solid fa-users"></i> นร.ทั้งหมด</div>
+    </div>
+    <div class="dash-box" style="background:linear-gradient(135deg,#10b981,#059669);border:1px solid #34d399;box-shadow:0 8px 16px -4px rgba(5,150,105,0.3)">
+        <div class="n" id="dash-scan" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.2)">0</div>
+        <div class="l" style="color:#f8fafc"><i class="fa-solid fa-qrcode"></i> สแกนวันนี้</div>
+    </div>
 </div>
 <div class="seg">
     <button id="sc-d" class="act" onclick="setMode('scan','daily')">กิจกรรมรายวัน</button>
@@ -322,7 +333,7 @@ main{padding:14px 12px 20px}
 
 <section id="s-settings" class="card hidden np"><h2>ตั้งค่าระบบ</h2>
 <label>ข้อความหัวหน้าสแกน</label><input id="set-title">
-<label>โลโก้หน้าสแกน</label><input type="file" id="set-logo" accept="image/*" onchange="previewLogo(event)">
+<label>โลโกหน้าสแกน</label><input type="file" id="set-logo" accept="image/*" onchange="previewLogo(event)">
 <img id="set-prev" class="hidden" style="width:64px;height:64px;object-fit:cover;border-radius:12px">
 <button style="margin:8px 0" onclick="saveScan()">บันทึกหน้าสแกน</button>
 <h3>ธีมสี</h3><div class="themes" id="themes"></div><button onclick="confirmTheme()">✔ บันทึกชุดสี</button></section>
@@ -681,10 +692,13 @@ async function registerUser(){
 
 async function listUsers(){
  let list = [];
- if(SRC==='auth'){const r=await sb.from('profiles').select('*').neq('role','admin').order('name'); list = r.data||[];}
+ if(SRC==='auth'){const r=await profiles_select(); list = r.data||[];}
  const localUsers = L().users.filter(u=>u.role!=='admin');
  localUsers.forEach(lu => { if(!list.some(u => u.email === lu.email)) list.push(lu); });
  return{data:list, error:null};
+}
+async function profiles_select(){
+    return await sb.from('profiles').select('*').neq('role','admin').order('name');
 }
 async function setStatus(id,status){
  if(SRC==='auth')await sb.from('profiles').update({status}).eq('id',id);
