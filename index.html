@@ -456,7 +456,7 @@ async function forgotPassword() {
                 Swal.fire('ไม่พบข้อมูล', 'อีเมลไม่ถูกต้อง หรือยังไม่ได้สมัครสมาชิก', 'error');
                 return;
             }
-            const { error: resetErr } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+            const { error: resetErr } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://sklschool.github.io/tomscan/' });
             if (resetErr) throw resetErr;
             Swal.fire('สำเร็จ', 'ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว', 'success');
         } catch(e) {
