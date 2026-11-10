@@ -21,8 +21,9 @@
 *{box-sizing:border-box;font-family:Kanit,sans-serif}
 body{margin:0;background:#F8FAFC;color:#1e293b;-webkit-tap-highlight-color:transparent}
 .hidden{display:none!important}
-button{cursor:pointer;border:0;border-radius:12px;padding:10px 16px;font-weight:600;background:var(--main);color:#fff;font-size:15px}
+button{cursor:pointer;border:0;border-radius:12px;padding:10px 16px;font-weight:600;background:var(--main);color:#fff;font-size:15px;transition:0.2s}
 button.g{background:#e2e8f0;color:#334155}button.r{background:#f43f5e}button.ok{background:#10b981}
+button:hover{transform:translateY(-1px);filter:brightness(1.05)}
 input,select{width:100%;padding:12px 14px;border:1px solid #cbd5e1;border-radius:12px;font-size:16px;background:#fff;margin:4px 0}
 input:focus,select:focus{outline:0;border-color:var(--main)}
 .card{background:#fff;border-radius:20px;padding:20px;box-shadow:0 2px 12px #4f46e51a;max-width:760px;margin:0 auto 16px}
@@ -102,7 +103,7 @@ main{padding:14px 12px 20px}
 .scard .t{display:flex;align-items:center;gap:2mm;color:#fff;padding:1.6mm 3mm;font-weight:700;font-size:3.6mm;line-height:1.1}
 .scard .t img{height:7mm;width:7mm;object-fit:contain;background:#fff;border-radius:50%;padding:.4mm;flex:none}
 .scard .b{flex:1;display:flex;gap:3mm;align-items:center;padding:2mm 3.5mm;overflow:hidden}
-.scard .b>div:first-child{flex:1;min-width:0}
+.scard .b .info{flex:1;min-width:0}
 .scard .nm{font-weight:700;font-size:4.2mm;line-height:1.25;margin-bottom:1.5mm;word-break:break-word}
 .scard .ln{font-size:3.2mm;color:#475569;line-height:1.5}
 .scard .f{height:4.6mm;font-size:2.6mm;display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.3mm}
@@ -130,7 +131,7 @@ main{padding:14px 12px 20px}
 .dash-box .l{font-size:14px;color:var(--dark);font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;}
 
 @media print{
- *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+ *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important; color-adjust:exact!important;}
  body.pc{background:#fff;}
  body.pc main{padding:0!important;}
  body.pc #s-cards{padding:0!important;margin:0!important;box-shadow:none!important;border:none!important;max-width:none!important;}
@@ -140,7 +141,15 @@ main{padding:14px 12px 20px}
  .pc .sheet{margin:0 auto!important;padding:8mm 0!important;box-shadow:none!important;break-after:page;page-break-after:always;zoom:1!important;transform:none!important;height:296mm!important;}
  .pc .sheet:last-child{break-after:auto;page-break-after:auto;}
  .pc .scard{border:0.5mm dashed #cbd5e1!important;}
+ 
+ body.printing-port > *:not(#print-port-area) { display: none !important; }
+ body.printing-port { background: #fff !important; margin: 0; padding: 0; }
+ body.printing-port #print-port-area { display: block !important; position: static; width: 100%; }
+ .port-page { break-after: page; page-break-after: always; padding: 20mm 15mm; background: #fff; }
 }
+
+/* ดันหน้าต่างแจ้งเตือนให้อยู่หน้าสุดเสมอ เพื่อไม่ให้ Kiosk บัง */
+.swal2-container { z-index: 999999 !important; }
 </style>
 </head>
 <body>
@@ -199,7 +208,6 @@ main{padding:14px 12px 20px}
 
 <section id="s-scan" class="card hidden np">
 <div style="text-align:center;margin-bottom:14px"><div id="scan-logo" style="font-size:44px"></div><h2 id="scan-title" style="margin:0">สแกน QR Code 2IN1</h2></div>
-<!-- ส่วนที่อัปเดตสีกล่อง Dashboard ใหม่ ให้เข้มและไล่ระดับสวยงาม -->
 <div class="row" style="margin-bottom:18px; gap:12px;">
     <div class="dash-box" style="background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);border:none;box-shadow:0 8px 16px -4px rgba(30,60,114,0.4)">
         <div class="n" id="dash-class" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.3)">0</div>
@@ -222,6 +230,10 @@ main{padding:14px 12px 20px}
 <div id="sc-daily"><select id="scan-act" onchange="try{updateDash()}catch(e){}"></select></div>
 <div id="sc-score" class="hidden"><select id="scan-sub" onchange="try{fillAssign('scan-asg','scan-sub')}catch(e){}"></select><div class="row"><select id="scan-asg" onchange="try{updateDash()}catch(e){}"></select><input id="scan-val" type="number" placeholder="คะแนน"></div></div>
 <div id="sc-behavior" class="hidden"><div class="row"><select id="scan-beh" onchange="try{updateDash()}catch(e){}"></select><input id="scan-beh-val" type="number" placeholder="แต้ม (ค่าเริ่มต้น +1)"></div></div>
+
+<button class="menu-btn" style="width:100%; margin-bottom:12px; background:linear-gradient(135deg, #f59e0b, #d97706); color:white; justify-content:center; box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);" onclick="startKiosk()">
+    <i class="fas fa-desktop"></i> เปิดโหมด Kiosk (จุดสแกนสำหรับนักเรียน)
+</button>
 
 <div class="row" style="margin:8px 0">
     <button id="btn-cam" style="flex:1" onclick="toggleCamera()">📷 เปิดกล้องสแกน</button>
@@ -325,11 +337,10 @@ main{padding:14px 12px 20px}
     <canvas id="rep-chart"></canvas>
 </div>
 
-<div class="np row" style="margin-bottom:8px"><button class="ok" onclick="exportCSV()">⬇ โหลด CSV (Excel)</button><button class="r" onclick="window.print()">พิมพ์ PDF</button></div>
+<div class="np row" style="margin-bottom:8px"><button class="ok" onclick="exportCSV()">⬇ โหลด CSV (Excel)</button><button class="r" onclick="window.print()">พิมพ์ตาราง PDF</button></div>
 <div class="tw"><table><thead><tr><th>ห้อง</th><th>เลขที่</th><th>ชื่อ</th><th>ผล</th></tr></thead><tbody id="rep-body"><tr><td colspan="4" style="text-align:center;color:#94a3b8">กรุณากดค้นหาข้อมูล</td></tr></tbody></table></div>
 </section>
 
-<!-- ส่วนของตัดเกรดที่เพิ่มเข้ามาใหม่ -->
 <section id="s-grade" class="card hidden np">
     <h2>ตัดเกรด (คำนวณผลการเรียน)</h2>
     <div class="row">
@@ -373,6 +384,36 @@ main{padding:14px 12px 20px}
 </div>
 </div>
 
+<!-- ==========================================
+     พื้นที่สำหรับโหมด Kiosk (นักเรียนสแกนเอง)
+     ========================================== -->
+<div id="kiosk-mode" class="hidden" style="position:fixed; inset:0; z-index:99999; background:radial-gradient(circle at center, #F8FAFC, #E2E8F0); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; overflow:hidden;">
+    <button style="position:absolute; top:20px; right:20px; background:#ef4444; border-radius:30px; padding:12px 24px; box-shadow:0 4px 12px rgba(239,68,68,0.3);" onclick="exitKiosk()">
+        <i class="fas fa-lock"></i> ปิดโหมด Kiosk (สำหรับครู)
+    </button>
+    <div style="text-align:center; animation: fadeInDown 0.8s ease;">
+        <h1 style="font-size:clamp(2rem, 5vw, 3.5rem); color:var(--main); margin-bottom:10px; text-shadow: 2px 2px 0px #fff;">🏫 จุดสแกนเช็คชื่อด้วยตัวเอง</h1>
+        <p style="font-size:clamp(1.2rem, 3vw, 1.8rem); color:#475569; margin-bottom:30px; font-weight:600;">✨ หยิบบัตรนักเรียนมาสแกนได้เลยลูก! ✨</p>
+    </div>
+    
+    <div style="background:white; padding:20px; border-radius:30px; box-shadow:0 20px 40px rgba(0,0,0,0.1); margin-bottom:30px; border:4px solid var(--main);">
+        <div id="kiosk-reader" style="width:100%; max-width:400px; aspect-ratio:1; background:#f1f5f9; border-radius:20px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-qrcode" style="font-size:60px; color:#cbd5e1;"></i>
+        </div>
+    </div>
+    
+    <input id="kiosk-input" style="opacity:0; position:absolute; z-index:-1" onblur="if(!document.body.classList.contains('swal2-shown') && !document.getElementById('kiosk-mode').classList.contains('hidden')) this.focus()" onkeydown="if(event.key==='Enter'){ kioskScan(this.value); this.value=''; }">
+    
+    <div style="font-size:18px; color:#64748b; background:white; padding:10px 20px; border-radius:30px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+        <i class="fas fa-barcode"></i> รองรับปืนยิงบาร์โค้ด และกล้องสแกน
+    </div>
+</div>
+
+<!-- ==========================================
+     พื้นที่สำหรับ พิมพ์รายงาน PDF (Portfolio A4)
+     ========================================== -->
+<div id="print-port-area" class="hidden"></div>
+
 <script>
 const THEMES={indigo:['#4F46E5','#EEF2FF','#3730A3','#8B5CF6'],emerald:['#10B981','#ECFDF5','#047857','#34D399'],rose:['#E11D48','#FFF1F2','#9F1239','#FB7185'],sky:['#0EA5E9','#F0F9FF','#0369A1','#38BDF8'],amber:['#D97706','#FFFBEB','#92400E','#FBBF24'],slate:['#475569','#F1F5F9','#1E293B','#94A3B8']};
 const $=id=>document.getElementById(id);
@@ -393,7 +434,6 @@ const newWS=()=>({
 const SB_URL='https://iyqmurdgbsrhaggtwrub.supabase.co',SB_KEY='sb_publishable_vfa92rWZX43Yw6YaOg2Fig_7KQ66lMz';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 
-// เพิ่มตัวดักจับลิงก์เปลี่ยนรหัสผ่านทันที
 sb.auth.onAuthStateChange(async (event, session) => {
     if (event === 'PASSWORD_RECOVERY') {
         const { value: newPassword } = await Swal.fire({
@@ -423,7 +463,7 @@ const DOM='@syscheck.app',norm=u=>u.includes('@')?u:u+DOM,shown=e=>String(e||'-'
 const LK='sc_local';
 
 let reportChart = null; 
-let repTimeView = 'daily'; // ตัวแปรสำหรับเก็บมุมมองการค้นหารายงาน (daily, month, room)
+let repTimeView = 'daily'; 
 
 function L(){
  let d; try{d=JSON.parse(localStorage.getItem(LK))}catch(e){}
@@ -443,7 +483,6 @@ const save=()=>{
 let me=null,ws=null,mode={scan:'daily',check:'daily',reports:'daily'},cam=null,camOn=false,tempTheme='indigo',tempLogo='',repRows=[];
 let soundEnabled = localStorage.getItem('sc_sound') !== 'false';
 
-/* AUDIO (Web Audio API) */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
  if(!soundEnabled) return;
@@ -488,7 +527,6 @@ function toggleSound() {
     if(soundEnabled) playSound('ok');
 }
 
-/* AUTH & FORGOT PASSWORD */
 async function forgotPassword() {
     const { value: email } = await Swal.fire({
         title: 'ตั้งรหัสผ่านใหม่',
@@ -511,7 +549,6 @@ async function forgotPassword() {
                 Swal.fire('ไม่พบข้อมูล', 'อีเมลไม่ถูกต้อง หรือยังไม่ได้สมัครสมาชิก', 'error');
                 return;
             }
-            // แก้ไขล็อกเป้าหมายไปที่ URL โปรเจกต์คุณครู
             const { error: resetErr } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://sklschool.github.io/tomscan/' });
             if (resetErr) throw resetErr;
             Swal.fire('สำเร็จ', 'ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว', 'success');
@@ -566,7 +603,6 @@ function gate(u) {
 
 async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await sb.auth.signOut();if(camOn)toggleCamera();me=null;ws=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');}
 
-/* START & MIGRATION */
 async function start(){
  try {
   $('login').classList.add('hidden');$('app').classList.remove('hidden');
@@ -582,7 +618,7 @@ async function start(){
     { id: 'cards', label: 'บัตร', icon: 'fa-id-badge' },
     { id: 'random', label: 'สุ่ม', icon: 'fa-dice' },
     { id: 'reports', label: 'สรุป', icon: 'fa-chart-pie' },
-    { id: 'grade', label: 'ตัดเกรด', icon: 'fa-graduation-cap' } // เมนูตัดเกรดย้ายมาต่อท้าย
+    { id: 'grade', label: 'ตัดเกรด', icon: 'fa-graduation-cap' }
   ];
   if(admin) topNavItems.unshift({ id: 'admin', label: 'แอดมิน', icon: 'fa-users-cog' });
 
@@ -593,7 +629,6 @@ async function start(){
   ).join('');
 
   updateSoundBtn(); 
-  
   if (admin) checkPendingUsers(true);
   
   try {
@@ -615,7 +650,7 @@ async function start(){
   ws.behaviors = ws.behaviors || [];
   ws.students = ws.students || [];
   ws.logs = ws.logs || [];
-  ws.grades = ws.grades || []; // ป้องกันกรณีข้อมูลเก่าไม่มีฟิลด์นี้
+  ws.grades = ws.grades || []; 
   ws.settings = ws.settings || {scanTitle:'สแกน QR Code 2IN1',scanLogo:''};
 
   let migrated = false;
@@ -871,7 +906,6 @@ async function editSetup(k,i){
  }
 }
 
-// อัปเดต SweetAlert แจ้งเตือนก่อนลบกิจกรรม
 async function delSetup(k,i){
   const arr = k==='a'?ws.activities:(k==='b'?ws.behaviors:ws.assignments);
   const item = arr[i];
@@ -967,7 +1001,7 @@ function saveCheck(){
 function renderStudents(){
  const q=$('stu-q').value.toLowerCase(),c=$('stu-class').value;
  $('stu-body').innerHTML=ws.students.filter(s=>(!c||s.class===c)&&(!q||s.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)))
- .map(s=>`<tr><td><b style="color:var(--main)">${esc(s.code)}</b></td><td>${s.num}. ${esc(s.name)}</td><td><span class="badge">${esc(s.class)}</span></td><td style="white-space:nowrap"><button class="ok" onclick="viewPortfolio('${esc(s.code)}')" title="ประวัติ">🔍</button> <button class="g" onclick="delStudent('${esc(s.code)}')">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
+ .map(s=>`<tr><td><b style="color:var(--main)">${esc(s.code)}</b></td><td>${s.num}. ${esc(s.name)}</td><td><span class="badge">${esc(s.class)}</span></td><td style="white-space:nowrap"><button class="g" style="background:#3b82f6;color:white;padding:10px;" onclick="uploadPic('${esc(s.code)}')" title="ใส่รูป">🖼️</button> <button class="ok" onclick="viewPortfolio('${esc(s.code)}')" title="ประวัติ">🔍</button> <button class="g" onclick="delStudent('${esc(s.code)}')">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
 }
 async function addStudent(){
  const {value:v}=await Swal.fire({title:'เพิ่มนักเรียน',html:'<input id="n-c" class="swal2-input" placeholder="รหัส"><input id="n-n" class="swal2-input" placeholder="ชื่อ-สกุล"><input id="n-num" type="number" class="swal2-input" placeholder="เลขที่"><input id="n-cl" class="swal2-input" placeholder="ห้อง เช่น ป.1">',
@@ -979,7 +1013,6 @@ async function addStudent(){
  if(!v)return;if(!ws.classes.includes(v.class))ws.classes.push(v.class);ws.students.push(v);save();populate();renderStudents();updateDash();
 }
 
-// อัปเดต SweetAlert แจ้งเตือนก่อนลบนักเรียน
 async function delStudent(code){
   const s = ws.students.find(x=>x.code===code);
   if(!s) return;
@@ -998,6 +1031,52 @@ async function delStudent(code){
       save();renderStudents();updateDash();
       Swal.fire({icon:'success',title:'ลบข้อมูลสำเร็จ',showConfirmButton:false,timer:1500});
   }
+}
+
+function resizeImage(file, maxWidth, maxHeight) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                if (width > height) {
+                    if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+                } else {
+                    if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
+                }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.6));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function uploadPic(code) {
+    const s = ws.students.find(x => x.code === code);
+    if(!s) return;
+    const { value: file } = await Swal.fire({
+        title: `อัปโหลดรูป: ${esc(s.name)}`,
+        input: 'file',
+        inputAttributes: { 'accept': 'image/*', 'aria-label': 'อัปโหลดรูปภาพนักเรียน' },
+        showCancelButton: true,
+        confirmButtonText: 'บันทึกรูป',
+        cancelButtonText: 'ยกเลิก'
+    });
+    if (file) {
+        Swal.fire({title:'กำลังประมวลผล...', allowOutsideClick:false, didOpen:()=>{Swal.showLoading()}});
+        const base64 = await resizeImage(file, 200, 260); 
+        s.pic = base64;
+        save();
+        renderStudents();
+        Swal.fire({icon:'success', title:'บันทึกรูปสำเร็จ', timer:1200, showConfirmButton:false});
+    }
 }
 
 async function deleteClass() {
@@ -1076,7 +1155,7 @@ function renderCards(){
   part.forEach((s,j)=>{
    const qrId = 'qr-code-' + p + '-' + j;
    const d=document.createElement('div');d.className='scard';
-   d.innerHTML=`<div class="t" style="background:${col}"><img src="${logo}" alt="" onerror="this.style.display='none'"><span>${t}</span></div><div class="b"><div><div class="nm">${esc(s.name)}</div><div class="ln">รหัส: <b>${esc(s.code)}</b></div><div class="ln">ชั้น: <b>${esc(s.class)}</b>${s.num?' &nbsp; เลขที่: <b>'+s.num+'</b>':''}</div></div><div class="qrb" id="${qrId}"></div></div><div class="f" style="background:${col}">สแกน QR Code เพื่อเช็คชื่อ</div>`;
+   d.innerHTML=`<div class="t" style="background:${col}"><img src="${logo}" alt="" onerror="this.style.display='none'"><span>${t}</span></div><div class="b"><div style="width:17mm;height:22mm;background:#f1f5f9;border-radius:2mm;overflow:hidden;flex:none;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:9px;">${s.pic ? `<img src="${s.pic}" style="width:100%;height:100%;object-fit:cover;">` : 'รูป'}</div><div class="info"><div class="nm">${esc(s.name)}</div><div class="ln">รหัส: <b>${esc(s.code)}</b></div><div class="ln">ชั้น: <b>${esc(s.class)}</b>${s.num?' &nbsp; เลขที่: <b>'+s.num+'</b>':''}</div></div><div class="qrb" id="${qrId}"></div></div><div class="f" style="background:${col}">สแกน QR Code เพื่อเช็คชื่อ</div>`;
    sh.appendChild(d);
   });
   box.appendChild(sh);
@@ -1092,7 +1171,6 @@ function renderCards(){
  }
 }
 
-/* ฟังก์ชันรายงานที่อัปเดตเพื่อรองรับ สถิติรายวัน / รายเดือน / ภาพรวมห้อง */
 function fetchReport(){
  const c=$('rep-class').value;
  const d=mode.reports==='daily', b=mode.reports==='behavior';
@@ -1112,19 +1190,17 @@ function fetchReport(){
   } else if(repTimeView === 'month') {
       if(month) fLogs = logs.filter(l=>l.date.startsWith(month));
   }
-  // ถ้าเป็น 'room' (ภาพรวมห้อง) จะใช้ fLogs = logs คือรวมทั้งหมดตั้งแต่วันแรก
   
   if(repTimeView === 'daily') {
-      const l = fLogs.pop(); // เอาข้อมูลล่าสุดของวันนั้น
+      const l = fLogs.pop(); 
       const good = l&&(d?l.value==='มา':true);
       if(good) ok++;
       return { class:s.class, num:s.num, name:s.name, res:l?(d?l.value:l.value+(b?' แต้ม':' คะแนน')):(d?'ไม่มีข้อมูล':'ยังไม่บันทึก'), good:!!good };
   } else {
-      // โหมดสรุปรายเดือน หรือ ภาพรวม (Aggregate)
       if(d){
           const countCome = fLogs.filter(l=>l.value==='มา').length;
-          const countAll = fLogs.length; // จำนวนครั้งที่ถูกเช็คชื่อทั้งหมด (รวมขาด/ลา/ป่วย)
-          if(countCome > 0) ok++; // นับว่ามีความสำเร็จถ้ามาเรียนอย่างน้อย 1 ครั้ง
+          const countAll = fLogs.length; 
+          if(countCome > 0) ok++; 
           return { class:s.class, num:s.num, name:s.name, res: countCome>0?`มาเรียน ${countCome} ครั้ง`:(!countAll?'ไม่มีข้อมูล':`มาเรียน 0 ครั้ง`), good: countCome>0 };
       } else {
           const sum = fLogs.reduce((acc,l)=>acc+(parseFloat(l.value)||0),0);
@@ -1139,7 +1215,6 @@ function fetchReport(){
  $('rep-pct').textContent=pct+'%';
  $('rep-body').innerHTML=repRows.map(r=>`<tr><td>${esc(r.class)}</td><td>${r.num}</td><td>${esc(r.name)}</td><td><span class="badge ${r.good?'b-ok':'b-no'}">${esc(r.res)}</span></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center">ไม่พบนักเรียน</td></tr>';
 
- /* ---- โค้ดส่วนวาดกราฟ Chart.js ---- */
  const fail = st.length - ok;
  const chartWrapper = $('chart-wrapper');
  const ctx = $('rep-chart');
@@ -1154,7 +1229,6 @@ function fetchReport(){
     let labelSuccess = d ? 'มาเรียน' : (b ? 'ได้แต้มแล้ว' : 'ส่งงาน/บันทึกแล้ว');
     let labelFail = d ? 'ขาด/ลา/ยังไม่เช็ค' : (b ? 'ยังไม่ได้แต้ม' : 'ยังไม่ส่งงาน');
     
-    // ปรับคำอธิบายกราฟนิดหน่อยสำหรับมุมมองรวม
     if(repTimeView !== 'daily') {
         labelSuccess = d ? 'มาเรียนอย่างน้อย 1 ครั้ง' : (b ? 'ได้แต้มสะสมแล้ว' : 'มีคะแนนสะสมแล้ว');
         labelFail = d ? 'ไม่เคยมาเรียนเลย' : (b ? 'ไม่มีแต้มเลย' : 'ยังไม่มีคะแนน');
@@ -1217,17 +1291,14 @@ function drawWheel(){
   g.fillStyle='#fff';
   g.font=`600 ${fs}px Kanit`;
   
-  // เพิ่มเงาให้ข้อความในวงล้ออ่านง่ายขึ้น
   g.shadowColor = 'rgba(0,0,0,0.5)';
   g.shadowBlur = 4;
   
-  // ตัดคำนำหน้าชื่อและนามสกุลออก ให้เหลือแค่ชื่อจริง
   let shortName = String(x.name||'').replace(/^(เด็กชาย|เด็กหญิง|ด\.ช\.|ด\.ญ\.|นาย|นางสาว|นาง)\s*/, '').split(' ')[0];
   const mx = n>50 ? 0 : (n>25 ? 10 : 16);
   const t = n>50 ? String(x.num) : (x.num + '. ' + shortName);
   const lb = mx && t.length > mx ? t.slice(0,mx) + '…' : t;
   
-  // ขยับ margin เข้ามาจากขอบเล็กน้อย (จาก R-18 เป็น R-22) ให้ดูเป็นระเบียบขึ้น
   g.fillText(lb,R-22,fs/3);
   g.restore();
  });
@@ -1272,6 +1343,7 @@ function viewPortfolio(code) {
  Swal.fire({
   title: `พอร์ตโฟลิโอ: ${s.name}`,
   html: `
+   ${s.pic ? `<img src="${s.pic}" style="width:100px;height:120px;object-fit:cover;border-radius:12px;margin:10px auto;box-shadow:0 4px 10px rgba(0,0,0,0.15);display:block;">` : ''}
    <div style="text-align:left; font-size:15px; display:flex; flex-direction:column; gap:10px; margin-top:10px;">
     <div style="background:#f1f5f9; padding:12px; border-radius:12px; border-left: 4px solid var(--main)">
      <b>📅 สถิติการเข้าเรียน</b><br>
@@ -1287,14 +1359,259 @@ function viewPortfolio(code) {
     </div>
    </div>
   `,
-  confirmButtonText: 'ปิด',
-  confirmButtonColor: 'var(--main)'
+  showCancelButton: true,
+  confirmButtonText: '<i class="fas fa-print"></i> พิมพ์ PDF',
+  cancelButtonText: 'ปิด',
+  confirmButtonColor: '#4F46E5'
+ }).then((result) => {
+    if (result.isConfirmed) {
+        printPortfolio(code);
+    }
  });
 }
 
-/* ==========================================
- * ฟังก์ชันหน้าตัดเกรด (ใหม่)
- * ========================================== */
+function printPortfolio(code) {
+    const s = ws.students.find(x => x.code === code);
+    if(!s) return;
+    
+    const myLogs = ws.logs.filter(l => l.code === code);
+    const daily = myLogs.filter(l => l.type === 'daily');
+    const score = myLogs.filter(l => l.type === 'score');
+    const beh = myLogs.filter(l => l.type === 'behavior');
+    
+    const countCome = daily.filter(l => l.value === 'มา').length;
+    const countAbsent = daily.filter(l => l.value === 'ขาด').length;
+    const countLeave = daily.filter(l => l.value === 'ลา' || l.value === 'ป่วย').length;
+    const totalAtt = countCome + countAbsent + countLeave;
+    
+    let pctC = 0, pctL = 0, pctA = 0;
+    if(totalAtt > 0) {
+        pctC = Math.round((countCome/totalAtt)*100);
+        pctL = Math.round((countLeave/totalAtt)*100);
+        pctA = 100 - pctC - pctL;
+    }
+    
+    const totalScore = score.reduce((sum, l) => sum + (parseFloat(l.value)||0), 0);
+    const totalBeh = beh.reduce((sum, l) => sum + (parseFloat(l.value)||0), 0);
+    
+    const myGrades = (ws.grades||[]).filter(g => g.code === code);
+    const gradeHtml = myGrades.length === 0 ? '<p style="color:#94a3b8; text-align:center;">ยังไม่มีข้อมูลผลการเรียน (เกรด)</p>' : `
+        <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+            <thead>
+                <tr style="background:#f1f5f9;">
+                    <th style="border:1px solid #cbd5e1; padding:8px; text-align:left;">วิชา</th>
+                    <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">เก็บ</th>
+                    <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">กลาง</th>
+                    <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">ปลาย</th>
+                    <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">รวม</th>
+                    <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">เกรด</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${myGrades.map(g => {
+                    const col = parseFloat(g.collect)||0;
+                    const mid = parseFloat(g.mid)||0;
+                    const fin = parseFloat(g.final)||0;
+                    const sum = col + mid + fin;
+                    let gd = '0';
+                    if(sum >= 80) gd = '4'; else if(sum >= 75) gd = '3.5'; else if(sum >= 70) gd = '3';
+                    else if(sum >= 65) gd = '2.5'; else if(sum >= 60) gd = '2'; else if(sum >= 55) gd = '1.5'; else if(sum >= 50) gd = '1';
+                    
+                    return `<tr>
+                        <td style="border:1px solid #cbd5e1; padding:8px;">${esc(g.subject)}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">${col}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">${mid}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">${fin}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px; text-align:center; font-weight:bold;">${sum}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px; text-align:center; font-weight:bold; color:var(--main);">${gd}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+    
+    const logo = ws.settings?.scanLogo || 'https://i0.wp.com/kroocool.com/wp-content/uploads/2024/03/%E0%B8%AA%E0%B8%9E%E0%B8%90.png';
+    
+    const html = `
+    <div class="port-page" style="font-family:'Kanit',sans-serif; color:#1e293b; line-height:1.6;">
+        <div style="text-align:center; margin-bottom:20px; border-bottom:2px solid var(--main); padding-bottom:15px;">
+            <img src="${logo}" style="width:80px; height:80px; object-fit:contain;">
+            <h1 style="margin:10px 0 5px; color:var(--main); font-size:24px;">รายงานผลสัมฤทธิ์และพฤติกรรมผู้เรียน</h1>
+            <p style="margin:0; font-size:16px;">ปีการศึกษา ${new Date().getFullYear() + 543}</p>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px; background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; -webkit-print-color-adjust:exact; align-items:center;">
+            <div style="display:flex; gap:15px; align-items:center;">
+                ${s.pic ? `<img src="${s.pic}" style="width:70px; height:90px; object-fit:cover; border-radius:8px; border:2px solid #cbd5e1;">` : ''}
+                <div>
+                    <h3 style="margin:0 0 10px; font-size:18px;">ข้อมูลนักเรียน</h3>
+                    <p style="margin:0;"><b>ชื่อ-สกุล:</b> ${esc(s.name)}</p>
+                    <p style="margin:0;"><b>รหัสประจำตัว:</b> ${esc(s.code)}</p>
+                    <p style="margin:0;"><b>ชั้น:</b> ${esc(s.class)} <b>เลขที่:</b> ${s.num}</p>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <p style="margin:0; font-size:14px; color:#64748b;">วันที่พิมพ์: ${today()}</p>
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:20px; margin-bottom:20px;">
+            <div style="flex:1; background:#fff; padding:15px; border-radius:10px; border:1px solid #e2e8f0; text-align:center; -webkit-print-color-adjust:exact;">
+                <h3 style="margin:0 0 15px; font-size:16px;">สถิติการมาเรียน</h3>
+                <div style="position:relative; width:140px; height:140px; margin:0 auto; border-radius:50%; background:conic-gradient(#10b981 0% ${pctC}%, #f59e0b ${pctC}% ${pctC+pctL}%, #ef4444 ${pctC+pctL}% 100%);">
+                    <div style="position:absolute; inset:20px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                        <span style="font-size:24px; font-weight:bold; color:#10b981;">${pctC}%</span>
+                        <span style="font-size:12px; color:#64748b;">มาเรียน</span>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-around; margin-top:15px; font-size:14px;">
+                    <div><span style="color:#10b981;">●</span> มา ${countCome}</div>
+                    <div><span style="color:#f59e0b;">●</span> ลา ${countLeave}</div>
+                    <div><span style="color:#ef4444;">●</span> ขาด ${countAbsent}</div>
+                </div>
+            </div>
+            
+            <div style="flex:1; display:flex; flex-direction:column; gap:20px;">
+                <div style="background:#eff6ff; padding:20px; border-radius:10px; border:1px solid #bfdbfe; text-align:center; flex:1; display:flex; flex-direction:column; justify-content:center; -webkit-print-color-adjust:exact;">
+                    <h3 style="margin:0 0 5px; font-size:16px; color:#1d4ed8;">คะแนนเก็บชิ้นงานรวม</h3>
+                    <span style="font-size:36px; font-weight:bold; color:#2563eb;">${totalScore}</span>
+                </div>
+                <div style="background:#fffbeb; padding:20px; border-radius:10px; border:1px solid #fde68a; text-align:center; flex:1; display:flex; flex-direction:column; justify-content:center; -webkit-print-color-adjust:exact;">
+                    <h3 style="margin:0 0 5px; font-size:16px; color:#b45309;">แต้มความดี / พฤติกรรม</h3>
+                    <span style="font-size:36px; font-weight:bold; color:#d97706;">${totalBeh}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background:#fff; padding:15px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:20px; -webkit-print-color-adjust:exact;">
+            <h3 style="margin:0 0 10px; font-size:16px;">สรุปผลการเรียน</h3>
+            ${gradeHtml}
+        </div>
+        
+        <div style="margin-top:40px; display:flex; justify-content:space-around; text-align:center;">
+            <div>
+                <p>ลงชื่อ.........................................................</p>
+                <p>(.........................................................)</p>
+                <p>ครูประจำชั้น / ผู้สอน</p>
+            </div>
+            <div>
+                <p>ลงชื่อ.........................................................</p>
+                <p>(.........................................................)</p>
+                <p>ผู้ปกครอง</p>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    $('print-port-area').innerHTML = html;
+    document.body.classList.add('printing-port');
+    setTimeout(() => {
+        window.print();
+        document.body.classList.remove('printing-port');
+    }, 500);
+}
+
+window.kioskBusy = false;
+async function startKiosk() {
+    const act = $('scan-act').value;
+    if(!act) return Swal.fire('แจ้งเตือน', 'กรุณาเลือก "กิจกรรมรายวัน" ในหน้าสแกน ก่อนเปิดโหมด Kiosk ครับ', 'warning');
+    
+    const {value: pin} = await Swal.fire({
+        title: 'เปิดโหมด Kiosk',
+        html: `โหมดนี้สำหรับตั้งให้นักเรียนสแกนเอง (จำกัดสิทธิ์การแก้ไขข้อมูล)<br><br><b>ตั้งรหัส PIN 4 หลัก</b> เพื่อป้องกันนักเรียนกดปิด:<br><input id="k-pin" type="password" class="swal2-input" placeholder="เช่น 1234">`,
+        showCancelButton: true,
+        confirmButtonText: 'เริ่มใช้งาน',
+        cancelButtonText: 'ยกเลิก',
+        preConfirm: () => {
+            const p = document.getElementById('k-pin').value;
+            if(!p) Swal.showValidationMessage('กรุณาตั้งรหัส PIN ด้วยครับ');
+            return p;
+        }
+    });
+
+    if(pin) {
+        window.kioskPin = pin;
+        $('kiosk-mode').classList.remove('hidden');
+        $('kiosk-input').value = '';
+        $('kiosk-input').focus();
+        
+        try {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            if(!window.kioskCam) window.kioskCam = new Html5Qrcode('kiosk-reader');
+            window.kioskCam.start({facingMode:'environment'}, {fps:10, qrbox:250}, t => {
+                kioskScan(t);
+            }, ()=>{});
+        } catch(e) {
+            console.log('Kiosk Camera Init Failed', e);
+        }
+    }
+}
+
+async function exitKiosk() {
+    const {value: pin} = await Swal.fire({
+        title: 'ใส่รหัส PIN เพื่อปิดโหมด',
+        input: 'password',
+        showCancelButton: true,
+        confirmButtonText: 'ตกลง',
+        cancelButtonText: 'ยกเลิก'
+    });
+    if(pin === window.kioskPin) {
+        $('kiosk-mode').classList.add('hidden');
+        if(window.kioskCam) { window.kioskCam.stop().catch(()=>{}); }
+        updateDash();
+    } else if(pin) {
+        Swal.fire('รหัสไม่ถูกต้อง', '', 'error');
+        setTimeout(() => $('kiosk-input').focus(), 500);
+    } else {
+        setTimeout(() => $('kiosk-input').focus(), 500);
+    }
+}
+
+function kioskScan(code) {
+    if(window.kioskBusy) return;
+    window.kioskBusy = true;
+    setTimeout(() => { window.kioskBusy = false; }, 3500);
+    
+    const s = ws.students.find(x => x.code === code);
+    if(!s) {
+        playSound('err');
+        Swal.fire({title: 'ไม่พบข้อมูล', text: 'ไม่พบรหัสนักเรียนในระบบ', icon: 'error', timer: 1500, showConfirmButton: false});
+        return;
+    }
+    
+    const date = today();
+    const act = $('scan-act').value;
+    const old = ws.logs.find(l => l.type === 'daily' && l.item === act && l.date === date && l.code === code && l.value === 'มา');
+    
+    if(old) {
+        playSound('dup');
+        Swal.fire({
+            html: `<div style="font-size:60px; margin-bottom:10px;">😅</div><b style="font-size:26px; color:#f59e0b">${esc(s.name)}</b><br><br><span style="font-size:18px;">หนูสแกนเช็คชื่อไปแล้วลูก!</span>`,
+            showConfirmButton: false,
+            timer: 2500
+        });
+        return;
+    }
+    
+    addLog('daily', act, date, code, 'มา', nowT());
+    save();
+    playSound('ok');
+    
+    const myBeh = ws.logs.filter(l => l.type === 'behavior' && l.code === code);
+    const totalPoints = myBeh.reduce((acc, l) => acc + (parseFloat(l.value)||0), 0);
+    
+    Swal.fire({
+        html: `<div style="font-size:60px; margin-bottom:10px;">🎉</div><b style="font-size:26px; color:var(--main)">${esc(s.name)}</b><br><br><span style="font-size:18px; color:#10b981; font-weight:bold;">เช็คชื่อเรียบร้อย!</span><br><br>🌟 แต้มความดีสะสม: <b>${totalPoints}</b> แต้ม`,
+        showConfirmButton: false,
+        timer: 3500,
+        backdrop: `rgba(16, 185, 129, 0.1)` 
+    });
+    
+    if(typeof confetti !== 'undefined') confetti({particleCount: 80, spread: 70, origin: {y: 0.6}, zIndex: 100000});
+    
+    setTimeout(() => $('kiosk-input').focus(), 3600);
+}
+
 function fetchGrade() {
     const sub = $('gr-sub').value;
     const c = $('gr-class').value;
@@ -1314,7 +1631,6 @@ function fetchGrade() {
     }).join('') || '<tr><td colspan="6" style="text-align:center">ไม่พบนักเรียน</td></tr>';
     
     $('gr-wrap').classList.remove('hidden');
-    // คำนวณเบื้องต้นตอนดึงข้อมูลเสร็จ
     document.querySelectorAll('#gr-body tr').forEach(tr => calcGrade(tr.querySelector('.g-col')));
 }
 
@@ -1351,9 +1667,7 @@ function saveGrade() {
         const mid = tr.querySelector('.g-mid').value;
         const fin = tr.querySelector('.g-fin').value;
         
-        // ลบข้อมูลเก่าออกก่อน
         ws.grades = ws.grades.filter(x => !(x.code === code && x.subject === sub));
-        // ถ้ามีการกรอกคะแนน ให้บันทึก
         if(col !== '' || mid !== '' || fin !== '') {
             ws.grades.push({code, subject:sub, class:c, collect:col, mid, final:fin});
         }
@@ -1368,15 +1682,26 @@ function loadScan(){
  $('scan-logo').innerHTML=s.scanLogo?`<img src="${s.scanLogo}" style="width:80px;height:80px;object-fit:cover;border-radius:16px">`:'📱';
  $('set-prev').classList.toggle('hidden',!s.scanLogo);if(s.scanLogo)$('set-prev').src=s.scanLogo;
 }
+
 function previewLogo(e){
  const f=e.target.files[0];if(!f)return;const r=new FileReader();
  r.onload=ev=>{tempLogo=ev.target.result;$('set-prev').src=tempLogo;$('set-prev').classList.remove('hidden')};r.readAsDataURL(f);
 }
-function saveScan(){ws.settings.scanTitle=$('set-title').value.trim()||'สแกน QR Code 2IN1';ws.settings.scanLogo=tempLogo;save();loadScan();Swal.fire({icon:'success',title:'บันทึกสำเร็จ',timer:1200,showConfirmButton:false})}
-function applyTheme(k){const t=THEMES[k];if(!t)return;['main','light','dark','accent'].forEach((n,i)=>document.documentElement.style.setProperty('--'+n,t[i]))}
+
+function saveScan(){
+ ws.settings.scanTitle=$('set-title').value.trim()||'สแกน QR Code 2IN1';ws.settings.scanLogo=tempLogo;save();loadScan();
+ Swal.fire({icon:'success',title:'บันทึกสำเร็จ',timer:1200,showConfirmButton:false});
+}
+
+function applyTheme(k){
+ const t=THEMES[k];if(!t)return;
+ ['main','light','dark','accent'].forEach((n,i)=>document.documentElement.style.setProperty('--'+n,t[i]));
+}
+
 function renderThemes(){
  $('themes').innerHTML=Object.keys(THEMES).map(k=>`<span title="${k}" data-k="${k}" class="${k===tempTheme?'act':''}" style="background:${THEMES[k][0]}" onclick="pickTheme('${k}')"></span>`).join('');
 }
+
 function pickTheme(k){tempTheme=k;applyTheme(k);renderThemes()}
 function confirmTheme(){localStorage.setItem('sc_theme',tempTheme);Swal.fire({icon:'success',title:'บันทึกชุดสีแล้ว',timer:1200,showConfirmButton:false})}
 
@@ -1459,7 +1784,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
   });
   tempTheme=localStorage.getItem('sc_theme')||'indigo';applyTheme(tempTheme);
-  try{const {data}=await sb.auth.getSession();if(data.session){SRC='auth';return enter(data.session.user)}}catch(e){}
+  try{const {data}=await sb.auth.getSession();if(data.session){SRC='auth';return gate(data.session.user)}}catch(e){}
   
   const sess = localStorage.getItem('sc_sess');
   if(sess){
