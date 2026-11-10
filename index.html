@@ -199,18 +199,18 @@ main{padding:14px 12px 20px}
 
 <section id="s-scan" class="card hidden np">
 <div style="text-align:center;margin-bottom:14px"><div id="scan-logo" style="font-size:44px"></div><h2 id="scan-title" style="margin:0">สแกน QR Code 2IN1</h2></div>
-<!-- ส่วนที่อัปเดตสีกล่อง Dashboard ใหม่ -->
+<!-- ส่วนที่อัปเดตสีกล่อง Dashboard ใหม่ ให้เข้มและไล่ระดับสวยงาม -->
 <div class="row" style="margin-bottom:18px; gap:12px;">
-    <div class="dash-box" style="background:linear-gradient(135deg,#3b82f6,#2563eb);border:1px solid #60a5fa;box-shadow:0 8px 16px -4px rgba(37,99,235,0.3)">
-        <div class="n" id="dash-class" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.2)">0</div>
+    <div class="dash-box" style="background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);border:none;box-shadow:0 8px 16px -4px rgba(30,60,114,0.4)">
+        <div class="n" id="dash-class" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.3)">0</div>
         <div class="l" style="color:#f8fafc"><i class="fa-solid fa-layer-group"></i> จำนวนห้อง</div>
     </div>
-    <div class="dash-box" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);border:1px solid #a78bfa;box-shadow:0 8px 16px -4px rgba(124,58,237,0.3)">
-        <div class="n" id="dash-total" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.2)">0</div>
+    <div class="dash-box" style="background:linear-gradient(135deg,#4a00e0 0%,#8e2de2 100%);border:none;box-shadow:0 8px 16px -4px rgba(74,0,224,0.4)">
+        <div class="n" id="dash-total" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.3)">0</div>
         <div class="l" style="color:#f8fafc"><i class="fa-solid fa-users"></i> นร.ทั้งหมด</div>
     </div>
-    <div class="dash-box" style="background:linear-gradient(135deg,#10b981,#059669);border:1px solid #34d399;box-shadow:0 8px 16px -4px rgba(5,150,105,0.3)">
-        <div class="n" id="dash-scan" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.2)">0</div>
+    <div class="dash-box" style="background:linear-gradient(135deg,#11998e 0%,#38ef7d 100%);border:none;box-shadow:0 8px 16px -4px rgba(17,153,142,0.4)">
+        <div class="n" id="dash-scan" style="color:#ffffff;text-shadow:1px 2px 4px rgba(0,0,0,0.3)">0</div>
         <div class="l" style="color:#f8fafc"><i class="fa-solid fa-qrcode"></i> สแกนวันนี้</div>
     </div>
 </div>
@@ -290,7 +290,6 @@ main{padding:14px 12px 20px}
 <button id="btn-rnd" style="width:100%;padding:14px;font-size:18px" onclick="startRandom()">🎲 หมุนวงล้อ</button>
 </section>
 
-<!-- ส่วนของรายงาน (Reports) ที่ถูกอัปเดต -->
 <section id="s-reports" class="card hidden">
 <div class="np">
     <div class="row" style="align-items:center; justify-content:space-between; margin-bottom:12px">
@@ -322,13 +321,43 @@ main{padding:14px 12px 20px}
 
 <div style="text-align:center;margin:16px 0"><div class="big" id="rep-count" style="color:#1e293b">0</div>คน · อัตราความสำเร็จ <b id="rep-pct" style="color:#10b981">0%</b></div>
 
-<!-- พื้นที่สำหรับแสดงกราฟสรุปผล -->
 <div id="chart-wrapper" class="hidden" style="position: relative; height: 260px; width: 100%; max-width: 320px; margin: 0 auto 20px;">
     <canvas id="rep-chart"></canvas>
 </div>
 
 <div class="np row" style="margin-bottom:8px"><button class="ok" onclick="exportCSV()">⬇ โหลด CSV (Excel)</button><button class="r" onclick="window.print()">พิมพ์ PDF</button></div>
 <div class="tw"><table><thead><tr><th>ห้อง</th><th>เลขที่</th><th>ชื่อ</th><th>ผล</th></tr></thead><tbody id="rep-body"><tr><td colspan="4" style="text-align:center;color:#94a3b8">กรุณากดค้นหาข้อมูล</td></tr></tbody></table></div>
+</section>
+
+<!-- ส่วนของตัดเกรดที่เพิ่มเข้ามาใหม่ -->
+<section id="s-grade" class="card hidden np">
+    <h2>ตัดเกรด (คำนวณผลการเรียน)</h2>
+    <div class="row">
+        <select id="gr-sub"></select>
+        <select id="gr-class"></select>
+    </div>
+    <button style="width:100%;margin-top:8px" onclick="fetchGrade()">ดึงรายชื่อนักเรียน</button>
+    <div id="gr-wrap" class="hidden">
+        <div class="row" style="align-items:center;margin:12px 0">
+            <b style="flex:1">รายชื่อนักเรียน</b>
+            <button class="ok" style="flex:0 0 auto" onclick="saveGrade()">บันทึกคะแนน</button>
+        </div>
+        <div class="tw">
+            <table>
+                <thead>
+                    <tr>
+                        <th>เลขที่-ชื่อ</th>
+                        <th>เก็บ</th>
+                        <th>กลาง</th>
+                        <th>ปลาย</th>
+                        <th>รวม</th>
+                        <th>เกรด</th>
+                    </tr>
+                </thead>
+                <tbody id="gr-body"></tbody>
+            </table>
+        </div>
+    </div>
 </section>
 
 <section id="s-settings" class="card hidden np"><h2>ตั้งค่าระบบ</h2>
@@ -358,11 +387,37 @@ const newWS=()=>({
  assignments:[{id:genId('s'), name:'ชิ้นงานที่ 1', subject:'วิทยาการคำนวณ'}],
  behaviors:[{id:genId('b'), name:'ตอบคำถามถูก'},{id:genId('b'), name:'จิตอาสา'},{id:genId('b'), name:'ช่วยเหลืองานครู'},{id:genId('b'), name:'ทำเวร'}],
  students:[{code:'ST101',num:1,name:'เด็กชายสมชาย ใจดี',class:'ป.1'},{code:'ST102',num:2,name:'เด็กหญิงสมหญิง รักเรียน',class:'ป.1'}],
- logs:[], settings:{scanTitle:'สแกน QR Code 2IN1',scanLogo:''}
+ logs:[], grades:[], settings:{scanTitle:'สแกน QR Code 2IN1',scanLogo:''}
 });
 
 const SB_URL='https://iyqmurdgbsrhaggtwrub.supabase.co',SB_KEY='sb_publishable_vfa92rWZX43Yw6YaOg2Fig_7KQ66lMz';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
+
+// เพิ่มตัวดักจับลิงก์เปลี่ยนรหัสผ่านทันที
+sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+        const { value: newPassword } = await Swal.fire({
+            title: 'ตั้งรหัสผ่านใหม่',
+            input: 'password',
+            inputLabel: 'กรุณากรอกรหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)',
+            inputPlaceholder: 'รหัสผ่านใหม่',
+            showCancelButton: false,
+            confirmButtonText: 'บันทึกรหัสผ่าน',
+            allowOutsideClick: false
+        });
+
+        if (newPassword) {
+            const { error } = await sb.auth.updateUser({ password: newPassword });
+            if (error) {
+                Swal.fire('ข้อผิดพลาด', error.message, 'error');
+            } else {
+                await Swal.fire({title: 'สำเร็จ!', text: 'อัปเดตรหัสผ่านเรียบร้อยแล้ว คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้ทันที', icon: 'success'});
+                window.location.href = 'https://sklschool.github.io/tomscan/';
+            }
+        }
+    }
+});
+
 let saveT,SRC='local',ulist=[];
 const DOM='@syscheck.app',norm=u=>u.includes('@')?u:u+DOM,shown=e=>String(e||'-').endsWith(DOM)?e.slice(0,-DOM.length):(e||'-');
 const LK='sc_local';
@@ -456,6 +511,7 @@ async function forgotPassword() {
                 Swal.fire('ไม่พบข้อมูล', 'อีเมลไม่ถูกต้อง หรือยังไม่ได้สมัครสมาชิก', 'error');
                 return;
             }
+            // แก้ไขล็อกเป้าหมายไปที่ URL โปรเจกต์คุณครู
             const { error: resetErr } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://sklschool.github.io/tomscan/' });
             if (resetErr) throw resetErr;
             Swal.fire('สำเร็จ', 'ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว', 'success');
@@ -525,7 +581,8 @@ async function start(){
     { id: 'setup', label: 'กิจกรรม', icon: 'fa-list' },
     { id: 'cards', label: 'บัตร', icon: 'fa-id-badge' },
     { id: 'random', label: 'สุ่ม', icon: 'fa-dice' },
-    { id: 'reports', label: 'สรุป', icon: 'fa-chart-pie' }
+    { id: 'reports', label: 'สรุป', icon: 'fa-chart-pie' },
+    { id: 'grade', label: 'ตัดเกรด', icon: 'fa-graduation-cap' } // เมนูตัดเกรดย้ายมาต่อท้าย
   ];
   if(admin) topNavItems.unshift({ id: 'admin', label: 'แอดมิน', icon: 'fa-users-cog' });
 
@@ -558,6 +615,7 @@ async function start(){
   ws.behaviors = ws.behaviors || [];
   ws.students = ws.students || [];
   ws.logs = ws.logs || [];
+  ws.grades = ws.grades || []; // ป้องกันกรณีข้อมูลเก่าไม่มีฟิลด์นี้
   ws.settings = ws.settings || {scanTitle:'สแกน QR Code 2IN1',scanLogo:''};
 
   let migrated = false;
@@ -752,9 +810,9 @@ const opts=(a,t)=>(t?`<option value="">-- ${t} --</option>`:'')+a.map(i=>`<optio
 const optsObj=(a,t)=>(t?`<option value="">-- ${t} --</option>`:'')+a.map(i=>`<option value="${esc(i.id)}">${esc(i.name)}</option>`).join('');
 
 function populate(){
- ['chk-class','stu-class','rep-class'].forEach(i=>$(i).innerHTML=opts(ws.classes,'ทุกห้อง'));
+ ['chk-class','stu-class','rep-class','gr-class'].forEach(i=>$(i).innerHTML=opts(ws.classes,'ทุกห้อง'));
  ['cd-class','rnd-class'].forEach(i=>$(i).innerHTML=opts(ws.classes,'เลือกห้อง'));
- ['scan-sub','chk-sub','rep-sub'].forEach(i=>$(i).innerHTML=opts(ws.subjects,'เลือกวิชา'));
+ ['scan-sub','chk-sub','rep-sub','gr-sub'].forEach(i=>$(i).innerHTML=opts(ws.subjects,'เลือกวิชา'));
  $('setup-filter').innerHTML=opts(ws.subjects,'วิชาทั้งหมด');
  
  ['scan-act','chk-act','rep-act'].forEach(i=>$(i).innerHTML=optsObj(ws.activities,'เลือกกิจกรรม'));
@@ -812,7 +870,27 @@ async function editSetup(k,i){
   if(v) { if(!ws.subjects.includes(v.sub)) ws.subjects.push(v.sub); ws.assignments[i].name = v.n; ws.assignments[i].subject = v.sub; save(); populate(); }
  }
 }
-function delSetup(k,i){(k==='a'?ws.activities:(k==='b'?ws.behaviors:ws.assignments)).splice(i,1);save();populate()}
+
+// อัปเดต SweetAlert แจ้งเตือนก่อนลบกิจกรรม
+async function delSetup(k,i){
+  const arr = k==='a'?ws.activities:(k==='b'?ws.behaviors:ws.assignments);
+  const item = arr[i];
+  const {isConfirmed} = await Swal.fire({
+      title: 'ยืนยันการลบ?',
+      html: `ต้องการลบรายการ <b>${esc(item.name)}</b> ใช่หรือไม่?<br><span style="color:#ef4444;font-size:14px;">(ข้อมูลการบันทึกจะหายไป)</span>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'ใช่, ลบเลย',
+      cancelButtonText: 'ยกเลิก'
+  });
+  if(isConfirmed) {
+      arr.splice(i,1);
+      save();populate();
+      Swal.fire({icon:'success',title:'ลบรายการสำเร็จ',showConfirmButton:false,timer:1500});
+  }
+}
 
 function toggleCamera(){
  const b=$('btn-cam'),c=$('qr-reader');
@@ -900,7 +978,27 @@ async function addStudent(){
   return{code,name,class:cl,num}}});
  if(!v)return;if(!ws.classes.includes(v.class))ws.classes.push(v.class);ws.students.push(v);save();populate();renderStudents();updateDash();
 }
-function delStudent(code){ws.students=ws.students.filter(s=>s.code!==code);save();renderStudents();updateDash();}
+
+// อัปเดต SweetAlert แจ้งเตือนก่อนลบนักเรียน
+async function delStudent(code){
+  const s = ws.students.find(x=>x.code===code);
+  if(!s) return;
+  const {isConfirmed} = await Swal.fire({
+      title: 'ยืนยันการลบนักเรียน?',
+      html: `ต้องการลบข้อมูลของ <b>${esc(s.name)}</b> ใช่หรือไม่?<br><span style="color:#ef4444;font-size:14px;">ข้อมูลคะแนนและการเข้าเรียนจะหายไปด้วย</span>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'ใช่, ลบเลย',
+      cancelButtonText: 'ยกเลิก'
+  });
+  if(isConfirmed) {
+      ws.students=ws.students.filter(x=>x.code!==code);
+      save();renderStudents();updateDash();
+      Swal.fire({icon:'success',title:'ลบข้อมูลสำเร็จ',showConfirmButton:false,timer:1500});
+  }
+}
 
 async function deleteClass() {
   const c = $('stu-class').value;
@@ -1192,6 +1290,76 @@ function viewPortfolio(code) {
   confirmButtonText: 'ปิด',
   confirmButtonColor: 'var(--main)'
  });
+}
+
+/* ==========================================
+ * ฟังก์ชันหน้าตัดเกรด (ใหม่)
+ * ========================================== */
+function fetchGrade() {
+    const sub = $('gr-sub').value;
+    const c = $('gr-class').value;
+    if(!sub || !c) return Swal.fire({icon:'warning', text:'กรุณาเลือกวิชาและห้องเรียน'});
+    
+    const st = ws.students.filter(s => s.class === c);
+    $('gr-body').innerHTML = st.map(s => {
+        const g = (ws.grades||[]).find(x => x.code === s.code && x.subject === sub) || {collect:'', mid:'', final:''};
+        return `<tr data-code="${esc(s.code)}">
+            <td><small>${s.num}.</small> <b>${esc(s.name)}</b></td>
+            <td><input type="number" class="g-col" style="width:60px;padding:6px;margin:0;font-size:14px" value="${g.collect}" oninput="calcGrade(this)"></td>
+            <td><input type="number" class="g-mid" style="width:60px;padding:6px;margin:0;font-size:14px" value="${g.mid}" oninput="calcGrade(this)"></td>
+            <td><input type="number" class="g-fin" style="width:60px;padding:6px;margin:0;font-size:14px" value="${g.final}" oninput="calcGrade(this)"></td>
+            <td class="g-sum" style="font-weight:bold;text-align:center;color:var(--dark)">0</td>
+            <td class="g-res" style="font-weight:bold;color:var(--main);text-align:center;font-size:18px">-</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="6" style="text-align:center">ไม่พบนักเรียน</td></tr>';
+    
+    $('gr-wrap').classList.remove('hidden');
+    // คำนวณเบื้องต้นตอนดึงข้อมูลเสร็จ
+    document.querySelectorAll('#gr-body tr').forEach(tr => calcGrade(tr.querySelector('.g-col')));
+}
+
+function calcGrade(inp) {
+    const tr = inp.closest('tr');
+    const col = parseFloat(tr.querySelector('.g-col').value) || 0;
+    const mid = parseFloat(tr.querySelector('.g-mid').value) || 0;
+    const fin = parseFloat(tr.querySelector('.g-fin').value) || 0;
+    const sum = col + mid + fin;
+    tr.querySelector('.g-sum').textContent = sum;
+    
+    let g = '0';
+    if(sum >= 80) g = '4';
+    else if(sum >= 75) g = '3.5';
+    else if(sum >= 70) g = '3';
+    else if(sum >= 65) g = '2.5';
+    else if(sum >= 60) g = '2';
+    else if(sum >= 55) g = '1.5';
+    else if(sum >= 50) g = '1';
+    
+    tr.querySelector('.g-res').textContent = g;
+    if(sum < 50) tr.querySelector('.g-res').style.color = '#ef4444';
+    else tr.querySelector('.g-res').style.color = 'var(--main)';
+}
+
+function saveGrade() {
+    const sub = $('gr-sub').value;
+    const c = $('gr-class').value;
+    if(!ws.grades) ws.grades = [];
+    
+    document.querySelectorAll('#gr-body tr[data-code]').forEach(tr => {
+        const code = tr.dataset.code;
+        const col = tr.querySelector('.g-col').value;
+        const mid = tr.querySelector('.g-mid').value;
+        const fin = tr.querySelector('.g-fin').value;
+        
+        // ลบข้อมูลเก่าออกก่อน
+        ws.grades = ws.grades.filter(x => !(x.code === code && x.subject === sub));
+        // ถ้ามีการกรอกคะแนน ให้บันทึก
+        if(col !== '' || mid !== '' || fin !== '') {
+            ws.grades.push({code, subject:sub, class:c, collect:col, mid, final:fin});
+        }
+    });
+    save();
+    Swal.fire({icon:'success', title:'บันทึกเกรดสำเร็จ', timer:1500, showConfirmButton:false});
 }
 
 function loadScan(){
