@@ -153,6 +153,74 @@ main{padding:14px 12px 20px}
 </style>
 </head>
 <body>
+<!-- PUBLIC PORTAL (หน้าต่างสำหรับนักเรียนเช็คงาน) -->
+<div id="public-portal" class="hidden" style="position:fixed;inset:0;background:#f3f4f6;z-index:90000;overflow-y:auto;padding:20px 16px;">
+    <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 4px 15px rgba(0,0,0,0.05);padding:30px 20px;">
+        <!-- หน้าค้นหา -->
+        <div id="pp-search">
+            <div style="text-align:center;">
+                <img id="pp-logo" src="" style="width:80px;height:80px;object-fit:contain;border-radius:50%;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <h2 id="pp-school" style="color:#2563eb;margin:0 0 10px;font-size:22px;">ชื่อโรงเรียน</h2>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;display:inline-block;padding:6px 16px;border-radius:99px;font-size:13px;color:#475569;margin-bottom:20px;"><i class="fa-solid fa-chalkboard-user"></i> ครูผู้สอน: <span id="pp-teacher">...</span></div>
+                <h3 style="margin:0 0 5px;color:#1e293b;font-size:18px;">เช็คผลนักเรียนออนไลน์</h3>
+                <p style="color:#64748b;font-size:13px;margin:0 0 25px;">ระบบตรวจสอบสถานะการส่งงานและเข้าเรียน</p>
+            </div>
+            <label style="display:block;text-align:left;margin-bottom:8px;font-weight:bold;color:#475569;font-size:14px;">รหัสประจำตัวนักเรียน</label>
+            <input id="pp-sid" placeholder="เช่น 101" style="text-align:center;font-size:20px;padding:12px;border-radius:12px;border:1px solid #cbd5e1;margin-bottom:20px;width:100%;box-sizing:border-box;" onkeydown="if(event.key==='Enter')publicSearch()">
+            <button style="width:100%;padding:14px;font-size:16px;border-radius:24px;background:#2563eb;color:#fff;border:none;cursor:pointer;font-weight:bold;transition:0.2s;box-shadow:0 4px 10px rgba(37,99,235,0.3);" onclick="publicSearch()"><i class="fa-solid fa-magnifying-glass"></i> ค้นหาข้อมูล</button>
+        </div>
+        
+        <!-- หน้าแสดงผลลัพธ์ -->
+        <div id="pp-result" class="hidden">
+            <button onclick="$('pp-result').classList.add('hidden');$('pp-search').classList.remove('hidden');$('pp-sid').value='';" style="background:none;color:#64748b;border:none;padding:0;margin-bottom:15px;cursor:pointer;font-size:14px;"><i class="fa-solid fa-arrow-left"></i> กลับไปค้นหาใหม่</button>
+            
+            <div style="display:flex;align-items:center;gap:15px;margin-bottom:20px;padding:15px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;">
+                <div style="width:50px;height:50px;border-radius:50%;background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;">
+                    <img id="pp-stu-pic" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+                    <i id="pp-stu-icon" class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div>
+                    <b id="pp-stu-name" style="font-size:16px;color:#1e293b;display:block;margin-bottom:2px;">...</b>
+                    <span id="pp-stu-class" style="color:#64748b;font-size:13px;">...</span>
+                </div>
+            </div>
+            
+            <div style="display:flex;background:#f1f5f9;border-radius:12px;padding:4px;margin-bottom:20px;">
+                <button id="pp-tab-work" onclick="switchPPTab('work')" style="flex:1;padding:10px;border-radius:10px;background:#2563eb;color:#fff;font-size:14px;border:none;cursor:pointer;font-weight:bold;"><i class="fa-solid fa-book"></i> ชิ้นงาน/คะแนน</button>
+                <button id="pp-tab-att" onclick="switchPPTab('att')" style="flex:1;padding:10px;border-radius:10px;background:none;color:#64748b;font-size:14px;border:none;cursor:pointer;font-weight:bold;"><i class="fa-solid fa-calendar-check"></i> การเข้าเรียน</button>
+            </div>
+            
+            <!-- ชิ้นงาน -->
+            <div id="pp-work-content">
+                <div style="display:flex;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:20px;overflow:hidden;background:#fff;">
+                    <div style="flex:1;padding:15px;text-align:center;border-right:1px solid #e2e8f0;">
+                        <div style="color:#10b981;font-size:12px;font-weight:bold;margin-bottom:5px;"><i class="fa-solid fa-circle-check"></i> ส่งงานแล้ว</div>
+                        <div id="pp-work-done" style="font-size:24px;font-weight:bold;color:#10b981;">0 <span style="font-size:12px;font-weight:normal;">ชิ้น</span></div>
+                    </div>
+                    <div style="flex:1;padding:15px;text-align:center;">
+                        <div style="color:#ef4444;font-size:12px;font-weight:bold;margin-bottom:5px;"><i class="fa-solid fa-circle-exclamation"></i> ค้างส่ง</div>
+                        <div id="pp-work-miss" style="font-size:24px;font-weight:bold;color:#ef4444;">0 <span style="font-size:12px;font-weight:normal;">ชิ้น</span></div>
+                    </div>
+                </div>
+                <select id="pp-sub-filter" onchange="renderPPWork()" style="width:100%;padding:12px 14px;border-radius:8px;border:1px solid #2563eb;color:#2563eb;font-weight:bold;margin-bottom:15px;background:#eff6ff;"></select>
+                <div style="display:flex;justify-content:space-between;padding:0 10px;margin-bottom:8px;font-size:12px;font-weight:bold;color:#1e293b;">
+                    <span>ชื่อชิ้นงาน</span>
+                    <div style="display:flex;gap:20px;width:120px;justify-content:flex-end;">
+                        <span style="width:60px;text-align:center;">สถานะ</span>
+                        <span style="width:40px;text-align:right;">คะแนน</span>
+                    </div>
+                </div>
+                <div id="pp-work-list" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:#fff;"></div>
+            </div>
+            
+            <!-- การเข้าเรียน -->
+            <div id="pp-att-content" class="hidden">
+                <div id="pp-att-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- LOGIN -->
 <div id="login"><div class="wrap"><div class="card">
 <div class="ring"><div class="in"><img src="https://i0.wp.com/kroocool.com/wp-content/uploads/2024/03/%E0%B8%AA%E0%B8%9E%E0%B8%90.png" alt="โลโก้โรงเรียน" onerror="this.outerHTML='<span style=&quot;font-size:48px&quot;>🏫</span>'"></div></div>
@@ -372,6 +440,9 @@ main{padding:14px 12px 20px}
 </section>
 
 <section id="s-settings" class="card hidden np"><h2>ตั้งค่าระบบ</h2>
+<button style="margin:8px 0 20px 0;width:100%;background:#2563eb;font-size:16px;padding:14px;border-radius:14px;box-shadow:0 4px 12px rgba(37,99,235,0.3);" onclick="showShareLink()">
+    <i class="fa-solid fa-share-nodes"></i> แชร์ลิงก์ให้นักเรียนเช็คผลงาน
+</button>
 <label>ข้อความหัวหน้าสแกน</label><input id="set-title">
 <label>โลโกหน้าสแกน</label><input type="file" id="set-logo" accept="image/*" onchange="previewLogo(event)">
 <img id="set-prev" class="hidden" style="width:64px;height:64px;object-fit:cover;border-radius:12px">
@@ -415,6 +486,215 @@ main{padding:14px 12px 20px}
 <div id="print-port-area" class="hidden"></div>
 
 <script>
+let ppWs = null;
+let ppTeacherName = '';
+let ppCurrentStudent = null;
+
+async function initPublicPortal(tId) {
+    $('login').classList.add('hidden');
+    $('app').classList.add('hidden');
+    $('public-portal').classList.remove('hidden');
+
+    Swal.fire({title:'กำลังโหลดข้อมูลโรงเรียน...', allowOutsideClick:false, didOpen:()=>{Swal.showLoading()}});
+    
+    try {
+        const tmpSb = window.supabase.createClient(SB_URL, SB_KEY);
+        const {data: prof} = await tmpSb.from('profiles').select('name').eq('id', tId).maybeSingle();
+        ppTeacherName = prof ? prof.name : 'คุณครู';
+
+        const {data: wsData} = await tmpSb.from('workspaces').select('data').eq('user_id', tId).maybeSingle();
+        if(wsData && wsData.data) {
+            ppWs = wsData.data;
+            $('pp-teacher').textContent = ppTeacherName;
+            const logo = ppWs.settings?.scanLogo || 'https://i0.wp.com/kroocool.com/wp-content/uploads/2024/03/%E0%B8%AA%E0%B8%9E%E0%B8%90.png';
+            $('pp-logo').src = logo;
+            $('pp-school').textContent = ppWs.settings?.scanTitle || 'System Check';
+            Swal.close();
+        } else {
+            throw new Error("ไม่พบข้อมูลห้องเรียน");
+        }
+    } catch(e) {
+        Swal.fire('เกิดข้อผิดพลาด', 'ลิงก์ไม่ถูกต้อง หรือผู้ดูแลระบบยังไม่ได้เปิดสิทธิ์แชร์ข้อมูลสาธารณะ (RLS)', 'error');
+    }
+}
+
+function publicSearch() {
+    const sid = $('pp-sid').value.trim();
+    if(!sid) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสประจำตัวนักเรียน', 'warning');
+    if(!ppWs || !ppWs.students) return;
+
+    const student = ppWs.students.find(s => s.code === sid);
+    if(!student) {
+        return Swal.fire('ไม่พบข้อมูล', 'ไม่พบรหัสประจำตัวนี้ในระบบ กรุณาตรวจสอบอีกครั้ง', 'error');
+    }
+    ppCurrentStudent = student;
+    
+    $('pp-search').classList.add('hidden');
+    $('pp-result').classList.remove('hidden');
+    
+    if(student.pic) {
+        $('pp-stu-pic').src = student.pic;
+        $('pp-stu-pic').style.display = 'block';
+        $('pp-stu-icon').style.display = 'none';
+    } else {
+        $('pp-stu-pic').style.display = 'none';
+        $('pp-stu-icon').style.display = 'block';
+    }
+    
+    $('pp-stu-name').textContent = student.name;
+    $('pp-stu-class').textContent = 'ห้อง: ' + student.class + (student.num ? ' | เลขที่: ' + student.num : '');
+
+    $('pp-sub-filter').innerHTML = '<option value="">-- ดูทุกวิชา --</option>' + (ppWs.subjects||[]).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    
+    switchPPTab('work');
+}
+
+function switchPPTab(tab) {
+    $('pp-tab-work').style.background = tab === 'work' ? '#2563eb' : 'none';
+    $('pp-tab-work').style.color = tab === 'work' ? '#fff' : '#64748b';
+    $('pp-tab-att').style.background = tab === 'att' ? '#2563eb' : 'none';
+    $('pp-tab-att').style.color = tab === 'att' ? '#fff' : '#64748b';
+    $('pp-work-content').classList.toggle('hidden', tab !== 'work');
+    $('pp-att-content').classList.toggle('hidden', tab !== 'att');
+    if(tab==='work') renderPPWork();
+    else renderPPAtt();
+}
+
+function renderPPWork() {
+    const fSub = $('pp-sub-filter').value;
+    const myLogs = (ppWs.logs||[]).filter(l => l.code === ppCurrentStudent.code && l.type === 'score');
+    let html = '';
+    let totalDone = 0;
+    let totalMiss = 0;
+    const subjects = fSub ? [fSub] : (ppWs.subjects||[]);
+    
+    subjects.forEach(sub => {
+        const assigns = (ppWs.assignments||[]).filter(a => a.subject === sub);
+        if(assigns.length === 0) return;
+        
+        let subScore = 0;
+        let subItemsHtml = '';
+        
+        assigns.forEach(a => {
+            const log = myLogs.find(l => l.item === a.id);
+            if(log) {
+                totalDone++;
+                subScore += parseFloat(log.value) || 0;
+                subItemsHtml += `<div style="padding:12px;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+                    <div style="color:#475569;font-size:13px;flex:1;"><i class="fa-solid fa-angle-right" style="color:#cbd5e1;margin-right:5px;"></i> ${esc(a.name)}</div>
+                    <div style="display:flex;gap:20px;width:120px;justify-content:flex-end;align-items:center;">
+                        <span style="background:#d1fae5;color:#047857;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;width:64px;text-align:center;">ส่งแล้ว</span>
+                        <span style="color:#2563eb;font-weight:bold;font-size:14px;width:40px;text-align:right;">${log.value}</span>
+                    </div>
+                </div>`;
+            } else {
+                totalMiss++;
+                subItemsHtml += `<div style="padding:12px;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+                    <div style="color:#475569;font-size:13px;flex:1;"><i class="fa-solid fa-angle-right" style="color:#cbd5e1;margin-right:5px;"></i> ${esc(a.name)}</div>
+                    <div style="display:flex;gap:20px;width:120px;justify-content:flex-end;align-items:center;">
+                        <span style="background:#fee2e2;color:#b91c1c;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;width:64px;text-align:center;">ค้างส่ง</span>
+                        <span style="color:#94a3b8;font-weight:bold;font-size:14px;width:40px;text-align:right;">-</span>
+                    </div>
+                </div>`;
+            }
+        });
+        
+        html += `<div style="background:#f8fafc;padding:12px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e2e8f0;">
+            <div style="font-weight:bold;color:#1e293b;font-size:14px;"><i class="fa-solid fa-book" style="color:#2563eb;margin-right:5px;"></i> วิชา: ${esc(sub)}</div>
+            <div style="background:#2563eb;color:#fff;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold;">คะแนนรวม: ${subScore}</div>
+        </div>`;
+        html += subItemsHtml;
+    });
+    
+    if(!html) html = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:14px;">ไม่มีชิ้นงานในระบบ</div>';
+    $('pp-work-list').innerHTML = html;
+    $('pp-work-done').innerHTML = `${totalDone} <span style="font-size:12px;font-weight:normal;">ชิ้น</span>`;
+    $('pp-work-miss').innerHTML = `${totalMiss} <span style="font-size:12px;font-weight:normal;">ชิ้น</span>`;
+}
+
+function renderPPAtt() {
+    const myLogs = (ppWs.logs||[]).filter(l => l.code === ppCurrentStudent.code && l.type === 'daily');
+    const acts = ppWs.activities || [];
+    let html = '';
+    acts.forEach(act => {
+        const logsForAct = myLogs.filter(l => l.item === act.id);
+        if(logsForAct.length === 0) return;
+        
+        const countCome = logsForAct.filter(l => l.value === 'มา').length;
+        const countLeave = logsForAct.filter(l => l.value === 'ลา' || l.value === 'ป่วย').length;
+        const countAbsent = logsForAct.filter(l => l.value === 'ขาด').length;
+        
+        html += `
+        <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:15px;background:#fff;">
+            <div style="background:#f8fafc;padding:12px 15px;border-bottom:1px solid #e2e8f0;font-weight:bold;color:#1e293b;"><i class="fa-solid fa-calendar-day" style="color:#10b981;margin-right:5px;"></i> กิจกรรม: ${esc(act.name)}</div>
+            <div style="display:flex;padding:15px;gap:10px;text-align:center;">
+                <div style="flex:1;background:#d1fae5;color:#047857;padding:10px;border-radius:10px;border:1px solid #a7f3d0;">
+                    <div style="font-size:12px;">มาเรียน</div>
+                    <div style="font-size:22px;font-weight:bold;">${countCome}</div>
+                </div>
+                <div style="flex:1;background:#fef3c7;color:#b45309;padding:10px;border-radius:10px;border:1px solid #fde68a;">
+                    <div style="font-size:12px;">ลา/ป่วย</div>
+                    <div style="font-size:22px;font-weight:bold;">${countLeave}</div>
+                </div>
+                <div style="flex:1;background:#fee2e2;color:#b91c1c;padding:10px;border-radius:10px;border:1px solid #fecaca;">
+                    <div style="font-size:12px;">ขาด</div>
+                    <div style="font-size:22px;font-weight:bold;">${countAbsent}</div>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+    
+    if(!html) html = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:14px;background:#fff;border-radius:12px;border:1px solid #e2e8f0;">ยังไม่มีสถิติการเข้าเรียน</div>';
+    $('pp-att-list').innerHTML = html;
+}
+
+function showShareLink() {
+    if(!me || !me.id) return Swal.fire('Error', 'ต้องเข้าสู่ระบบก่อน', 'error');
+    
+    const longLink = window.location.origin + window.location.pathname + '?t=' + me.id;
+
+    Swal.fire({
+        title: 'กำลังสร้างลิงก์...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    // ใช้ is.gd แก้ปัญหา CORS หากใช้ไม่ได้ให้แสดงลิงก์ยาวแทน
+    fetch('https://is.gd/create.php?format=json&url=' + encodeURIComponent(longLink))
+        .then(res => res.json())
+        .then(data => {
+            const finalLink = data.shorturl ? data.shorturl : longLink;
+            renderSharePopup(finalLink, longLink);
+        })
+        .catch(() => {
+            renderSharePopup(longLink, longLink);
+        });
+        
+    function renderSharePopup(linkToShow, qrLink) {
+        Swal.fire({
+            title: 'ส่งลิงก์ให้นักเรียนเช็คงาน',
+            html: `
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:15px;margin-bottom:20px;">
+                    <p style="font-size:14px;color:#1e40af;margin:0 0 10px;text-align:left;"><b><i class="fa-solid fa-link"></i> คัดลอกลิงก์ด้านล่างนี้ส่งให้นักเรียน:</b></p>
+                    <div style="display:flex;gap:5px;">
+                        <input value="${linkToShow}" readonly style="flex:1;background:#fff;font-size:14px;margin:0;border:1px solid #cbd5e1;text-align:center;font-weight:bold;color:#2563eb;">
+                        <button class="ok" onclick="navigator.clipboard.writeText('${linkToShow}');Swal.fire({toast:true,position:'top',icon:'success',title:'คัดลอกลิงก์แล้ว!',showConfirmButton:false,timer:1500})" style="flex:none;background:#2563eb;"><i class="fa-solid fa-copy"></i></button>
+                    </div>
+                </div>
+                <div style="border-top:1px dashed #cbd5e1;margin:15px 0;"></div>
+                <p style="font-size:14px;color:#475569;margin-bottom:10px;">หรือให้นักเรียนสแกน QR Code นี้</p>
+                <div id="share-qr" style="display:flex;justify-content:center;margin:15px 0;padding:15px;background:#fff;border-radius:12px;border:1px solid #e2e8f0;"></div>
+                <p style="font-size:12px;color:#94a3b8;margin:0;">เมื่อนักเรียนเข้าลิงก์นี้ จะสามารถค้นหาประวัติการส่งงานและคะแนนตัวเองได้ทันที</p>
+            `,
+            didOpen: () => {
+                new QRCode(document.getElementById("share-qr"), {text: qrLink, width: 160, height: 160});
+            },
+            confirmButtonText: 'ปิด'
+        });
+    }
+}
+
 const THEMES={indigo:['#4F46E5','#EEF2FF','#3730A3','#8B5CF6'],emerald:['#10B981','#ECFDF5','#047857','#34D399'],rose:['#E11D48','#FFF1F2','#9F1239','#FB7185'],sky:['#0EA5E9','#F0F9FF','#0369A1','#38BDF8'],amber:['#D97706','#FFFBEB','#92400E','#FBBF24'],slate:['#475569','#F1F5F9','#1E293B','#94A3B8']};
 const $=id=>document.getElementById(id);
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -1570,7 +1850,7 @@ async function exitKiosk() {
 function kioskScan(code) {
     if(window.kioskBusy) return;
     window.kioskBusy = true;
-    setTimeout(() => { window.kioskBusy = false; }, 3500);
+    setTimeout(() => { window.kioskBusy = false; }, 3500); 
     
     const s = ws.students.find(x => x.code === code);
     if(!s) {
@@ -1777,6 +2057,13 @@ async function deleteSubject() {
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
+  const urlParams = new URLSearchParams(window.location.search);
+  const tId = urlParams.get('t');
+  if (tId) {
+      initPublicPortal(tId);
+      return; 
+  }
+
   document.addEventListener('click', (e) => {
     const dd = $('user-dropdown');
     if (dd && !dd.classList.contains('hidden') && !e.target.closest('.tn-user')) {
