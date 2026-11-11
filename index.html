@@ -660,7 +660,6 @@ function showShareLink() {
         didOpen: () => { Swal.showLoading(); }
     });
 
-    // ใช้ is.gd แก้ปัญหา CORS หากใช้ไม่ได้ให้แสดงลิงก์ยาวแทน
     fetch('https://is.gd/create.php?format=json&url=' + encodeURIComponent(longLink))
         .then(res => res.json())
         .then(data => {
@@ -1281,7 +1280,7 @@ function saveCheck(){
 function renderStudents(){
  const q=$('stu-q').value.toLowerCase(),c=$('stu-class').value;
  $('stu-body').innerHTML=ws.students.filter(s=>(!c||s.class===c)&&(!q||s.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)))
- .map(s=>`<tr><td><b style="color:var(--main)">${esc(s.code)}</b></td><td>${s.num}. ${esc(s.name)}</td><td><span class="badge">${esc(s.class)}</span></td><td style="white-space:nowrap"><button class="g" style="background:#3b82f6;color:white;padding:10px;" onclick="uploadPic('${esc(s.code)}')" title="ใส่รูป">🖼️</button> <button class="ok" onclick="viewPortfolio('${esc(s.code)}')" title="ประวัติ">🔍</button> <button class="g" onclick="delStudent('${esc(s.code)}')">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
+ .map(s=>`<tr><td><b style="color:var(--main)">${esc(s.code)}</b></td><td>${s.num}. ${esc(s.name)}</td><td><span class="badge">${esc(s.class)}</span></td><td style="white-space:nowrap"><button class="g" style="background:#3b82f6;color:white;padding:10px;" onclick="uploadPic('${esc(s.code)}')" title="ใส่รูป">🖼️</button> <button class="ok" onclick="viewPortfolio('${esc(s.code)}')" title="ประวัติ">🔍</button> <button class="g" style="background:#eab308;color:white;padding:10px;" onclick="editStudent('${esc(s.code)}')" title="แก้ไข">✏️</button> <button class="g" onclick="delStudent('${esc(s.code)}')">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
 }
 async function addStudent(){
  const {value:v}=await Swal.fire({title:'เพิ่มนักเรียน',html:'<input id="n-c" class="swal2-input" placeholder="รหัส"><input id="n-n" class="swal2-input" placeholder="ชื่อ-สกุล"><input id="n-num" type="number" class="swal2-input" placeholder="เลขที่"><input id="n-cl" class="swal2-input" placeholder="ห้อง เช่น ป.1">',
@@ -1291,6 +1290,68 @@ async function addStudent(){
   if(ws.students.some(s=>s.code===code))return Swal.showValidationMessage('รหัสนี้มีอยู่แล้ว')||false;
   return{code,name,class:cl,num}}});
  if(!v)return;if(!ws.classes.includes(v.class))ws.classes.push(v.class);ws.students.push(v);save();populate();renderStudents();updateDash();
+}
+
+async function editStudent(oldCode) {
+  const s = ws.students.find(x => x.code === oldCode);
+  if (!s) return;
+
+  const { value: v } = await Swal.fire({
+    title: 'แก้ไขข้อมูลนักเรียน',
+    html: `
+      <div style="text-align:left; font-size:14px; padding:0 10px;">
+        <label style="font-weight:600; color:#475569;">รหัสนักเรียน</label>
+        <input id="e-c" class="swal2-input" value="${esc(s.code)}" style="margin:4px 0 12px; width:100%">
+        <label style="font-weight:600; color:#475569;">ชื่อ-สกุล</label>
+        <input id="e-n" class="swal2-input" value="${esc(s.name)}" style="margin:4px 0 12px; width:100%">
+        <label style="font-weight:600; color:#475569;">เลขที่</label>
+        <input id="e-num" type="number" class="swal2-input" value="${s.num || ''}" style="margin:4px 0 12px; width:100%">
+        <label style="font-weight:600; color:#475569;">ห้องเรียน</label>
+        <input id="e-cl" class="swal2-input" value="${esc(s.class)}" style="margin:4px 0 12px; width:100%">
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'บันทึก',
+    cancelButtonText: 'ยกเลิก',
+    preConfirm: () => {
+      const code = document.getElementById('e-c').value.trim();
+      const name = document.getElementById('e-n').value.trim();
+      const cl = document.getElementById('e-cl').value.trim();
+      const num = parseInt(document.getElementById('e-num').value) || 0;
+
+      if (!code || !name || !cl) {
+        Swal.showValidationMessage('กรอกรหัส ชื่อ และห้องให้ครบถ้วน');
+        return false;
+      }
+      if (code !== oldCode && ws.students.some(x => x.code === code)) {
+        Swal.showValidationMessage('รหัสนี้มีอยู่ในระบบแล้ว');
+        return false;
+      }
+      return { code, name, class: cl, num };
+    }
+  });
+
+  if (v) {
+    if (!ws.classes.includes(v.class)) ws.classes.push(v.class);
+
+    if (v.code !== oldCode) {
+      ws.logs.forEach(l => { if (l.code === oldCode) l.code = v.code; });
+      if (ws.grades) {
+        ws.grades.forEach(g => { if (g.code === oldCode) g.code = v.code; });
+      }
+    }
+
+    s.code = v.code;
+    s.name = v.name;
+    s.num = v.num;
+    s.class = v.class;
+
+    save();
+    populate();
+    renderStudents();
+    updateDash();
+    Swal.fire({ icon: 'success', title: 'แก้ไขข้อมูลสำเร็จ', timer: 1500, showConfirmButton: false });
+  }
 }
 
 async function delStudent(code){
