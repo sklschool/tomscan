@@ -148,7 +148,6 @@ main{padding:14px 12px 20px}
  .port-page { break-after: page; page-break-after: always; padding: 20mm 15mm; background: #fff; }
 }
 
-/* ดันหน้าต่างแจ้งเตือนให้อยู่หน้าสุดเสมอ เพื่อไม่ให้ Kiosk บัง */
 .swal2-container { z-index: 999999 !important; }
 </style>
 </head>
@@ -352,8 +351,13 @@ main{padding:14px 12px 20px}
 <p style="font-size:12px;color:#64748b;margin:8px 0 0">💡 บัตรขนาด 85.6×54 มม. (เท่าบัตรจริง) หน้าละ 10 ใบ ตอนพิมพ์เลือกกระดาษ A4 แนวตั้ง ขนาด 100% และปิด Headers/Footers</p></div>
 <div id="cards" style="margin-top:12px"></div></section>
 
-<section id="s-setup" class="card hidden np"><div class="row" style="align-items:center"><h2>วิชา / ชิ้นงาน</h2><button class="ok" style="flex:0 0 auto" onclick="addSetup()">+ เพิ่ม</button></div>
-<div class="row" style="margin-bottom: 12px; align-items:center; gap: 8px;">
+<section id="s-setup" class="card hidden np">
+<div class="row" style="align-items:center; flex-wrap:wrap;">
+    <h2 style="margin:0; flex:1; min-width:150px;">วิชา / ชิ้นงาน</h2>
+    <button class="ok" style="flex:0 0 auto; background:#3b82f6;" onclick="addSubject()">+ เพิ่มรายวิชา</button>
+    <button class="ok" style="flex:0 0 auto" onclick="addSetup()">+ เพิ่มงาน</button>
+</div>
+<div class="row" style="margin-top: 12px; margin-bottom: 12px; align-items:center; gap: 8px;">
     <select id="setup-filter" onchange="renderSetup()" style="flex:1; margin:0;"></select>
     <button style="flex:0 0 auto; background:#eab308; color:#fff;" onclick="editSubjectName()">
         <i class="fa-solid fa-pen-to-square"></i> แก้ชื่อ
@@ -411,31 +415,41 @@ main{padding:14px 12px 20px}
 
 <section id="s-grade" class="card hidden np">
     <h2>ตัดเกรด (คำนวณผลการเรียน)</h2>
-    <div class="row">
+    <div class="row" style="margin-bottom:8px;">
         <select id="gr-sub"></select>
         <select id="gr-class"></select>
     </div>
-    <button style="width:100%;margin-top:8px" onclick="fetchGrade()">ดึงรายชื่อนักเรียน</button>
+    
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:15px; margin-bottom:12px;">
+        <div style="font-size:14px; font-weight:bold; color:#1e293b; margin-bottom:8px;"><i class="fa-solid fa-scale-balanced"></i> ตั้งค่าสัดส่วนคะแนนเก็บ</div>
+        <div class="row" style="align-items:center;">
+            <div style="flex:1;">
+                <label style="font-size:12px;">คะแนนดิบใบงานรวม (เต็ม)</label>
+                <input type="number" id="gr-raw-max" value="100" placeholder="เช่น 100" style="margin:0; text-align:center;">
+            </div>
+            <div style="flex:0 0 auto; padding-top:15px;"><i class="fa-solid fa-arrow-right" style="color:#cbd5e1"></i></div>
+            <div style="flex:1;">
+                <label style="font-size:12px; color:var(--main);">แปลงเป็นคะแนนเก็บ (%)</label>
+                <input type="number" id="gr-scale-max" value="70" placeholder="เช่น 70" style="margin:0; text-align:center; border-color:var(--main); color:var(--main); font-weight:bold;">
+            </div>
+        </div>
+    </div>
+
+    <button style="width:100%;margin-top:8px" onclick="fetchGrade()"><i class="fa-solid fa-calculator"></i> คำนวณและดึงรายชื่อ</button>
+    
     <div id="gr-wrap" class="hidden">
-        <div class="row" style="align-items:center;margin:12px 0">
-            <b style="flex:1">รายชื่อนักเรียน</b>
-            <button class="ok" style="flex:0 0 auto" onclick="saveGrade()">บันทึกคะแนน</button>
+        <div class="row" style="align-items:center;margin:15px 0 10px;">
+            <b style="flex:1">ตารางคำนวณเกรด</b>
+            <button class="ok" style="flex:0 0 auto" onclick="saveGrade()"><i class="fa-solid fa-floppy-disk"></i> บันทึกผล</button>
         </div>
         <div class="tw">
             <table>
-                <thead>
-                    <tr>
-                        <th>เลขที่-ชื่อ</th>
-                        <th>เก็บ</th>
-                        <th>กลาง</th>
-                        <th>ปลาย</th>
-                        <th>รวม</th>
-                        <th>เกรด</th>
-                    </tr>
+                <thead id="gr-thead">
                 </thead>
                 <tbody id="gr-body"></tbody>
             </table>
         </div>
+        <p style="font-size:12px; color:#94a3b8; margin-top:8px;">* ระบบจะดึงคะแนนใบงานมาคำนวณให้อัตโนมัติ คุณครูกรอกเฉพาะคะแนน กลางภาค และ ปลายภาค</p>
     </div>
 </section>
 
@@ -455,9 +469,6 @@ main{padding:14px 12px 20px}
 </div>
 </div>
 
-<!-- ==========================================
-     พื้นที่สำหรับโหมด Kiosk (นักเรียนสแกนเอง)
-     ========================================== -->
 <div id="kiosk-mode" class="hidden" style="position:fixed; inset:0; z-index:99999; background:radial-gradient(circle at center, #F8FAFC, #E2E8F0); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; overflow:hidden;">
     <button style="position:absolute; top:20px; right:20px; background:#ef4444; border-radius:30px; padding:12px 24px; box-shadow:0 4px 12px rgba(239,68,68,0.3);" onclick="exitKiosk()">
         <i class="fas fa-lock"></i> ปิดโหมด Kiosk (สำหรับครู)
@@ -480,9 +491,6 @@ main{padding:14px 12px 20px}
     </div>
 </div>
 
-<!-- ==========================================
-     พื้นที่สำหรับ พิมพ์รายงาน PDF (Portfolio A4)
-     ========================================== -->
 <div id="print-port-area" class="hidden"></div>
 
 <script>
@@ -544,7 +552,11 @@ function publicSearch() {
     $('pp-stu-name').textContent = student.name;
     $('pp-stu-class').textContent = 'ห้อง: ' + student.class + (student.num ? ' | เลขที่: ' + student.num : '');
 
-    $('pp-sub-filter').innerHTML = '<option value="">-- ดูทุกวิชา --</option>' + (ppWs.subjects||[]).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    // กรองวิชาให้แสดงเฉพาะวิชาที่มีชิ้นงานตรงกับห้องของนักเรียน หรือชิ้นงานที่ไม่ได้ระบุห้อง (ของเก่า)
+    const validSubjects = (ppWs.subjects||[]).filter(sub => {
+        return (ppWs.assignments||[]).some(a => a.subject === sub && (!a.class || a.class === ppCurrentStudent.class));
+    });
+    $('pp-sub-filter').innerHTML = '<option value="">-- ดูทุกวิชา --</option>' + validSubjects.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
     
     switchPPTab('work');
 }
@@ -566,10 +578,16 @@ function renderPPWork() {
     let html = '';
     let totalDone = 0;
     let totalMiss = 0;
-    const subjects = fSub ? [fSub] : (ppWs.subjects||[]);
+    
+    // ดึงเฉพาะวิชาที่ตรงกับห้องของเด็ก (เหมือนตอน search)
+    let subjects = fSub ? [fSub] : (ppWs.subjects||[]);
+    subjects = subjects.filter(sub => {
+        return (ppWs.assignments||[]).some(a => a.subject === sub && (!a.class || a.class === ppCurrentStudent.class));
+    });
     
     subjects.forEach(sub => {
-        const assigns = (ppWs.assignments||[]).filter(a => a.subject === sub);
+        // กรองชิ้นงานให้ตรงกับห้องนักเรียน
+        const assigns = (ppWs.assignments||[]).filter(a => a.subject === sub && (!a.class || a.class === ppCurrentStudent.class));
         if(assigns.length === 0) return;
         
         let subScore = 0;
@@ -1142,46 +1160,101 @@ const getItemName = (type, id) => {
  return id;
 };
 
-function sT(t){const d=t==='daily';$('s-sub').style.display=t==='academic'?'block':'none';$('s-n').placeholder=t==='daily'?'ชื่อกิจกรรม':(t==='behavior'?'ชื่อพฤติกรรม':'ชื่อชิ้นงาน/ใบงาน');}
+// ควบคุมการแสดงผลฟิลด์ตามประเภทงานที่เลือก
+function sT(t){
+  $('s-sub').style.display=t==='academic'?'block':'none';
+  $('s-cl').style.display=t==='academic'?'block':'none'; // แสดงช่องเลือกห้องเรียน
+  $('s-n').placeholder=t==='daily'?'ชื่อกิจกรรม':(t==='behavior'?'ชื่อพฤติกรรม':'ชื่อชิ้นงาน/ใบงาน');
+  if(t==='academic' && ws.subjects.length===0){
+    Swal.showValidationMessage('กรุณา "เพิ่มรายวิชา" ก่อนสร้างชิ้นงาน');
+  } else {
+    Swal.resetValidationMessage();
+  }
+}
+
+async function addSubject() {
+    const {value: sub} = await Swal.fire({
+        title: 'เพิ่มรายวิชา',
+        input: 'text',
+        inputPlaceholder: 'เช่น คณิตศาสตร์ ป.5',
+        showCancelButton: true,
+        confirmButtonText: 'บันทึก',
+        cancelButtonText: 'ยกเลิก',
+        inputValidator: (val) => !val.trim() && 'กรุณาระบุชื่อวิชา'
+    });
+    
+    if(sub) {
+        const s = sub.trim();
+        if(ws.subjects.includes(s)) return Swal.fire('แจ้งเตือน', 'มีวิชานี้อยู่ในระบบแล้ว', 'warning');
+        
+        ws.subjects.push(s);
+        save(); populate();
+        Swal.fire({icon: 'success', title: 'เพิ่มรายวิชาสำเร็จ', timer: 1200, showConfirmButton: false});
+    }
+}
+
 async function addSetup(){
- const {value:v}=await Swal.fire({title:'เพิ่มวิชา/งาน',html:'<select id="s-t" class="swal2-select" onchange="sT(this.value)"><option value="academic">📚 ชิ้นงานวิชาการ</option><option value="daily">📅 กิจกรรมประจำวัน</option><option value="behavior">⭐ พฤติกรรม/ความดี</option></select><input id="s-sub" class="swal2-input" list="s-list" placeholder="ชื่อรายวิชา (พิมพ์ใหม่ หรือเลือกที่มีอยู่)"><datalist id="s-list">'+ws.subjects.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist><input id="s-n" class="swal2-input" placeholder="ชื่อชิ้นงาน/ใบงาน (เช่น ใบงานที่ 1)">',
- showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
-  const t=$('s-t').value,sub=$('s-sub').value.trim(),n=$('s-n').value.trim();
-  if(t==='academic'&&!sub)return Swal.showValidationMessage('ระบุชื่อรายวิชา')||false;
+ const subOpts = ws.subjects.length > 0 ? ws.subjects.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('') : '<option value="" disabled selected>-- ไม่มีรายวิชา กรุณาเพิ่มวิชาก่อน --</option>';
+ const clsOpts = ws.classes.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+ 
+ const {value:v}=await Swal.fire({title:'เพิ่มงาน/กิจกรรม',html:`
+  <select id="s-t" class="swal2-select" onchange="sT(this.value)">
+      <option value="academic">📚 ชิ้นงานวิชาการ</option>
+      <option value="daily">📅 กิจกรรมประจำวัน</option>
+      <option value="behavior">⭐ พฤติกรรม/ความดี</option>
+  </select>
+  <select id="s-sub" class="swal2-select" style="margin-top:0">${subOpts}</select>
+  <select id="s-cl" class="swal2-select" style="margin-top:0"><option value="">-- ระบุห้องเรียน (ถ้ามี) --</option>${clsOpts}</select>
+  <input id="s-n" class="swal2-input" placeholder="ชื่อชิ้นงาน/ใบงาน (เช่น ใบงานที่ 1)">
+ `,
+ showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',
+ didOpen: () => { sT($('s-t').value); }, 
+ preConfirm:()=>{
+  const t=$('s-t').value,sub=$('s-sub').value,n=$('s-n').value.trim(),cl=$('s-cl').value;
+  if(t==='academic'&&!sub)return Swal.showValidationMessage('กรุณาเพิ่มรายวิชาในระบบก่อนสร้างชิ้นงาน')||false;
   if(!n)return Swal.showValidationMessage('ระบุชื่อรายการ')||false;
-  return{t,sub,n}}});
+  return{t,sub,n,cl}
+ }});
+ 
  if(!v)return;
  
  if(v.t==='daily') ws.activities.push({id:genId('a'), name:v.n});
  else if(v.t==='behavior') ws.behaviors.push({id:genId('b'), name:v.n});
- else{if(!ws.subjects.includes(v.sub))ws.subjects.push(v.sub);ws.assignments.push({id:genId('s'), name:v.n, subject:v.sub})}
+ else{ws.assignments.push({id:genId('s'), name:v.n, subject:v.sub, class:v.cl})}
+ 
  save();populate();
+ Swal.fire({icon: 'success', title: 'เพิ่มข้อมูลสำเร็จ', timer: 1200, showConfirmButton: false});
 }
+
 function renderSetup(){
  const f=$('setup-filter').value;let it=[];
  if(!f){
   ws.activities.forEach((a,i)=>it.push({n:a.name,s:'-',t:'รายวัน',k:'a',i}));
   (ws.behaviors||[]).forEach((a,i)=>it.push({n:a.name,s:'-',t:'พฤติกรรม',k:'b',i}));
  }
- ws.assignments.forEach((a,i)=>{if(!f||a.subject===f)it.push({n:a.name,s:a.subject,t:'ชิ้นงาน',k:'s',i})});
+ // แสดงชื่อห้องต่อท้ายวิชา (ถ้ามีการระบุ)
+ ws.assignments.forEach((a,i)=>{if(!f||a.subject===f)it.push({n:a.name,s:a.subject + (a.class ? ` (${a.class})` : ''),t:'ชิ้นงาน',k:'s',i})});
  $('setup-body').innerHTML=it.map(x=>`<tr><td>${esc(x.n)}</td><td>${esc(x.s)}</td><td><span class="badge">${x.t}</span></td><td style="white-space:nowrap"><button class="g" onclick="editSetup('${x.k}',${x.i})" title="แก้ไข">✏️</button> <button class="g" onclick="delSetup('${x.k}',${x.i})" title="ลบ">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
 }
+
 async function editSetup(k,i){
  const isAct = k==='a', isBeh = k==='b'; const item = isAct ? ws.activities[i] : (isBeh ? ws.behaviors[i] : ws.assignments[i]);
  if (isAct || isBeh) {
   const {value:v} = await Swal.fire({title:isAct?'แก้ไขกิจกรรม':'แก้ไขพฤติกรรม',input:'text',inputValue:item.name,showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',inputValidator:(val)=>!val.trim()&&'กรุณาระบุชื่อ'});
   if(v) { if(isAct)ws.activities[i].name=v.trim(); else ws.behaviors[i].name=v.trim(); save(); populate(); }
  } else {
+  const subOpts = ws.subjects.map(x=>`<option value="${esc(x)}" ${x===item.subject?'selected':''}>${esc(x)}</option>`).join('');
+  const clsOpts = '<option value="">-- ระบุห้องเรียน (ถ้ามี) --</option>' + ws.classes.map(x=>`<option value="${esc(x)}" ${x===item.class?'selected':''}>${esc(x)}</option>`).join('');
   const {value:v} = await Swal.fire({title:'แก้ไขชิ้นงาน',html:`
-   <input id="e-sub" list="e-list" class="swal2-input" placeholder="วิชา" value="${esc(item.subject)}">
-   <datalist id="e-list">${ws.subjects.map(x=>'<option value="'+esc(x)+'">').join('')}</datalist>
+   <select id="e-sub" class="swal2-select" style="margin-top:0">${subOpts}</select>
+   <select id="e-cl" class="swal2-select" style="margin-top:0">${clsOpts}</select>
    <input id="e-n" class="swal2-input" placeholder="ชื่อชิ้นงาน" value="${esc(item.name)}">
   `,showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
-   const sub = $('e-sub').value.trim(), n = $('e-n').value.trim();
+   const sub = $('e-sub').value, n = $('e-n').value.trim(), cl = $('e-cl').value;
    if(!sub||!n)return Swal.showValidationMessage('กรอกข้อมูลให้ครบ')||false;
-   return {sub,n};
+   return {sub,n,cl};
   }});
-  if(v) { if(!ws.subjects.includes(v.sub)) ws.subjects.push(v.sub); ws.assignments[i].name = v.n; ws.assignments[i].subject = v.sub; save(); populate(); }
+  if(v) { ws.assignments[i].name = v.n; ws.assignments[i].subject = v.sub; ws.assignments[i].class = v.cl; save(); populate(); }
  }
 }
 
@@ -1282,6 +1355,7 @@ function renderStudents(){
  $('stu-body').innerHTML=ws.students.filter(s=>(!c||s.class===c)&&(!q||s.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)))
  .map(s=>`<tr><td><b style="color:var(--main)">${esc(s.code)}</b></td><td>${s.num}. ${esc(s.name)}</td><td><span class="badge">${esc(s.class)}</span></td><td style="white-space:nowrap"><button class="g" style="background:#3b82f6;color:white;padding:10px;" onclick="uploadPic('${esc(s.code)}')" title="ใส่รูป">🖼️</button> <button class="ok" onclick="viewPortfolio('${esc(s.code)}')" title="ประวัติ">🔍</button> <button class="g" style="background:#eab308;color:white;padding:10px;" onclick="editStudent('${esc(s.code)}')" title="แก้ไข">✏️</button> <button class="g" onclick="delStudent('${esc(s.code)}')">🗑</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">ไม่พบข้อมูล</td></tr>';
 }
+
 async function addStudent(){
  const {value:v}=await Swal.fire({title:'เพิ่มนักเรียน',html:'<input id="n-c" class="swal2-input" placeholder="รหัส"><input id="n-n" class="swal2-input" placeholder="ชื่อ-สกุล"><input id="n-num" type="number" class="swal2-input" placeholder="เลขที่"><input id="n-cl" class="swal2-input" placeholder="ห้อง เช่น ป.1">',
  showCancelButton:true,confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',preConfirm:()=>{
@@ -1852,134 +1926,74 @@ function printPortfolio(code) {
     }, 500);
 }
 
-window.kioskBusy = false;
-async function startKiosk() {
-    const act = $('scan-act').value;
-    if(!act) return Swal.fire('แจ้งเตือน', 'กรุณาเลือก "กิจกรรมรายวัน" ในหน้าสแกน ก่อนเปิดโหมด Kiosk ครับ', 'warning');
-    
-    const {value: pin} = await Swal.fire({
-        title: 'เปิดโหมด Kiosk',
-        html: `โหมดนี้สำหรับตั้งให้นักเรียนสแกนเอง (จำกัดสิทธิ์การแก้ไขข้อมูล)<br><br><b>ตั้งรหัส PIN 4 หลัก</b> เพื่อป้องกันนักเรียนกดปิด:<br><input id="k-pin" type="password" class="swal2-input" placeholder="เช่น 1234">`,
-        showCancelButton: true,
-        confirmButtonText: 'เริ่มใช้งาน',
-        cancelButtonText: 'ยกเลิก',
-        preConfirm: () => {
-            const p = document.getElementById('k-pin').value;
-            if(!p) Swal.showValidationMessage('กรุณาตั้งรหัส PIN ด้วยครับ');
-            return p;
-        }
-    });
-
-    if(pin) {
-        window.kioskPin = pin;
-        $('kiosk-mode').classList.remove('hidden');
-        $('kiosk-input').value = '';
-        $('kiosk-input').focus();
-        
-        try {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            if(!window.kioskCam) window.kioskCam = new Html5Qrcode('kiosk-reader');
-            window.kioskCam.start({facingMode:'environment'}, {fps:10, qrbox:250}, t => {
-                kioskScan(t);
-            }, ()=>{});
-        } catch(e) {
-            console.log('Kiosk Camera Init Failed', e);
-        }
-    }
-}
-
-async function exitKiosk() {
-    const {value: pin} = await Swal.fire({
-        title: 'ใส่รหัส PIN เพื่อปิดโหมด',
-        input: 'password',
-        showCancelButton: true,
-        confirmButtonText: 'ตกลง',
-        cancelButtonText: 'ยกเลิก'
-    });
-    if(pin === window.kioskPin) {
-        $('kiosk-mode').classList.add('hidden');
-        if(window.kioskCam) { window.kioskCam.stop().catch(()=>{}); }
-        updateDash();
-    } else if(pin) {
-        Swal.fire('รหัสไม่ถูกต้อง', '', 'error');
-        setTimeout(() => $('kiosk-input').focus(), 500);
-    } else {
-        setTimeout(() => $('kiosk-input').focus(), 500);
-    }
-}
-
-function kioskScan(code) {
-    if(window.kioskBusy) return;
-    window.kioskBusy = true;
-    setTimeout(() => { window.kioskBusy = false; }, 3500); 
-    
-    const s = ws.students.find(x => x.code === code);
-    if(!s) {
-        playSound('err');
-        Swal.fire({title: 'ไม่พบข้อมูล', text: 'ไม่พบรหัสนักเรียนในระบบ', icon: 'error', timer: 1500, showConfirmButton: false});
-        return;
-    }
-    
-    const date = today();
-    const act = $('scan-act').value;
-    const old = ws.logs.find(l => l.type === 'daily' && l.item === act && l.date === date && l.code === code && l.value === 'มา');
-    
-    if(old) {
-        playSound('dup');
-        Swal.fire({
-            html: `<div style="font-size:60px; margin-bottom:10px;">😅</div><b style="font-size:26px; color:#f59e0b">${esc(s.name)}</b><br><br><span style="font-size:18px;">หนูสแกนเช็คชื่อไปแล้วลูก!</span>`,
-            showConfirmButton: false,
-            timer: 2500
-        });
-        return;
-    }
-    
-    addLog('daily', act, date, code, 'มา', nowT());
-    save();
-    playSound('ok');
-    
-    const myBeh = ws.logs.filter(l => l.type === 'behavior' && l.code === code);
-    const totalPoints = myBeh.reduce((acc, l) => acc + (parseFloat(l.value)||0), 0);
-    
-    Swal.fire({
-        html: `<div style="font-size:60px; margin-bottom:10px;">🎉</div><b style="font-size:26px; color:var(--main)">${esc(s.name)}</b><br><br><span style="font-size:18px; color:#10b981; font-weight:bold;">เช็คชื่อเรียบร้อย!</span><br><br>🌟 แต้มความดีสะสม: <b>${totalPoints}</b> แต้ม`,
-        showConfirmButton: false,
-        timer: 3500,
-        backdrop: `rgba(16, 185, 129, 0.1)` 
-    });
-    
-    if(typeof confetti !== 'undefined') confetti({particleCount: 80, spread: 70, origin: {y: 0.6}, zIndex: 100000});
-    
-    setTimeout(() => $('kiosk-input').focus(), 3600);
-}
-
 function fetchGrade() {
     const sub = $('gr-sub').value;
     const c = $('gr-class').value;
     if(!sub || !c) return Swal.fire({icon:'warning', text:'กรุณาเลือกวิชาและห้องเรียน'});
     
+    const rawMax = parseFloat($('gr-raw-max').value) || 100;
+    const scaleMax = parseFloat($('gr-scale-max').value) || 70;
+
+    const assigns = (ws.assignments||[]).filter(a => a.subject === sub);
     const st = ws.students.filter(s => s.class === c);
+    
+    let thHtml = `<tr>
+        <th style="min-width:140px;">เลขที่-ชื่อ</th>`;
+    assigns.forEach(a => {
+        thHtml += `<th style="text-align:center;"><div style="font-size:10px; font-weight:normal; max-width:50px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(a.name)}">${esc(a.name)}</div></th>`;
+    });
+    thHtml += `<th style="text-align:center; background:#f1f5f9;">ดิบรวม</th>
+        <th style="text-align:center; background:#e0e7ff; color:var(--main);">เก็บ(${scaleMax})</th>
+        <th style="text-align:center;">กลางภาค</th>
+        <th style="text-align:center;">ปลายภาค</th>
+        <th style="text-align:center;">รวม</th>
+        <th style="text-align:center;">เกรด</th>
+    </tr>`;
+    $('gr-thead').innerHTML = thHtml;
+
     $('gr-body').innerHTML = st.map(s => {
-        const g = (ws.grades||[]).find(x => x.code === s.code && x.subject === sub) || {collect:'', mid:'', final:''};
-        return `<tr data-code="${esc(s.code)}">
-            <td><small>${s.num}.</small> <b>${esc(s.name)}</b></td>
-            <td><input type="number" class="g-col" style="width:60px;padding:6px;margin:0;font-size:14px" value="${g.collect}" oninput="calcGrade(this)"></td>
-            <td><input type="number" class="g-mid" style="width:60px;padding:6px;margin:0;font-size:14px" value="${g.mid}" oninput="calcGrade(this)"></td>
-            <td><input type="number" class="g-fin" style="width:60px;padding:6px;margin:0;font-size:14px" value="${g.final}" oninput="calcGrade(this)"></td>
-            <td class="g-sum" style="font-weight:bold;text-align:center;color:var(--dark)">0</td>
+        const g = (ws.grades||[]).find(x => x.code === s.code && x.subject === sub) || {mid:'', final:''};
+        
+        let rawSum = 0;
+        let asgTds = '';
+        assigns.forEach(a => {
+            const log = (ws.logs||[]).find(l => l.type === 'score' && l.item === a.id && l.code === s.code);
+            const score = log ? (parseFloat(log.value)||0) : 0;
+            rawSum += score;
+            asgTds += `<td style="text-align:center; font-size:12px; color:#64748b;">${log ? score : '-'}</td>`;
+        });
+
+        let scaled = (rawSum / rawMax) * scaleMax;
+        if(scaled > scaleMax) scaled = scaleMax; 
+        scaled = Math.round(scaled); 
+
+        return `<tr data-code="${esc(s.code)}" data-scaled="${scaled}">
+            <td><small style="color:#64748b">${s.num}.</small> <b style="font-size:14px;">${esc(s.name)}</b></td>
+            ${asgTds}
+            <td style="text-align:center; font-size:13px; font-weight:bold; background:#f1f5f9; color:#475569;">${rawSum}</td>
+            <td style="text-align:center; font-size:15px; font-weight:bold; color:var(--main); background:#e0e7ff;">${scaled}</td>
+            <td><input type="number" class="g-mid" style="width:60px;padding:6px;margin:0;font-size:14px;text-align:center;" value="${g.mid}" oninput="calcGrade(this)" placeholder="-"></td>
+            <td><input type="number" class="g-fin" style="width:60px;padding:6px;margin:0;font-size:14px;text-align:center;" value="${g.final}" oninput="calcGrade(this)" placeholder="-"></td>
+            <td class="g-sum" style="font-weight:bold;text-align:center;color:var(--dark);font-size:15px;">0</td>
             <td class="g-res" style="font-weight:bold;color:var(--main);text-align:center;font-size:18px">-</td>
         </tr>`;
-    }).join('') || '<tr><td colspan="6" style="text-align:center">ไม่พบนักเรียน</td></tr>';
+    }).join('') || `<tr><td colspan="${assigns.length + 7}" style="text-align:center">ไม่พบนักเรียน</td></tr>`;
     
     $('gr-wrap').classList.remove('hidden');
-    document.querySelectorAll('#gr-body tr').forEach(tr => calcGrade(tr.querySelector('.g-col')));
+    
+    document.querySelectorAll('#gr-body tr[data-code]').forEach(tr => calcGrade(tr));
 }
 
 function calcGrade(inp) {
-    const tr = inp.closest('tr');
-    const col = parseFloat(tr.querySelector('.g-col').value) || 0;
-    const mid = parseFloat(tr.querySelector('.g-mid').value) || 0;
-    const fin = parseFloat(tr.querySelector('.g-fin').value) || 0;
+    const tr = inp.closest ? inp.closest('tr') : inp;
+    if(!tr.dataset.code) return;
+
+    const col = parseFloat(tr.dataset.scaled) || 0; 
+    const midInp = tr.querySelector('.g-mid');
+    const finInp = tr.querySelector('.g-fin');
+    const mid = midInp ? (parseFloat(midInp.value) || 0) : 0;
+    const fin = finInp ? (parseFloat(finInp.value) || 0) : 0;
+    
     const sum = col + mid + fin;
     tr.querySelector('.g-sum').textContent = sum;
     
@@ -1992,9 +2006,10 @@ function calcGrade(inp) {
     else if(sum >= 55) g = '1.5';
     else if(sum >= 50) g = '1';
     
-    tr.querySelector('.g-res').textContent = g;
-    if(sum < 50) tr.querySelector('.g-res').style.color = '#ef4444';
-    else tr.querySelector('.g-res').style.color = 'var(--main)';
+    const resEl = tr.querySelector('.g-res');
+    resEl.textContent = g;
+    if(sum < 50) resEl.style.color = '#ef4444';
+    else resEl.style.color = 'var(--main)';
 }
 
 function saveGrade() {
@@ -2004,13 +2019,13 @@ function saveGrade() {
     
     document.querySelectorAll('#gr-body tr[data-code]').forEach(tr => {
         const code = tr.dataset.code;
-        const col = tr.querySelector('.g-col').value;
+        const scaled = tr.dataset.scaled; 
         const mid = tr.querySelector('.g-mid').value;
         const fin = tr.querySelector('.g-fin').value;
         
         ws.grades = ws.grades.filter(x => !(x.code === code && x.subject === sub));
-        if(col !== '' || mid !== '' || fin !== '') {
-            ws.grades.push({code, subject:sub, class:c, collect:col, mid, final:fin});
+        if(mid !== '' || fin !== '' || scaled !== '0') {
+            ws.grades.push({code, subject:sub, class:c, collect:scaled, mid, final:fin});
         }
     });
     save();
