@@ -324,8 +324,29 @@ main{padding:14px 12px 20px}
 <div id="ck-behavior" class="hidden"><label>พฤติกรรม</label><select id="chk-beh"></select></div>
 <label>วันที่</label><input type="date" id="chk-date"><label>ห้องเรียน</label><select id="chk-class"></select>
 <button style="width:100%;margin-top:8px" onclick="fetchCheck()">ดึงรายชื่อนักเรียน</button>
-<div id="chk-wrap" class="hidden"><div class="row" style="align-items:center;margin:12px 0"><b>รายชื่อนักเรียน</b><button class="ok" style="flex:0 0 auto" onclick="saveCheck()">บันทึก</button></div>
-<div class="tw"><table><thead><tr><th>เลขที่</th><th>ชื่อ</th><th id="chk-th">สถานะ</th></tr></thead><tbody id="chk-body"></tbody></table></div></div></section>
+<div id="chk-wrap" class="hidden">
+    <div class="row" style="align-items:center;margin:15px 0 10px;">
+        <b style="flex:1">รายชื่อนักเรียน</b>
+    </div>
+    <div class="tw">
+        <table>
+            <thead>
+                <tr>
+                    <th>เลขที่</th>
+                    <th>ชื่อ</th>
+                    <th id="chk-th">สถานะ</th>
+                    <th style="text-align:center;width:90px;">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="chk-body"></tbody>
+        </table>
+    </div>
+    <div style="text-align:center; margin-top:20px; margin-bottom:10px;">
+        <button class="ok" style="padding:12px 40px; font-size:16px; border-radius:30px; box-shadow:0 4px 12px rgba(16,185,129,0.3);" onclick="saveCheck()">
+            <i class="fa-solid fa-floppy-disk"></i> บันทึกทั้งหมด
+        </button>
+    </div>
+</div></section>
 
 <section id="s-students" class="card hidden np"><h2>ฐานข้อมูลนักเรียน</h2>
 <div class="row" style="align-items:center; margin-bottom: 8px;">
@@ -1331,23 +1352,44 @@ function fetchCheck(){
  const c=$('chk-class').value;if(!c)return Swal.fire({icon:'warning',text:'กรุณาเลือกห้องเรียน'});
  const d=mode.check==='daily', b=mode.check==='behavior';
  const opts = ['มา','ขาด','ลา','ป่วย'].map(x=>`<option value="${x}">${x}</option>`).join('');
- $('chk-body').innerHTML=ws.students.filter(s=>s.class===c).map(s=>`<tr data-code="${esc(s.code)}"><td>${s.num}</td><td><b>${esc(s.name)}</b><br><small style="color:#94a3b8">${esc(s.code)}</small></td><td>${d?`<select class="st-sel" style="width:70px;padding:6px">${opts}</select>`:(!b?'<input type="number" style="width:80px" placeholder="คะแนน">':'<input type="number" style="width:80px" placeholder="แต้ม (ปกติ 1)">')}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center">ไม่มีนักเรียน</td></tr>';
+ $('chk-body').innerHTML=ws.students.filter(s=>s.class===c).map(s=>`<tr data-code="${esc(s.code)}"><td>${s.num}</td><td><b>${esc(s.name)}</b><br><small style="color:#94a3b8">${esc(s.code)}</small></td><td>${d?`<select class="st-sel" style="width:80px;padding:6px;border-radius:8px;">${opts}</select>`:(!b?'<input type="number" style="width:80px;padding:8px;border-radius:8px;" placeholder="คะแนน">':'<input type="number" style="width:80px;padding:8px;border-radius:8px;" placeholder="แต้ม (1)">')}</td><td style="text-align:center;"><button class="ok" onclick="saveSingleCheck('${esc(s.code)}', this)" style="padding:6px 12px;font-size:13px;border-radius:8px;box-shadow:0 2px 5px rgba(16,185,129,0.2);"><i class="fa-solid fa-check"></i> บันทึก</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center">ไม่มีนักเรียน</td></tr>';
  $('chk-wrap').classList.remove('hidden');
 }
+
+function saveSingleCheck(code, btnEl) {
+ const d=mode.check==='daily', b=mode.check==='behavior', item=d?$('chk-act').value:(b?$('chk-beh').value:$('chk-asg').value), date=$('chk-date').value;
+ if(!item)return Swal.fire({icon:'warning',text:'กรุณาเลือกรายการก่อนบันทึก'});
+ const r = btnEl.closest('tr');
+ if(d){
+  addLog('daily',item,date,code,r.querySelector('select.st-sel').value);
+ } else {
+  let v = r.querySelector('input').value; if(b && v==='') v='1';
+  if(v!=='') addLog(b?'behavior':'score',item,date,code,v);
+  else return Swal.fire({icon:'warning',text:'กรุณากรอกคะแนน/แต้ม',timer:1500,showConfirmButton:false});
+ }
+ save();updateDash();
+ 
+ // เอฟเฟกต์ปุ่มเมื่อบันทึกเสร็จ
+ const oldH = btnEl.innerHTML;
+ btnEl.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+ btnEl.style.background = '#059669';
+ setTimeout(() => { btnEl.innerHTML = oldH; btnEl.style.background = ''; }, 1500);
+}
+
 function saveCheck(){
  const d=mode.check==='daily', b=mode.check==='behavior', item=d?$('chk-act').value:(b?$('chk-beh').value:$('chk-asg').value), date=$('chk-date').value;
  if(!item)return Swal.fire({icon:'warning',text:'กรุณาเลือกรายการ'});
+ let saved = 0;
  document.querySelectorAll('#chk-body tr[data-code]').forEach(r=>{
   if(d){
-   const sel = r.querySelector('select.st-sel');
-   addLog('daily',item,date,r.dataset.code,sel.value);
+   addLog('daily',item,date,r.dataset.code,r.querySelector('select.st-sel').value);
+   saved++;
   } else {
-   const i = r.querySelector('input');
-   let v = i.value; if(b && v==='') v='1';
-   if(v!=='') addLog(b?'behavior':'score',item,date,r.dataset.code,v);
+   let v = r.querySelector('input').value; if(b && v==='') v='1';
+   if(v!=='') { addLog(b?'behavior':'score',item,date,r.dataset.code,v); saved++; }
   }
  });
- save();updateDash();Swal.fire({icon:'success',title:'บันทึกเรียบร้อย',timer:1400,showConfirmButton:false});
+ save();updateDash();Swal.fire({icon:'success',title:saved>0?'บันทึกทั้งหมดเรียบร้อย':'ไม่มีข้อมูลใหม่ให้บันทึก',timer:1400,showConfirmButton:false});
 }
 
 function renderStudents(){
@@ -1548,7 +1590,25 @@ function importCSV(e) {
     }
    }
    save(); populate(); renderStudents(); updateDash();
-   Swal.fire({icon:'success', title:'ดำเนินการเรียบร้อย', text:`อัปโหลดข้อมูลสำเร็จ เพิ่มนักเรียนใหม่จำนวน ${added} คน`});
+   
+   // ตกแต่งป๊อปอัปแจ้งเตือนใหม่ให้สวยงามขึ้น
+   Swal.fire({
+       icon: 'success', 
+       title: 'ดำเนินการเรียบร้อย!', 
+       html: `
+           <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:16px; padding:20px; margin-top:10px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);">
+               <div style="color:#047857; font-size:16px; margin-bottom:5px;">อัปโหลดข้อมูลสำเร็จ เพิ่มนักเรียนใหม่จำนวน</div>
+               <div style="font-size:42px; font-weight:bold; color:#10b981; line-height:1; text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">${added} <span style="font-size:18px; font-weight:normal;">คน</span></div>
+           </div>
+       `,
+       confirmButtonText: 'ยอดเยี่ยมเลย!',
+       confirmButtonColor: '#10b981',
+       backdrop: `rgba(16, 185, 129, 0.1)`
+   });
+   
+   // เพิ่มเอฟเฟกต์พลุกระดาษถ้ามีนักเรียนเพิ่มเข้ามาจริงๆ
+   if(typeof confetti !== 'undefined' && added > 0) confetti({particleCount: 120, spread: 80, origin: {y: 0.6}, zIndex: 100000});
+   
   } catch(err) {
    Swal.fire({icon:'error', title:'ข้อผิดพลาด', text:'รูปแบบไฟล์ CSV ไม่ถูกต้อง'});
   }
