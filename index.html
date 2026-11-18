@@ -783,6 +783,23 @@ const LK='sc_local';
 let reportChart = null; 
 let repTimeView = 'daily'; 
 
+let idleTimer;
+const IDLE_TIMEOUT = 5 * 60 * 1000; // ตั้งเวลา 5 นาที (300,000 มิลลิวินาที)
+
+function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    if (!me) return; // ถ้ายังไม่เข้าระบบ ไม่ต้องนับเวลา
+    idleTimer = setTimeout(() => {
+        logout(); // ล็อกเอาท์เมื่อครบ 5 นาที
+        Swal.fire({
+            icon: 'warning',
+            title: 'หมดเวลาการใช้งาน',
+            text: 'คุณไม่ได้ใช้งานระบบเกิน 5 นาที ระบบได้ออกจากระบบอัตโนมัติเพื่อความปลอดภัย',
+            confirmButtonText: 'เข้าสู่ระบบใหม่'
+        });
+    }, IDLE_TIMEOUT);
+}
+
 function L(){
  let d; try{d=JSON.parse(localStorage.getItem(LK))}catch(e){}
  if(!d||!d.ws)d={users:[{id:'admin_rescue',email:'admin@syscheck.app',pass:'1234',name:'แอดมินฉุกเฉิน',role:'admin',status:'active'}],ws:{}}; return d;
@@ -916,10 +933,19 @@ function gate(u) {
     if(SRC==='local') {
         const d=L(); d.sess={src:'local',me}; LS(d);
     }
+    resetIdleTimer(); // เริ่มนับเวลาเมื่อเข้าสู่ระบบสำเร็จ
     start();
 }
 
-async function logout(){localStorage.removeItem('sc_sess');if(SRC==='auth')await sb.auth.signOut();if(camOn)toggleCamera();me=null;ws=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');}
+async function logout(){
+    clearTimeout(idleTimer); // ยกเลิกการนับเวลาเมื่อล็อกเอาท์
+    localStorage.removeItem('sc_sess');
+    if(SRC==='auth')await sb.auth.signOut();
+    if(camOn)toggleCamera();
+    me=null;ws=null;
+    $('app').classList.add('hidden');
+    $('login').classList.remove('hidden');
+}
 
 async function start(){
  try {
@@ -2199,6 +2225,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
       initPublicPortal(tId);
       return; 
   }
+
+  // เพิ่มการตรวจจับความเคลื่อนไหว (เมาส์, คีย์บอร์ด, ทัชสกรีน) เพื่อรีเซ็ตเวลา 5 นาที
+  ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'].forEach(evt => {
+      document.addEventListener(evt, resetIdleTimer, {passive: true});
+  });
 
   document.addEventListener('click', (e) => {
     const dd = $('user-dropdown');
