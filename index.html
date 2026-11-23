@@ -109,12 +109,14 @@ main{padding:14px 12px 20px}
 .scard{width:85.6mm!important;height:54mm!important;border:.25mm solid #cbd5e1;border-radius:3mm;overflow:hidden;background:#fff;display:flex;flex-direction:column;break-inside:avoid;page-break-inside:avoid;box-sizing:border-box}
 .scard .t{display:flex;align-items:center;gap:2mm;color:#fff;padding:1.6mm 3mm;font-weight:700;font-size:3.6mm;line-height:1.1}
 .scard .t img{height:7mm;width:7mm;object-fit:contain;background:#fff;border-radius:50%;padding:.4mm;flex:none}
-.scard .b{flex:1;display:flex;gap:3mm;align-items:center;padding:2mm 3.5mm;overflow:hidden}
+.scard .b{flex:1;display:flex;gap:2mm;align-items:center;padding:2mm 2.5mm;overflow:hidden}
+.scard .pic{width:18mm;height:23mm;flex:none;border:.25mm solid #cbd5e1;border-radius:2mm;background:#f1f5f9;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:8mm}
+.scard .pic img{width:100%;height:100%;object-fit:cover;display:block}
 .scard .b .info{flex:1;min-width:0}
-.scard .nm{font-weight:700;font-size:4.2mm;line-height:1.25;margin-bottom:1.5mm;word-break:break-word}
-.scard .ln{font-size:3.2mm;color:#475569;line-height:1.5}
+.scard .nm{font-weight:700;font-size:3.6mm;line-height:1.25;margin-bottom:1.2mm;word-break:break-word}
+.scard .ln{font-size:2.9mm;color:#475569;line-height:1.45}
 .scard .f{height:4.6mm;font-size:2.6mm;display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.3mm}
-.qrb{width:25mm;height:25mm;flex:none;padding:1mm;border:.2mm solid #e2e8f0;border-radius:1.5mm;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.qrb{width:21mm;height:21mm;flex:none;padding:1mm;border:.2mm solid #e2e8f0;border-radius:1.5mm;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .qrb img, .qrb canvas{width:100%!important;height:auto!important;max-height:100%!important;display:block;margin:0 auto;}
 @media screen{.sheet{zoom:.55; transform-origin: top center;}}
 @media screen and (min-width:800px){.sheet{zoom:.8}}
@@ -539,6 +541,7 @@ main{padding:14px 12px 20px}
 <button style="margin:8px 0 20px 0;width:100%;background:#2563eb;font-size:16px;padding:14px;border-radius:14px;box-shadow:0 4px 12px rgba(37,99,235,0.3);" onclick="showShareLink()">
     <i class="fa-solid fa-share-nodes"></i> แชร์ลิงก์ให้นักเรียนเช็คผลงาน
 </button>
+<label>ชื่อครูผู้สอน (แสดงมุมขวาบนและหน้านักเรียน)</label><input id="set-teacher-name" placeholder="เช่น ครูสมชาย ใจดี">
 <label>ข้อความหัวหน้าสแกน</label><input id="set-title">
 <label>โลโกหน้าสแกน</label><input type="file" id="set-logo" accept="image/*" onchange="previewLogo(event)">
 <img id="set-prev" class="hidden" style="width:64px;height:64px;object-fit:cover;border-radius:12px">
@@ -812,11 +815,11 @@ async function initPublicPortal(tId) {
     try {
         const tmpSb = window.supabase.createClient(SB_URL, SB_KEY);
         const {data: prof} = await tmpSb.from('profiles').select('name').eq('id', tId).maybeSingle();
-        ppTeacherName = prof ? prof.name : 'คุณครู';
 
         const {data: wsData} = await tmpSb.from('workspaces').select('data').eq('user_id', tId).maybeSingle();
         if(wsData && wsData.data) {
             ppWs = wsData.data;
+            ppTeacherName = (prof && prof.name) ? prof.name : (ppWs.settings?.teacherName || 'คุณครู');
             $('pp-teacher').textContent = ppTeacherName;
             const logo = ppWs.settings?.scanLogo || 'https://i0.wp.com/kroocool.com/wp-content/uploads/2024/03/%E0%B8%AA%E0%B8%9E%E0%B8%90.png';
             $('pp-logo').src = logo;
@@ -1099,10 +1102,25 @@ async function logout(){
     $('login').classList.remove('hidden');
 }
 
+function updateUserNameDisplay() {
+    const el = $('uname');
+    if(!el) return;
+    const displayName = String(
+        me?.name ||
+        me?.full_name ||
+        me?.user_metadata?.name ||
+        me?.user_metadata?.full_name ||
+        ws?.settings?.teacherName ||
+        (me?.email ? shown(me.email) : '') ||
+        'คุณครู'
+    ).trim();
+    el.textContent = displayName || 'คุณครู';
+}
+
 async function start(){
  try {
   $('login').classList.add('hidden');$('app').classList.remove('hidden');
-  if(me && me.name) $('uname').textContent=me.name;
+  updateUserNameDisplay();
   const admin=me?.role==='admin';
   $('sub').textContent=admin?'ระบบผู้ดูแล (Admin)':'เช็คชื่อ/เช็คงาน 2IN1';
   
@@ -1148,6 +1166,7 @@ async function start(){
   ws.logs = ws.logs || [];
   ws.grades = ws.grades || []; 
   ws.settings = ws.settings || {scanTitle:'สแกน QR Code 2IN1',scanLogo:'',theme:'indigo'};
+  updateUserNameDisplay();
 
   let migrated = false;
   ws.activities = ws.activities.map(a => { if(typeof a==='string'){ migrated=true; return {id:genId('a'), name:a}; } return a; });
@@ -1753,6 +1772,29 @@ function saveCheck() {
 }
 
 // ==================== STUDENTS (จัดการนักเรียน + แก้ไข + CSV) ====================
+let tempStuPic = '';
+function resizeStuPic(file, previewId) {
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            const c = document.createElement('canvas');
+            const maxW = 220, maxH = 280;
+            let w = img.width, h = img.height;
+            const ratio = Math.min(maxW / w, maxH / h, 1);
+            c.width = Math.round(w * ratio);
+            c.height = Math.round(h * ratio);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            tempStuPic = c.toDataURL('image/jpeg', 0.78);
+            const prev = $(previewId);
+            if(prev) { prev.src = tempStuPic; prev.classList.remove('hidden'); }
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 function renderStudents() {
     const q = ($('stu-q').value || '').trim().toLowerCase();
     const cls = $('stu-class').value;
@@ -1765,7 +1807,14 @@ function renderStudents() {
     $('stu-body').innerHTML = list.map(s => `
         <tr>
             <td><b>${esc(s.code)}</b></td>
-            <td>${esc(s.num?s.num+'. ':'')}${esc(s.name)}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:#eef2ff;color:var(--main);overflow:hidden;display:flex;align-items:center;justify-content:center;flex:none;border:1px solid #e2e8f0;cursor:pointer;" onclick="editStudent('${esc(s.code)}')" title="คลิกเพื่อเพิ่ม/เปลี่ยนรูป">
+                        ${s.pic ? `<img src="${esc(s.pic)}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fa-solid fa-user" style="font-size:15px;"></i>'}
+                    </div>
+                    <span>${esc(s.num?s.num+'. ':'')}${esc(s.name)}</span>
+                </div>
+            </td>
             <td><span class="badge">${esc(s.class)}</span></td>
             <td style="white-space:nowrap;">
                 <button style="padding:6px 10px;font-size:12px;background:#3b82f6;" onclick="viewStudentHistory('${esc(s.code)}')" title="ดูประวัติ"><i class="fa-solid fa-clock-rotate-left"></i></button>
@@ -1777,9 +1826,15 @@ function renderStudents() {
 }
 
 async function addStudent() {
+    tempStuPic = '';
     const {value: f} = await Swal.fire({
         title: 'เพิ่มนักเรียนใหม่',
         html: `
+            <div style="text-align:center;margin-bottom:8px;">
+                <img id="as-prev" class="hidden" style="width:76px;height:96px;object-fit:cover;border-radius:10px;border:2px solid #e2e8f0;margin-bottom:6px;">
+                <label style="display:block;text-align:left;">รูปนักเรียน (แสดงบนบัตร)</label>
+                <input type="file" accept="image/*" onchange="resizeStuPic(this.files[0],'as-prev')">
+            </div>
             <input id="as-code" placeholder="รหัสนักเรียน (เช่น ST103)">
             <input id="as-name" placeholder="ชื่อ-นามสกุล">
             <input id="as-num" type="number" placeholder="เลขที่">
@@ -1790,7 +1845,7 @@ async function addStudent() {
             const code=$('as-code').value.trim(), name=$('as-name').value.trim(), num=$('as-num').value.trim(), cls=$('as-class').value.trim();
             if(!code||!name||!cls){ Swal.showValidationMessage('กรุณากรอกรหัส ชื่อ และห้องเรียน'); return false; }
             if(ws.students.some(s=>s.code===code)){ Swal.showValidationMessage('รหัสนักเรียนนี้มีอยู่ในระบบแล้ว'); return false; }
-            return {code, name, num:Number(num)||0, class:cls};
+            return {code, name, num:Number(num)||0, class:cls, pic:tempStuPic};
         }
     });
     if(!f) return;
@@ -1803,9 +1858,18 @@ async function addStudent() {
 async function editStudent(oldCode) {
     const s = ws.students.find(x => x.code === oldCode);
     if(!s) return;
+    tempStuPic = s.pic || '';
     const {value: f} = await Swal.fire({
         title: 'แก้ไขข้อมูลนักเรียน',
         html: `
+            <div style="text-align:center;margin-bottom:8px;">
+                <img id="es-prev" src="${esc(tempStuPic)}" class="${tempStuPic?'':'hidden'}" style="width:76px;height:96px;object-fit:cover;border-radius:10px;border:2px solid #e2e8f0;margin-bottom:6px;">
+                <label style="display:block;text-align:left;">รูปนักเรียน (แสดงบนบัตร)</label>
+                <div style="display:flex;gap:6px;align-items:center;">
+                    <input type="file" accept="image/*" onchange="resizeStuPic(this.files[0],'es-prev')" style="flex:1;">
+                    <button type="button" class="r" style="flex:none;padding:10px 12px;font-size:12px;" onclick="tempStuPic='';$('es-prev').classList.add('hidden');">ลบรูป</button>
+                </div>
+            </div>
             <label style="display:block;text-align:left;">รหัสนักเรียน</label>
             <input id="es-code" value="${esc(s.code)}">
             <label style="display:block;text-align:left;">ชื่อ-นามสกุล</label>
@@ -1820,11 +1884,11 @@ async function editStudent(oldCode) {
             const code=$('es-code').value.trim(), name=$('es-name').value.trim(), num=$('es-num').value.trim(), cls=$('es-class').value.trim();
             if(!code||!name||!cls){ Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบ'); return false; }
             if(code !== oldCode && ws.students.some(x=>x.code===code)){ Swal.showValidationMessage('รหัสนักเรียนใหม่ซ้ำกับคนอื่น'); return false; }
-            return {code, name, num:Number(num)||0, class:cls};
+            return {code, name, num:Number(num)||0, class:cls, pic:tempStuPic};
         }
     });
     if(!f) return;
-    s.code = f.code; s.name = f.name; s.num = f.num; s.class = f.class;
+    s.code = f.code; s.name = f.name; s.num = f.num; s.class = f.class; s.pic = f.pic;
     if(f.code !== oldCode) {
         (ws.logs||[]).forEach(l => { if(l.code === oldCode) l.code = f.code; });
         (ws.grades||[]).forEach(g => { if(g.code === oldCode) g.code = f.code; });
@@ -1933,6 +1997,7 @@ function renderCards() {
             card.innerHTML = `
                 <div class="t" style="background:${color}"><img src="${esc(logo)}" onerror="this.style.display='none'"><span>${esc(title)}</span></div>
                 <div class="b">
+                    <div class="pic">${s.pic ? `<img src="${esc(s.pic)}" alt="รูปนักเรียน">` : '<i class="fa-solid fa-user"></i>'}</div>
                     <div class="info">
                         <div class="nm">${esc(s.name)}</div>
                         <div class="ln">รหัส: <b>${esc(s.code)}</b></div>
@@ -1947,7 +2012,7 @@ function renderCards() {
         wrap.appendChild(sheet);
         chunk.forEach((s, idx) => {
             const el = document.getElementById(`qr_${i}_${idx}`);
-            if(el) new QRCode(el, {text: String(s.code), width: 92, height: 92, correctLevel: QRCode.CorrectLevel.M});
+            if(el) new QRCode(el, {text: String(s.code), width: 76, height: 76, correctLevel: QRCode.CorrectLevel.M});
         });
     }
 }
@@ -2303,6 +2368,9 @@ function loadScan() {
     const t = ws.settings.scanTitle || 'สแกน QR Code 2IN1';
     $('scan-title').textContent = t;
     $('set-title').value = t;
+    if($('set-teacher-name')) {
+        $('set-teacher-name').value = me?.name || me?.full_name || me?.user_metadata?.name || ws.settings.teacherName || '';
+    }
     const lg = ws.settings.scanLogo || '';
     tempLogo = lg;
     if(lg) {
@@ -2326,11 +2394,26 @@ function previewLogo(ev) {
     r.readAsDataURL(f);
 }
 
-function saveScan() {
+async function saveScan() {
     ws.settings.scanTitle = $('set-title').value.trim() || 'สแกน QR Code 2IN1';
     ws.settings.scanLogo = tempLogo;
+    const tName = $('set-teacher-name') ? $('set-teacher-name').value.trim() : '';
+    if(tName) {
+        ws.settings.teacherName = tName;
+        if(me) me.name = tName;
+        updateUserNameDisplay();
+        if(SRC === 'auth' && me?.id) {
+            try { await sb.from('profiles').update({name: tName}).eq('id', me.id); } catch(e) {}
+        } else if(SRC === 'local' && me?.id) {
+            const d = L();
+            const u = (d.users||[]).find(x => x.id === me.id);
+            if(u) u.name = tName;
+            if(d.sess?.me) d.sess.me.name = tName;
+            LS(d);
+        }
+    }
     save(); loadScan();
-    Swal.fire({toast:true,position:'top',icon:'success',title:'บันทึกหน้าสแกนแล้ว',showConfirmButton:false,timer:1500});
+    Swal.fire({toast:true,position:'top',icon:'success',title:'บันทึกการตั้งค่าแล้ว',showConfirmButton:false,timer:1500});
 }
 
 function applyTheme(k) {
