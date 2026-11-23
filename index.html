@@ -26,7 +26,7 @@
 <style>
 :root{--main:#4F46E5;--light:#EEF2FF;--dark:#3730A3;--accent:#8B5CF6}
 *{box-sizing:border-box;font-family:Kanit,sans-serif}
-body{margin:0;background:#F8FAFC;color:#1e293b;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#F8FAFC;color:#1e293b;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 .hidden{display:none!important}
 button{cursor:pointer;border:0;border-radius:12px;padding:10px 16px;font-weight:600;background:var(--main);color:#fff;font-size:15px;transition:0.2s}
 button.g{background:#e2e8f0;color:#334155}button.r{background:#f43f5e}button.ok{background:#10b981}
@@ -103,9 +103,9 @@ main{padding:14px 12px 20px}
 .b-ok{background:#d1fae5;color:#047857}.b-no{background:#ffe4e6;color:#be123c}.b-wait{background:#fef3c7;color:#b45309}
 #qr-reader{border-radius:14px;overflow:hidden;margin-bottom:10px}
 #scan-log{text-align:center;padding:16px;background:#f8fafc;border-radius:14px;min-height:64px}
-#cards{display:flex;flex-direction:column;align-items:center;gap:14px}
+#cards{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:100%;overflow-x:auto;padding:4px 0;-webkit-overflow-scrolling:touch}
 
-.sheet{width:210mm;height:296mm;padding:8mm 0;background:#fff;box-sizing:border-box;box-shadow:0 2px 10px #0003;display:grid;grid-template-columns:repeat(2,85.6mm);grid-template-rows:repeat(5,54mm);justify-content:center;align-content:center;column-gap:8mm;row-gap:2mm;margin:0 auto 20px;}
+.sheet{width:210mm;min-height:296mm;padding:10mm 0;background:#fff;box-sizing:border-box;box-shadow:0 2px 10px #0003;display:grid;grid-template-columns:repeat(2,85.6mm);grid-template-rows:repeat(5,54mm);justify-content:center;align-content:start;column-gap:8mm;row-gap:3mm;margin:0 auto 20px;flex:none}
 .scard{width:85.6mm!important;height:54mm!important;border:.25mm solid #cbd5e1;border-radius:3mm;overflow:hidden;background:#fff;display:flex;flex-direction:column;break-inside:avoid;page-break-inside:avoid;box-sizing:border-box}
 .scard .t{display:flex;align-items:center;gap:2mm;color:#fff;padding:1.6mm 3mm;font-weight:700;font-size:3.6mm;line-height:1.1}
 .scard .t img{height:7mm;width:7mm;object-fit:contain;background:#fff;border-radius:50%;padding:.4mm;flex:none}
@@ -113,15 +113,15 @@ main{padding:14px 12px 20px}
 .scard .pic{width:18mm;height:23mm;flex:none;border:.25mm solid #cbd5e1;border-radius:2mm;background:#f1f5f9;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:8mm}
 .scard .pic img{width:100%;height:100%;object-fit:cover;display:block}
 .scard .b .info{flex:1;min-width:0}
-.scard .nm{font-weight:700;font-size:3.6mm;line-height:1.25;margin-bottom:1.2mm;word-break:break-word}
-.scard .ln{font-size:2.9mm;color:#475569;line-height:1.45}
+.scard .nm{font-weight:700;font-size:3.4mm;line-height:1.25;margin-bottom:1.2mm;overflow-wrap:break-word;word-break:normal}
+.scard .ln{font-size:2.85mm;color:#475569;line-height:1.45}
 .scard .f{height:4.6mm;font-size:2.6mm;display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.3mm}
 .qrb{width:21mm;height:21mm;flex:none;padding:1mm;border:.2mm solid #e2e8f0;border-radius:1.5mm;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .qrb img, .qrb canvas{width:100%!important;height:auto!important;max-height:100%!important;display:block;margin:0 auto;}
-@media screen{.sheet{zoom:.55; transform-origin: top center;}}
-@media screen and (min-width:800px){.sheet{zoom:.8}}
-
-.big{font-size:64px;font-weight:700;color:var(--main);text-align:center}
+@media screen{.sheet{zoom:.38}}
+@media screen and (min-width:420px){.sheet{zoom:.44}}
+@media screen and (min-width:600px){.sheet{zoom:.62}}
+@media screen and (min-width:800px){.sheet{zoom:.82}}
 .themes{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
 .themes span{width:38px;height:38px;border-radius:50%;cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 1px #cbd5e1}
 .themes span.act{box-shadow:0 0 0 3px var(--main)}
@@ -187,8 +187,8 @@ main{padding:14px 12px 20px}
  body.pc #s-cards{padding:0!important;margin:0!important;box-shadow:none!important;border:none!important;max-width:none!important;}
  body.pc header, body.pc .np {display:none!important;}
  .pc .card{box-shadow:none;max-width:none;}
- .pc #cards{display:block;gap:0;}
- .pc .sheet{margin:0 auto!important;padding:8mm 0!important;box-shadow:none!important;break-after:page;page-break-after:always;zoom:1!important;transform:none!important;height:296mm!important;}
+ .pc #cards{display:block;gap:0;overflow:visible!important;padding:0!important;}
+ .pc .sheet{margin:0 auto!important;padding:10mm 0!important;box-shadow:none!important;break-after:page;page-break-after:always;zoom:1!important;transform:none!important;height:296mm!important;min-height:296mm!important;}
  .pc .sheet:last-child{break-after:auto;page-break-after:auto;}
  .pc .scard{border:0.5mm dashed #cbd5e1!important;}
  
@@ -1519,7 +1519,8 @@ function populate(){
   $('hd-filter-sub').innerHTML = opts(ws.subjects, 'ทุกวิชา');
   if(prevSub && ws.subjects.includes(prevSub)) $('hd-filter-sub').value = prevSub;
  }
- ['cd-class','rnd-class'].forEach(i=>{if($(i))$(i).innerHTML=opts(ws.classes,'เลือกห้อง')});
+ if($('cd-class')) $('cd-class').innerHTML = opts(ws.classes, 'ทุกห้อง');
+ if($('rnd-class')) $('rnd-class').innerHTML = opts(ws.classes, 'เลือกห้อง');
  ['scan-sub','chk-sub','rep-sub','gr-sub'].forEach(i=>{if($(i))$(i).innerHTML=opts(ws.subjects,'เลือกวิชา')});
  if($('setup-filter')) $('setup-filter').innerHTML = '<option value="">-- แสดงทุกประเภท/วิชา --</option>' + (ws.subjects||[]).map(s=>`<option value="${esc(s)}">วิชา: ${esc(s)}</option>`).join('');
 
